@@ -1,0 +1,2855 @@
+https://www.youtube.com/watch?v=7Q1rkgYh6ms
+
+current machine learning projects which
+you're doing are absolute piece of
+What I'm going to show you the project
+which has never ever been developed or
+showcased on the entire YouTube and this
+is the enterprise level project. Most
+machine learning projects which you do
+are absolutely piece of A collab
+notebook, some Titanic data set, some
+production grade project, some MLOps
+project and whatnot. And what you do,
+you train a model, you get a fancy
+accuracy score, you just try to make
+them in a good folders, try to use some
+sort of documentation into the code and
+then you're done. And that's the
+problem. Most of the companies who
+builds real AI and ML products does not
+really operates like that. And that's
+not how you get hired. And in my
+terminology is what you have built. It's
+not a system. It's a screenshot project
+that you screenshotted something and
+then you showcase that thing. It's
+definitely not a system. Let me show you
+the truth. Companies do not even care
+that what models you have trained on,
+what models you have fine-tuned on,
+etc., etc. They care if you can build a
+pipeline that can scrape live data,
+cleans it, feeds you to the model,
+tracks cost and ships training data at
+scale. And that's where the jobs are.
+And now I have come with another great
+enterprisegrade project that does not
+only builds a model and then you can use
+that to get a fancy accuracy score and
+done. No, what we're going to do in this
+project is build a system that prepares
+the training data set which can be fed
+into multiple tasks which is preparation
+of a chatbot, preparation of a
+summarization bot and etc etc. So we're
+not building that how to build a
+summarizer or chatbot. We're building a
+system that can generate the quality
+training data set which can be used for
+training of those specific tasks.
+Insane, right? And we'll be not doing
+this literally. We'll be doing this into
+fullblown enterprisegrade setting. I've
+worked on enormous number of enterprise
+grace projects and I know what they will
+look like and I bet you have not seen
+ever like this ever on entire YouTube on
+how these enterprise grade level
+projects are built and I have divided
+this project into several 12 to 14 steps
+and what every step does is following
+and I am going to help you build from it
+scratch step by step with a video
+explanation as well as a written
+explanation in a PDF format which has
+been beautifully crafted just for you.
+So what you learn into this entire
+project? One is of course that you'll be
+building a system that generates the
+training data set for building tools
+like chat bots, summarization tools,
+etc. which is not so common project. But
+more importantly, what you'll be
+learning is Python architecture, how to
+develop the asynchronous data pipelines,
+prompt engineering at scale, real-time
+monitoring, stream dashboards, error
+handling like a professional, and really
+how to develop something so scalable, so
+defensive and an enterprisegrade setting
+and much more. And you'll have finally
+have a project where interviewer will
+literally say that wait did you build
+this? Because this has never been
+produced entire on the internet. And
+then you can just copy and paste the
+entire framework which I have taught
+into different other projects and build
+your own enterpriseg grade project and
+showcase that as one of the oneclass
+project which one has ever developed.
+Let's get started with this. Hello
+everybody. So let's start off with the
+first step and as I said this project
+I've divided into several steps and I
+want to go step by step and break down
+every part of it super simply that
+anybody could understand with the real
+world examples. So the first step is
+let's assume that you go to any places
+right any factory or anywhere there's a
+main entrance which is which is always
+there in any factory right where
+visitors comes in and you know there's a
+big plate written written as a main
+entrance over there so think of that as
+the init.py so in in our project we have
+some a file known as into the source
+file the training data robo ine.py by
+and that's what our starting point is.
+We want to understand that where all
+things initialized into this data
+training data curation bot which is an
+enterprise grade train data creation b
+for LM training using certain tools. So
+understand this in a way that when you
+go to the Disneyland let's say when you
+go to the Disneyland you just you don't
+just walk into random buildings and then
+take the rides and stuff like that.
+First you go to the main entrance first.
+Then there's a reception desk that tells
+you okay what rides are available, what
+rights are not available, what you can
+do, what you can't. They give you a map
+showing where everything is so they can
+roam around it in the amusement park and
+hell lot of things. Correct. So what we
+usually do,
+I'm just going to check. Yeah. So what
+we usually do is that in.py is exactly
+the same. What it does it gives you the
+main entrance so that any enterprise
+group that you first visit me I will
+tell you what things are available into
+me what am I what I'm doing what are the
+rules what eventually this whole project
+represents and everything so
+so let's break down every bit of this
+particular file because this file is
+pretty important that you can also
+replicate this into your the project is
+the first one is that you this is a good
+tendency to write about what the project
+is about which is a welcome
+documentation. The welcome documentation
+means that any is even if you go to
+Disneyland that you'll see a huge board
+about that particular thing. Same way it
+happens a huge sign that welcome to the
+training data robo factory which is
+training data curation board and then a
+little bit about the description about
+it. Now why does it really matter is it
+tells about your particular project in a
+way that nobody does and this is a
+usually good sign to write about your
+project as much as possible. So it's
+like a welcome to the training data
+robbo factory and it what it does it
+tells the visitors who are coming to
+your project that's saying that okay
+this is a smart computer training data
+and just like McDonald's or probably the
+Disneyland would have something like
+build those seats then once you once you
+have the big sign about that particular
+thing then you have those metadata now
+information card what we do into that
+like we know we should know that who all
+people made this project, how to get
+help if any if any anyone gets stuck
+into that project, how we can cap, how
+we can track different versions of this
+project, etc., etc. when you update your
+phone or when you add new features and
+stuff like that. And that's what matters
+when you actually look at the factory
+meta data and that's what really means
+the version, the author. You can also
+write your name over here, the email and
+the description about that particular
+project. It is as simple you know all
+these things really you know is very
+very important in any enterpriseg grade
+setting project because nobody does it
+and my tendency is always to tell you
+that okay what nobody does it which is
+very simple but still so powerful at
+today's world. Now we go to the next one
+which is what we do. We bring all our
+imports which is all our important parts
+of our file into a tool which is
+bringing all the tools so that you take
+so that in Disneyland you go to
+reception desk they tell you the
+different different rides which are
+available. You go to a restaurant they
+tell you different different menus foods
+options which are available. Right?
+That's what you want to do. You want to
+make this as a reception desk. Okay. It
+knows everything which it has. For
+example, in the course, we'll come to
+one by one, but we have a settings,
+which is the config file. And then in
+settings, we have the um if you truly
+see over here, which is the settings
+where we inst instantiate. We'll come to
+what these all these things means in a
+bit. But we will import the we'll import
+the uh settings which is core imports
+which is very important because we are
+also logging every step. We are logging
+every step. Of course, we could have
+used some simple logger, but I wanted to
+have my own logger because that's that's
+more accurate. I can apply any
+customization. So, which is logging
+where you can literally log anything
+whether it's logging any completed
+operations, failed operations and stuff
+like that. Then we'll come to the code
+more in detail later on. And then you
+have training data board error. So, what
+does it mean? First of all, settings
+means the instruction manual tells our
+robot how to work, which is what are the
+settings do we have? Just like in any
+account, you have the settings, right?
+The same way it happens. We'll come to
+those settings in a bit. And then you
+have the logger. What it does, logger is
+very simple. Logger actually is is is a
+very simple. Logger actually is is is a notepad
+uh that that that writes down what robot
+is doing whether it's error any good
+pass and stuff whatever it does it just
+journals it down and then you have
+training data bot error whatever bot we
+are having it's an alarm system which
+tells us when something goes wrong and
+that is more important we'll go to these
+divers into more detail later on but
+this is the whole point
+Now
+in simple terms because I told you that
+I written tons of examples there is one
+instruction booklet like settings which
+of which we have imported which is these
+settings over here and then we have
+imported where you might take about
+notes what you're doing which is the
+logging where you log every step we'll
+look at it and if a pre breaks you need
+to know the error system you need to
+know what error eventually happen which
+is the error system which is the
+training data bot error which we have it
+is that simple right and then once Once
+you have these settings which is
+settings what you're doing and then
+probably anything alarm system what you
+want to do is you want to bring the
+actual robot to work and that's what we
+do. So our train data robo over here is
+our bot.py pie um where we have imported
+this is like an actual part which is the
+most important part is like our main
+robot that does all the work for example
+it's like bringing the factory manager
+to the front desk so that it can we'll
+come to what the training data robot
+does but at every reception you have a
+manager who works for you who are who's
+there for you now when someone wants to
+use your project or use your factory or
+go to Disneyland they talk to this
+robot. Now, what you should think of it
+is whenever you're going to a
+restaurant, you're asking for a manager,
+you're calling customer service, getting
+the main helper, going to the principal
+office and meeting the principal. The
+same way you come to this and then you
+meet my training retailer robot. As
+simple as that, right? And then you have
+our most important stuff which is
+because this guy is a manager. Manager
+has people inside it and that's what we
+call as a external modules which you're
+going to import. Now what it is does
+which is a specialized workers because
+we as as I said we can load data who
+read PDS file web load web loader PDF
+loader like anything comes PDF converted
+into training data anything given links
+converted into web web to training data
+for LLM anything who can worker who can
+read text files worker and there's one
+even in the manager you have the boss
+who will decide which worker to use
+which specialized let's say a user comes
+and says here I have this PDF that's it
+I have this file the unified loader will
+figure out okay if you have a PDF I will
+give it a PDF loader if you have a txt
+file I'll give it a document flow loader
+so it's like an hierarchical system
+which I eventually tells us okay this is
+what we want to do is a manager which is
+a training first test and then train
+robot tells unified loader that hey this
+is the file which this guy is trying to
+convert this into a data you can talk to
+any of these three and then unified
+loader gives to the right loader over
+And then we have another loader which is
+the task which is more specialized tasks
+which is worker who makes questions and
+answers. So once somebody loads the data
+it gives to the another worker who can
+generate questions and answers. Worker
+who sort things into categories workers
+who make short summaries about those
+instances and the instruction sheets for
+workers which is the task template and
+how this should be done for all these
+three workers. So I hope you're
+understanding the whole thing. It's like
+a team of agents talking really to each
+a team of agents talking really to each other.
+So I explained which is PDF loader is
+running workers who really really good
+at reading files. Web loader is worker
+who's really good at reading websites,
+document loader, who reads regular text
+files regularly and it's unifi loader
+which is a supervisor who decide which
+workers should hand should handle each
+job and then you have task creation
+department which converts that loaded
+document into actual substance and then
+we have three different ways to do it QA
+generator, classification generator and
+summarization generator and then you
+have just like I you have a supervisor
+you have a task template into this case
+the task table. We'll go to the each of
+the methods step by step. What it does
+is a recipe card that tells worker
+exactly what to do and in what format.
+So you have the entrance, you have the
+guys, you provide the services which is
+the task. Now what you need to do, you
+need to provide them the support and
+services, right? And that's what it
+leads to. Another one. The decoder
+client which we have over here is
+nothing but the internet detector. It
+just finds information from the websites
+and that we are using the for this. So
+we find information from the website and
+then we have a text prep-processor. What
+does text prep-processor means? It
+converts those information into a very
+nice looking text so that our um task
+creators can actually understand it.
+Then you have a quality evaluator which
+truly understands that everything is
+working fine enough. And then there's a
+data set exporter which packages
+everything and exports it for our
+customers. Completely makes sense right
+now. This is how I wanted you to
+understand that how you can think of it
+as a more managerial term.
+So I hope it makes sense till this point
+of time.
+Perfect. Now we go to the next one which
+Perfect. Now we go to the next one which is
+let me just go to the our next page. Now
+we come to the actual so now now you
+need to showcase right at the first step
+like a menu card that what customers can
+buy. Now customer can buy the core part
+of it which is the training they bought
+the settings to to to write an alarm
+system. What are the sources you can get
+the data is these things. with a task
+they can buy, they can do and with the
+services which they can opt for like a
+complete package. For example, the store
+can have thousands and thousands of
+things, but the front of it, there's a
+big poster showing the featured toys and
+the list only shows the main thing
+customer usually want and you can ask
+for other things, but these are the
+popular ones and that's what we make it
+customizable, right? So the reason why
+we say that is because we have hundreds
+and hundreds of functions and classes
+and stuff like that which is hundreds
+and hundreds of smaller codes inside our
+factory. that this list which is out
+here which is showcased to our public
+API definition it should show the main
+tools which is usually needed. Now if
+someone says from train from training
+data robot which is this folder's name
+import the training robot they exactly
+get what they want. So it's like a menu
+that's a restaurant right and showing
+the main delicious dish dishes and all
+as simple as that to understand. So you
+might be asking why do we really need
+this reception desk and because I'm
+spending a lot of time in explaining it
+I want to make it very clear. So let's
+say that you don't have this file. You
+don't have this entrance point.
+Customers would have to know exactly
+where everything is. For example, I want
+the robot from room 5 shell 4 box number
+two. Super confusing. Now with this file
+they can just come to this folder and
+say that from this folder I want to just
+import the training dair robo which can
+do my task. And the reception desk will
+give you that particular robot to work
+on. That's right. So if you don't have a
+robot, you do something from detail
+robot.bot import training the robot from
+robot.bot import training the robot from name.core.config.
+You import something. But if you want to
+use those things into any file, you just
+import from t folder. You import
+whatever you initialize all the things
+which you want to sell these particular
+tasks and all these classes. As simple
+as that. So it's like you don't need to
+add you don't need to the book for
+building three flow 2 section C self
+five in row three you just ask where's
+my Harry Potter book and then you get it
+and that's what all matters
+so here we go now customer let's say a
+customer arrives a factory with some PDF
+file and txt file and they knock your
+door the which is pretty much easily
+importing like from data what you import
+that particular robot out there right
+you you import that particular robot
+Now reception disc the file says okay
+here's your main robot when customer
+starts using that robot so it
+initializes that particular robot they
+create their own personal robot
+assistant basically in instantiate the
+class I don't want to go into python
+details but they instantiate the class
+and and you know what this is just an
+example not written in the project they
+give it some documents to read which is
+bloadloadad documents we'll come to all
+these features in a bit that how we have
+built this and everything and then they
+ask you to make the training data which
+is the process documents which are tasks
+which is there and then they export the
+data set. As simple as that. It's like
+ordering at McDonald's. You import, you
+order a Big Mac, they make it for you
+and then you there you get it. Pretty
+simple, right?
+And it's like building and and what this
+is one of the most important design
+patterns that people miss. It's like
+building with Legos. Users don't need
+how our factory works inside. They don't
+they don't need to know how our factory
+works that at this shell. No, come here
+and ask me. I'll give it to you. We just
+need to know what it can do. Like using
+a microwave, you don't need to
+understand electricity how it works.
+Easy to change. Now let's say if you
+improve a worker like making PDF floor
+faster, customers don't need to change
+anything. It just changes over there and
+they're importing the same file and
+everything. We are just going and
+improving a worker. The code still works
+the same way. You just going and
+changing and everything remains a
+consistent and it is easy to find
+because everything is important is at
+just one place. having your school
+supplies in just one backpack and not
+hunting around for things which you need
+around. And the really cool part in this
+is like magic trick. Customers think
+that they're getting everything at one
+place, but secretly we are going to have
+many different different rooms to
+collect all these pieces. And that's
+what the magic piece is. Now it's like a
+when a waiter takes your order at a
+table, goes to the chicken, gets food
+from the five different stations, brick
+everything you want, right? You just to
+see the final result. You don't see the
+waiter doing all of this thing. So I
+hope it makes sense. You don't I I I
+hope it makes sense. This is super
+important for you to know about it. I've
+written some more exercises and I've
+written imagine and I've written your
+own exercise which you should follow
+about it and think about what each robot
+would do, how students use them or what
+makes it easy for this particular fun
+exercise. It's all on you do it by
+yourself. We go to the next step which
+is our so-called heart of our factory
+robbo robot factory which is training
+data robot in the next file. But I hope
+this initialization file really makes
+sense to you.
+So we talked about our entrance gate
+which is we prepared the entrance gate
+for the people to come in. Now what
+we're going to going to do is we are
+going to build a factory manager right
+so that we have the desk so that no
+people can visit it. But now we want
+them to meet our factory manager the big
+boss who runs the entire operation. Now
+if I if our factory was Disneyland,
+let's understand this. If our factory
+was Disneyland, the reception desk,
+which is in.py, would be at the entrance
+gate, but the factory manager would be
+itself, the Walt Disney himself, the
+person who makes all the magic happen.
+Now the training data robo is the
+smartest and most organized manager you
+have ever seen. And that's what our aim
+is to build is to build an amazing
+smartest manager which you have ever
+seen. As simple as that. So what the
+file we're going to focus on is this
+particular file which is bot.py.
+Now what is this? What does this does?
+It's pretty simple. Right?
+It's pretty simple. Right? Now
+over here
+the manager which we create a class
+first of all we need to create a manager
+right and this is a training robot and
+the class is main training robot. What
+this does the class provides a highle
+interface for loading documents from
+various sources processing text with
+each quality assessment and data set
+creation export the five levels the four
+levels which you talk about of loading
+giving the processing and giving the
+right way making sure that it's the
+right data and exporting the data set in
+a way that it should. So what we're
+trying to do is this factory manager has
+four main jobs just like our how a
+school principal have a different
+responsibilities loads the document
+process the text into useful information
+make sure everything is perfect and fine
+and package the final products for the
+customers so let's go step by step over
+here I don't want to go too much in
+detail but let's go step by step the
+first one we import necessary libraries
+which is async path and stuff like that
+and I want to use this particular
+document for to understand it better.
+The asense the a async io is a super
+fast assistant which is do do many
+things at the same time and we'll see
+that how this eventually helps. This is
+a tool which you're going to use for it
+and then you have path which is a GPS
+for files. So we can find files on our
+computer and then you have a typing
+which is a label maker for example when
+you are loading. So config is a
+dictionary which contains a string over
+here right and u then those are those
+are typing which is from typing we
+importing the dictionary type list type
+optional union of two for two types any
+types and stuff like that so what it
+does it's a label which is the right
+types of information of what your data
+type of particular parameter is and then
+you have uyu ID which is a name tag
+maker so that if we have anything we
+unique ID numbers and then of course
+we're going to include our settings
+because settings are the most important
+part of anywhere and then we're going to
+it writes down everything which is a get
+logger basically the logger system which
+you have developed which locks
+everything which you're doing and then
+training data bot error which is alarms
+anything which alarm system which alerts
+when things goes really in the wrong
+when things goes really in the wrong direction.
+So we have imported it and then what
+we're going to do is we we're going to
+import all the workers at one point.
+First, we're going to import our unified
+loader, right? We're going to import our
+unified loader which loads all the
+documents. Then we're going to import
+our decoder client for web scraping.
+Basically, it's like internet is
+scraping out there. And then we're going
+to import our AI client. We'll go to
+each of these managers one by one later
+in different steps. But we go to the AI
+client and the Dakota client to go to ST
+step by step and figure out those
+details in a much better way. And then
+we have an AI brain which is uh which is
+AI brain which is AI client over here.
+And then the task manager the work order
+organizer to figure out okay where are
+we going to give anything to them. Then
+we have a text processor to process the
+text whatever we have generated after
+the task has been completed. Then we
+have an evaluator to evaluate a
+particular task and then we have a
+storage where we manage our database and
+export our data set in a way which is
+the packages. So all these workers for
+component imports we have imported this
+from different different files. So if
+you really go and see in from sources if
+you come over here and sources we have
+imported the unified lodo from decodo we
+have imported the client which is the
+decoder client right and you can see
+that init.py so even the decodo has the
+init.py so that you we don't even import
+from here from this folder we just
+import the entrance thing the interface
+that we just import over here even in
+sources you have any.py P you just
+import we have already gathered
+everything we just import from things
+from here which is much easier easy to
+find and we don't need to tell which
+file contains what I hope it completely
+makes sense so we put you can see how
+simpler it makes and all these errors of
+import errors comes and goes that's
+that's and that's what the whole point
+of inp for me to explain to you in that
+particular idea.
+Nice. Okay. So, what do we need to do?
+What do we really need to do is the
+following. We go to the next one which
+is age import which is superhero as I
+already explained to you. And you know
+what? I'm a big fan of giving this which
+is Captain America, Spider-Man, Iron
+Man, Nicki Fury, the Hulk, Hawkeye, and
+Ant-Man, right? Packages things
+perfectly. Now we go to the next step
+which is the birth of the factory
+manager where we initialize every bit of
+it which is the as you as you already
+know I I don't want to go into pythonic
+detail structures but where we
+initialize every instances which is we
+initialize our logger so that we can
+create our own personal things personal
+class instantiate that particular class
+for us then we have config right we
+initialize the components now for
+initializing the components I'll I'll
+I'll come back to that where we
+initialize all the components as as you
+can see that we are not even doing here.
+We have a different because the we have
+so many things to initialize. We are not
+initializing there itself. We are
+initializing here and then it
+initializes all the components and then
+says okay the training and then we log
+our information which is training data
+bot initialized successfully for it to
+work right
+then which is the component
+initialization. Now what you can see
+over here that we have initialized every
+bit of it uh into a different um
+um ob uh thing over here. Now there is
+three special memory boxes which is self
+documents which is over here which you
+can see you know that that we
+initializes all this for all our tasks.
+Three special uh memory boxes. The first
+one is self documents self dot data sets
+and self dot jobs. Now what does this
+do? I want I I I want you to understand
+carefully. The document box which we
+have over here is a filing cabinet for
+all our homework which is it files
+everything whatever we have and then the
+assets box is trophy case which we have
+completed and then we have jobs box
+which is to-do list for all the jobs and
+you will see that how eventually it
+helps in other instances which will
+work. And then if there's any vase if
+there's anything it says it fails failed
+to instantiate the bot components this
+is the cause and then we continue with
+that completely make sense. Now we go to
+the first part of the sup one of the
+superpower for the factory manager which
+is load the documents asynchronously
+which is parallelly right to do many
+things at the same time. So load
+documents is our another um superpower
+over here. And what it does, it read
+books literally from anywhere. It reads
+information from anywhere, handles
+multiple books at once and organizes
+everything perfectly. Now how does this
+work? Again, pretty simple. You see, I
+don't want to go into too much of detail
+of making sure that you understand
+everything because you just copy and
+paste with Jeopardy and understand it.
+But it what it does eventually it loads
+from different sources and then it
+eventually gets you the right set of
+understanding. Now
+then we have I I I want you to go
+through it in more detail but you can
+see over here that we have a loader
+which you have imported and we'll go to
+that loader in a bit that self
+self.loader it uses that self.loader
+loader to load a directory of the check
+if any source is a directory and load
+from the directory itself or load a
+single file or URL if there's a URL
+which you give and we'll go to the the
+loader when we go step by step but I
+don't want to focus more on it I want
+we'll we'll go to the functionalities of
+all these loaders and how this is work
+and stuff like that because this is a
+worker and we'll go to the
+implementation of the worker in the next
+course of steps and then what we do we
+store our documents whatever we have
+created in our documents this particular
+uh database out here uh whatever we have
+taken out which which had loaded okay
+and then what it does it logs that
+particular thing and then if there is an
+issue it says the failed to load the
+documents we have another superpower
+which is the process documents so once
+you have the loaded documents what you
+do is process those documents now what
+does processing those documents means
+processing those documents means is to
+create those training data for you to
+operate on which is nothing but use all
+the documents if none is specified. Now
+these are some default parameters,
+right? Then you create a processing job.
+Now processing job is also what we have
+imported and we'll come to that what
+this processing job means in a bit. But
+you use the processing job and then you
+process those number of n number of
+documents and you will see that how
+efficiently the code was written to even
+process millions and millions of
+documents in matter of no time right and
+we'll go to each of the implementation
+in a bit but I just want you to know
+about it now all this processing what it
+does it processes those documents pretty
+simple right it gets all the documents
+and chooses the tasks and then it
+creates a work order basically a work
+order for And then for each document as
+task for each document and task for
+example for each documents and task it
+give the make them in chunks for the
+each to basically cut in chunks and then
+it uses an AI client of ours. It uses an
+AI client of ours create a training
+example using that chunk to create a
+training data and then it creates a
+training training example over here
+right and then it applies the quality
+filtering if enabled. As you can see,
+the client that you're going to use is
+this AI client and our task manager is
+using this AI client, right? Completely
+understandable, right? This is not
+something super rocket science. It's
+just that you really have to keep
+yourself updated about what each task
+manager because over here we're not
+directly calling the AI client. Instead,
+we're calling the task manager, which
+we'll study about in a bit. What this
+task manager does is executes this task
+one by one and we'll go more and more in
+detail for everything in a bit. And then
+it applies the quality filtering and
+then it creates that data set. We'll
+also come to this data set. What does
+this mean? Because this data set is a
+particular format which your data set
+will be stored at and then it stores the
+data set updates the job status and
+outputs the data and says processing
+completed generated this much examples
+as a logging file and then it packages
+into everything as a single data.
+So I hope it makes sense. Then we have
+another one which is the call evaluate
+data set. Evaluate data set is pretty
+simple which is nothing but evaluate
+data set gets a detailed report for you
+and we'll come to those evaluation in in
+a bit and overall scorings as well when
+we study about what is the mechanism
+where you using to evaluate the data set
+and then you have the export data set
+which exports the data set into a
+particular file by contexting and saying
+okay I want to take this particular data
+set tell me what the data set ID is
+which you have u stored
+and then use those data set update the
+data set format and data set will be
+exported into a particular file.
+exported into a particular file. Correct?
+And then we have our another thing which
+is the the manager's dashboard where he
+sees like a report card where everything
+which you can see what statistics and
+status and that's how how we were able
+to create a very nice stream dashboard
+where we we were able to see everything
+out there by using the statistics column
+right statistic uh report. Now what does
+this do is it prints out okay what are
+the total number of documents what are
+the total number of data sets for job
+what is the qualities and everything out
+there and we'll come come back to all of
+this again so that you understand it
+again but yeah these are these were the
+few of the um things now you have the
+most important which is you have other
+statist count by type count by examples
+which is not needed for you as of now
+but then you have asynchronous which is
+cleaning resources and closing
+connections when you when you close your
+Disneyland when you close your project.
+So what it does it closes all the
+database connections and we'll come to
+what those database connection means.
+Again we have imported all those aspects
+out there.
+Then what it does is
+um sorry here we go. Yeah close loader
+which closes all this load and decoded
+client. It closes the remaining HTTP
+clients AI client if it has a cleanup
+methods and says okay I've closed this
+particular operations
+right perfect
+now we have this particular thing which
+is the async context manager entry async
+so you can actually a center enter
+center whenever you enter into the
+particular thing and then a exit where
+you whenever you want to clean up
+anything where you just calling the
+clean up at once.
+the magic context manager which we which
+I just explained you what it does what
+you can do you can just async with as a
+bot load documents process documents
+export as simple as that and bot
+automatically cleans up when they are
+done with it right for example so which
+is quick process with the convenience
+methods which is loads the document
+process the documents exports the data
+that in a particular format by looking
+at all these methods which is created
+down the line by a convenience method
+and that's what we call as a magic usage
+magic method which is you just call that
+asynchronously which is at one time and
+then it awaits loads the document
+processes it exports it and gives you
+the final data set and this is what we
+call as the express lane which is
+oneclick magic one-click magic which is
+crazily that you just call this method
+And it does everything for you. You
+don't have to do anything else apart
+from it.
+Right? So it was I know it was super
+comprehensive. The factory manager I
+know it is super overwhelming at times
+but what it does the performance begins
+where you create a bot which is your
+personal assistant. You set up your
+circus which is bot highest imports all
+the initializes components. It gathers
+the audience basically loads the
+document and then it processes those
+documents and exports that data set into
+a particular format and it cleans it up
+and goes back to home safely.
+Now why this design is pretty genius and
+why I really call this as the genius
+design which is single responsibility.
+The bot manages not does the work right?
+It just manager as this word. Workers
+are hired during setup and easy to
+upgrade. It uses only four main methods
+and just one to run you know single line
+handle multiple jobs at the same time
+and remembers everything for reports and
+and remembers everything for reports and debugging.
+Right. So let's say that you you have a
+company which is trained customer
+service and you have a data of customer
+service manual. You just await the bot
+to process those documents. You just say
+okay I want these data set types. I want
+you to evaluate it and if the report is
+passed export that data set as simple as
+that for you to do it. Now this is what
+what we call it as a good managers don't
+do everything. You just create a manager
+which is more powerful which manages the
+state. Async program is magic which is
+handling multiple tasks at once and
+always cleans up whenever you're done.
+So by this you're not just able to
+design better but also organize programs
+work in teams with clear
+responsibilities who is working on what
+debug by understand data and scale
+application for more and think
+architecturally about complex systems
+and the training data bot is the beating
+heart of the entire system. It's not the
+most complex component but it's the most
+important system because it provides the
+interface. It connects all the pieces
+into a single workflow. And now I hope
+that you understand it. Now what we will
+do is we'll go ahead.
+We have visited the reception desk. We
+have met the factory manager. Now what
+we do? We go to the most important room
+which is the the blueprint department.
+Now blueprint department is having all
+the instructions for our entire robot
+factory which is a step three which
+we'll talk about now.
+Perfect. So we go to the next step which
+is step number three which is the
+factory blueprints and I name it as a
+code data models. So what does it mean?
+It really means that we have visited the
+reception desk. We have met the factory
+manager who does everything. Now what we
+need to do is we need to visit the most
+important room into the entire factory
+which is like the blueprint department.
+So I want you to think in a way that
+let's say that you're building some Lego
+sets and what you need is you need
+instruction booklets that show you
+exactly what pieces to use and how to
+connect them like a blueprint or
+architecture that okay this is how this
+is what these kind of cards mean this is
+what that kind of cards mean this is the
+instruction booklets etc etc etc. Now
+that is what is our models.py this
+particular file really means that what
+it does it defines the core data models
+for this. So what are data models? Let's
+try to understand a little bit more in
+depth. So data models are nothing but
+the recipe cards that tell your computer
+or our computer exactly what information
+should look like just like how you are
+ch how a chocolate chip cookie recipe
+tells you. For example, the two cups of
+flour, not three, not one, exactly two,
+one egg, one cup chocolate chips, all
+that thing. So, it's like a recipe card
+which is out there which tells you what
+information should look like. For
+example, if I can tell you PDF should
+look like PDF, docs should be docs, txt
+should be in txt format. The available
+class type is Q&amp;A generation should look
+like a QA generation and all that. So,
+it defines what information should look
+like and exactly how it should look
+like and exactly how it should look like.
+For example, see it says that a
+particular document might be of any one
+of these ways or any one of these
+formats. A particular task type might be
+of any one of these. The quality matrix
+might be any one of these etc. So what
+does it mean? A document must have a
+title, content and source. A training
+example must have an input text and an
+output text and every piece of data must
+have a unique ID and creation date. So
+that's what it entirely means. So let's
+go ahead. So basically what we're doing
+is we are defining the data structures
+which will be used throughout this
+application and this is such an
+important thing that and this is what is
+usually nobody teaches it and usually
+done in enterprise grade applications is
+you define all the pyentic models for
+all the data structures which is going
+to be used in the entire document. For
+example, we'll be uploading the document
+and document might be of certain types
+etc etc etc. So let's go step by step
+and worry about the classes. The first
+which is the master template the
+foundation anywhere we start just
+remember it's the foundation which is
+the master blueprint which is base class
+for all entities with the common field
+the UID the UA uyu ID which we have
+which we have imported the unique ID for
+every field where it is created at when
+it is updated at and what is the
+metadata associated with it and then you
+so so that's what is there and Now I
+want you to understand another one which
+is the imagine you have thousand toy
+robots in a factory. How to keep track
+of them is the old messy way. Hey
+where's the red robot I made yesterday?
+Which robot? We have 50 red robots etc
+etc. So that's why we have this
+particular thing which is just uh sorry
+I'm not really okay
+the one which I built after lunch. I
+don't remember what you had for lunch.
+That's why we do this of the superass is
+what does it mean the smart base entity
+way would be that every robot gets a
+unique ID every robot gets a birth time
+stamp and every robot has their own
+metadata which is out here and then
+which is color red etc etc now you can
+find any robot instantly by using these
+entities right
+so then we have our another one which is
+enums now what does it mean is just like
+how your school Library sorts books into
+categories like friction, science and
+industry. Our factory model actually
+will sort everything into clear
+categories PDFs, documents, txt file,
+memd file, HTML, JSON, CSV and URL.
+Then we so as you can see over here that
+we are also supporting URL over here
+because we have used decoder over here
+which is decoder integrations. Now what
+you can do, you can give us any website
+URL and we'll automatically extract the
+content for the training data. That's
+insanely powerful.
+So what jobs can our robots do? So
+that's what I say. These are the
+available job types. For example, you
+can do Q&amp;A generation sort of data,
+classification sort of data,
+summarization, named entity recognition,
+red teaming, instruction response and
+etc. So what you do you go ahead and you
+tell your robot that listen dude I just
+want you want want you to read this
+Wikipedia pages about dinosaurs and make
+five questions about it. What does robot
+is? Okay, got it. This is a Q&amp;A
+generation task with a URL input and
+that's what we talk about the core data
+models, right? What we are doing is we
+are defining some sort of data
+structures for our application which
+will be used throughout the space. Then
+we have how can we check if the work is
+good? Then you have these parameters or
+data structures to check it is good.
+Toxicity, bias, diversity, corance and
+relevance. All these are the quality
+assessment matrix which we have used
+over here.
+For example,
+I would like to make you understand in
+that way
+sometimes. Yeah. So let's say like how
+your teacher grades essay on different
+things like spelling, grammar,
+activities, staying on the topic, the
+robot checks on in the same way. Then we
+have the document family which is our
+input data. Now document family if I
+could truly show you. Okay, here we go.
+Which is the document model. what should
+be our our source document which which
+is going to come in the title the
+content what is the source whether it's
+a PDF URL and stuff like that what is
+the doc type was language encoding the
+size the word count and the character
+count all these things should represent
+the model so
+and then we have extraction method the
+processing time it took to do it etc etc
+etc so let's say we have this scraped
+metadata that what information we have
+scraped from it for example the website
+title and description when it was last
+updated what type of content and all of
+this using decodo integration API
+and then we have text chunk which is
+represents a chunk of text from the
+document where that chunk is then
+converted into Q&amp;A by using our AI
+client which we'll come to that in a bit
+so you can see that we have the document
+ID the contents start index end index
+chunk index token account the context
+preceding context the following context
+text and embeddings associated towards
+it etc etc etc. Now you can also see
+that we also include something source
+URL what is does an original URL if it
+is from the web that of course then we
+have the task template and that what
+this task template does is what sort of
+task which is what sort of task or work
+instructions has to be given like how
+the recipe card should look like. So you
+can see over here
+that the name what is the task type the
+description what is the prompt
+associated with the classification and Q
+generation was of task if there's task
+specific configuration which we need to
+do the parameters what is the quality
+output length max output length quality
+thresholds timeout max retries etc etc
+all these parameters which will be given
+to a model itself now we now which is an
+AI provider which uses AI which is the
+AI provider which uses AI which is the cloud
+over here and then how much each
+training example cost to generate those
+things etc etc etc. Then we have a
+training example. The training example
+which comes over here a single training
+example which is input text, output
+text, the task type and then you have
+all these things to source it. The
+quality assessment parameters and
+additional fields for different formats.
+You can either remove it, add it does
+not really matters but how does it
+really matter is you're defining a data
+structure with the training example and
+they should the data structure usually
+have this for for example I want to
+think in one sense just go to list data
+structure. Right now when you go to list
+data structure in Python Python doc so
+let's just go there
+when you go here you have multiple
+things multiple methods inside it and
+list certainly has some of the some some
+of the uh required thing which needs to
+be given for example list over here in
+the bracket you put it so list is a data
+structure just like that training
+example is our data structure and simple
+reason we're doing this is nothing but
+to really really when whenever you use
+it this particular video you'll be
+seeing that we'll be using heavily all
+of these things we'll be using it there
+in the further steps so a data set which
+is a collection of a training example
+what makes a data set a data set where
+you put the content the statistics what
+should be the idle split how you should
+export it in a particular format and
+then you calculate the total number of
+examples correct so all of this and you
+know what I have done other things as
+well which I want you to figure it out
+all those data structures by your own as
+well because I just don't want to keep
+on telling you but yeah this is all we
+are doing and then of course you we have
+prepared the
+other thing as well but what I want to
+show you is you can go to pro quality
+reports the processing job models all
+these projection config the file
+information and other utility models out
+here which I want you to explore by your
+own you can use GPT to truly understand
+every line of code because I don't
+really really appreciate now going in
+too much of coding details and just need
+to get the gist of what I'm talking
+about so let's follow a drill For
+example, so this is your source URL
+which is a Wikipedia artificial
+intelligence. What a system does it
+creates a document. Now document you can
+literally call the document data
+structure. So you can see over here that
+document and sorry we just got a little
+down. Okay. So document will have its
+own title, the content, the source, the
+document type, word count and script and
+a data which is scraped from it. Right?
+Then what you do? You do have the text
+chunk and the text chunk gets a split
+document gets split into chunks which is
+the text chunk the data structure you
+give the document id document do ID
+because you get the particular unique ID
+for that the content associated with it
+the chunk index etc then you use the
+training example the trust generation
+where it generates the right set of task
+and it's a complete data journey which
+goes in throughout the end which is the
+data set creation so it's a complete
+database structure data architecture for
+our data training data factory. And what
+does this do is these blueprints ensure
+every piece of data which you're going
+to create is a consistent structure. The
+quality is tracked at every step. The
+costs are monitored for budget control
+and web sources are remembered for
+prevenence and analytics which is
+possible with the rich meta data. Now
+this is a blueprint. This is how it
+should look like. This is how the
+document should look like. This is how
+the data set should look like. This is
+how the processing should should look
+like. Now what we do is we will see that
+how we can actually load and process
+these documents through our highway
+system. So let's let's work on the step
+number four. But what I want to talk
+about is the most important thing. We
+have studied from basic concept which is
+init which initializes everything. Then
+we talk about blueprint. Then we talk
+about the the training the main factory
+which eventually like a workflow. And
+this we end we end this step three with
+the blueprint is good good blueprint
+makes great buildings. Our data models
+makes great training data because of
+these particular reasons.
+I hope it makes sense. Now we come to
+our other part which is the document
+highway system which is an amazing where
+we actually go ahead and load and stuff
+and work around our model actually. So
+now what we'll do is we'll go to step
+number four which is the document
+highway system that how do we really
+load our documents whether it's in form
+of PDF URL and stuff like that. So you
+remember our amazing robot factory
+journey right? We have seen the
+reception desk. We have seen the factory
+manager. We have learned about the blue
+blueprints. Now it's time to visit the
+document highway system that the super
+smart transportation network that brings
+all kinds of documents into just one
+factory. So think of it like this that
+you imagine you're running a pizza
+restaurant that delivers to anywhere in
+the world. You need trucks for local to
+delivery, ships for overseas, planes for
+fast delivery and special refrigerated
+vehicles for frozen visas. Now what you
+going to build a pipeline that is like
+having one smart dispatch center that
+automatically picks the right vehicle
+for every delivery. For example, you you
+have the a pipeline which say okay this
+is a text PDF file, this is a website,
+this is a text file, this is
+spreadsheets and many more. We're using
+this decoder professional web scraping
+API again integration while where you
+can literally scrape any content from
+any website in the world. Just give us a
+URL and we'll extract the docu the
+content for you.
+So the amazing part you don't need to
+tell it what exactly the document you're
+giving. It figures out automatically and
+handles it perfectly and that's what is
+needed. You don't need to tell what is
+going to come. So let's go to our code.
+go to the sources file and go to unified
+because these are other documents and um
+what I want to do is I want to go I want
+to let you go to unified loader and
+imports all the necessary libraries
+which we'll come to in a bit but we have
+a base loader what is base loader does
+like you know what all this you can go
+to the base.py PI and base loader is
+nothing but the abstract abstraction of
+how all the document loaders look like
+like inheriting the base class like this
+is the base class like just like the
+foundation right that this is how it
+should look like it should have a load
+single method it should have a load
+multiple method and stuff like that load
+stream and other others method you can
+overwrite it and everything so I don't
+want to get again Pythonic explaining
+you all this but they basic Basically we
+have an abstraction layer which you
+build on top of it. So unified one where
+we we inherit those and then you can see
+over here that we are writing the load
+single part of this particular class etc
+etc etc. So you have this unified
+loader. I don't want to again get into
+too much of code coding base but what
+what what we are saying is we initialize
+any subloaders which is document loader
+and then we have PDF loader and if
+there's a decoder client if the decoder
+APIs and stuff like that available then
+you load the web loader and then you say
+unified loader is using shed this out
+there right
+there right so
+uh we go to the next
+Now you can see over here that we have
+also more sub supported formats from a
+subloader and then we take out the
+document type which is basically the
+list of whatever the documents were
+supported all the supported from the do
+loaders which we have. So how this works
+actually that your old confusing f would
+be okay I have a PDF file okay use the
+PDF file I have a website okay use the
+web loader I have a word document m
+which loader should I use the smart
+unified loader way what it does I have
+some document or website URL no problem
+I'll figure it out automatically and
+that's how it is so powerful so I want
+you to go to over here which is nothing
+but um
+but um our
+our um
+how it figures out those document
+basically the document detective process
+and it is pretty simple if you truly see
+over here which is select loader which
+is select the appropriate loader for the
+given source which is the source file
+whatever the source file it may so if it
+is a handle if the instance is starts
+with http and stuff like that it is a
+web loader if it is handle file path if
+gets a file extension and then return to
+appropriate the doc type is document PDF
+you say poke a pdf loader if the doc
+pipe is getting into this then you
+return a formal document loader. So this
+is how it is automatically figuring out
+that what it needs to and how it needs
+to do right and now and you can see is
+it a file what type of file and then you
+automatically fix it up then we have our
+star player which is the web web loader
+which is web loader what you're doing is
+amazing stuff you're not using a bright
+data because again all these things
+really does doesn't really make sense
+now what this does is loads for the web
+content from URLs using Dakota's
+professional scraping service API,
+right? And it's so powerful. I don't
+want to get in too much of detail right
+now, but it's so powerful that it in it
+has an amazing ways of scraping it
+professionally using the APIs.
+Intelligent fallback to basic scraping
+if it doesn't work. the JavaScript
+rendering and dynamic content which is
+again super great
+and then we have this bypass any bot
+detection comes in rate limiting or
+clean text extraction from any website
+in your particular format.
+So let's start let's spend a little bit
+of time into actually talking about this
+particular thing right and I want you to
+which is this is a professional web
+scraper which we have built and and you
+know what this is the crazy thing which
+we have built out here so I I I don't
+want to get into too much of coding
+again but we initialize the web loader
+with a decoder integration which we have
+added and again I need you to do all
+this so you'll be having a PDF document
+basically which PDF document explains
+what things which you need to do and
+also you can come to the readme.md and
+readme.md tells you everything which
+needs to be done what are the env things
+which you have to add the APIs and stuff
+like that which you have to add over
+here so that which you can use it
+successfully all and the code is super
+simple you can just take their APIs from
+their website that's super simple if I
+can do it then why not you so
+the supported formats if it is there
+then document type URL because that's
+what we we are dealing with and then You
+initialize the decoder client and which
+you use use decodo which is the client
+which it passes over here and of course
+it'll be using this and then will pass
+something a client of decodo. Now if the
+self use decoder is equals to true then
+what we do we say okay web decoder
+initialized as a professional client
+failed to initialize then if if there's
+an error then web loader will use a
+fallback scraping right as simple as
+that and then the use decoder will
+become to false. So if the decode
+integration is not working it it it goes
+to a fallback options. Now fallback
+option I want to talk about that as well
+which is which I'm going to go which
+fetch with fallback. If the fallback is
+not there then it just uses simple sort
+of you know uh simple basic sort of
+extraction uh using the basic HTTP
+scraping as simple as that doesn't
+really help but if the decoder is not
+working it just falls back so that it
+can continue to do some work. Now if
+there is the if self is with self do and
+decoder client and it's a initialize
+with decoder professional scraping API
+that's it now this is the web loader
+which I'm talking about let's go step by
+step of what eventually happens at every
+point the real website so let's assume
+that you have this machine learning
+Wikipedia pages what you do the unified
+loader will load the single so basically
+you can see that we have we also have
+the load single method out here and what
+this load single method does if the
+instant does not start with that then
+you say it's an invalid URL but if it
+starts you log that particular context
+and then you say the load URL the URL is
+this the method is decoder and if the
+method is not decoder then say okay this
+is a fallback like a logging thing which
+is formal which you're doing now if the
+self do use decoder and self.client
+client then fetch with decoder. So if
+self decoder is true and then you also
+have the self. Dakota client is there
+then what you do you fetch using
+decoder. If that is not you use the
+fetch with fallback. So let's go to this
+particular statement which is the fetch
+with decoder. Now what does fetch with
+decoder means that you give the setup
+you give all these decoders parameters
+and decoder was once used to be called
+as smart proxy but this decoder
+parameters what it does is scrape those
+parameters which is the scrape the
+parameters which you need the target the
+local which what should be the English
+the geography the device type the output
+format should be in and then you simply
+call the decoder client with decoder
+clients scrape URL and we'll come to
+that as well when we actually learn
+about this particular thing which is a
+decodo client which is still yet to come
+where we literally have this which is
+just a big one on scrape URL and a big
+format of thing is over here and we have
+developed a pretty great web scraper
+then so we we'll come back to that but
+script URL and you extract the content
+from the decoded response and the
+content is in the results you clean it
+and whatnot and the contents fail try to
+extract from the raw which is the
+fallback option which is the extract
+HTML text and if we get here the decoded
+usable content then we just return
+something out here and then we have some
+fallback options as simple as that
+pretty simple right so what happens that
+it starts with and checks it okay this
+is the right thing then what it does it
+uses the load single then it extract
+content with the decoder using the
+script URL method from the decoder
+client which we'll study about and then
+you can actually get the content machine
+learning is the content from the resist
+it's actually the some sort of data
+structure which you can get from result
+content as well as the metadata like a
+title, description, stuff like that. And
+then what you do you simply simply
+simply create um a package as a document
+and the package is a document nothing
+but document the title content the
+source the document type script metadata
+created at as simple as that. So what it
+does from a simple website URL to
+perfectly structured packaged document
+not just you're calling it like SE it's
+just that you're literally creating a
+productionized great enterprise grade
+applications where you package it with
+the nice way and this is how the whole
+scraping API looks like. I wanted to do
+go in more detail because again I'm just
+making you go through other things like
+load multiple URLs and all these
+features which I've added extract titles
+from the content close up clean up all
+these things I want to go by your own
+because all these things is also I just
+want to talk about the right things for
+you to go ahead. So this is it about
+step four. I hope it makes sense. We now
+go to the so let me see if we have
+anything because usually we usually have
+it which is the okay here we go which is
+the multi-document loading because I I
+was about to come over here now multiple
+document loading means that what if you
+have hundreds and hundreds of websites
+to load that's where our decoder again
+smart conv comes into play you just put
+in the sources a list and then you use
+the load multiple which is the load
+multiple um urls and of course you have
+the uh you go to the client and when you
+go to the unified loader sorry
+and unified loader which I've created
+and then I'll just copy and paste
+because that's way better load
+multip
+right
+so what it does it uses this load
+multiple thing and then it just fix just
+just takes out multiple instances. So
+over here when we actually see it and
+then we go to web then you can actually
+see over here that we have this load
+multiple URLs where you can literally
+load multiple URLs out there. So what it
+does it's it's so basically it's it's
+it's that simple. You go ahead you load
+it you successfully load it all these
+documents and then you gather the tasks
+and then you get that up and running. Of
+course, this is I I'm just trying to
+avoid any sort of technicalities
+explanation because if I get into that
+in another an hour will take for me to
+explain you out. But yeah, this is one
+of the things which are doing and I want
+what what I want you is go through it go
+through it one by one and a lot of the
+code which is web and then you have the
+all these files created over here which
+is one is the select loader then you
+have the load single load multiples and
+all that data out here.
+Right. And then you can go to web then
+where we are inheriting all those
+understanding and then we are loading
+multiple concurrently. So you can see
+that we are loading multiple URLs
+concurrently where you gives the list of
+URLs the maximum current requests and
+then you sync asynchronously
+um load all these things. Of course,
+we'll come back to a little bit what is
+load load with seer means and how we're
+getting all these. But again, this this
+can be easily understandable. But what
+you're trying to do is we are trying to
+cover any other features which can
+actually come into the place.
+So I wanted to I wanted to explain about
+that which is
+mixed content rolling and what does it
+really mean which is let's say the
+student gives us the sources our smart
+student gives us the sources our smart analysis
+understands okay so three websites are
+detected and two files are detected it
+sends three websites to the professional
+web scraping API and two files to the
+file processing so the truck one which
+scrapes the u Wikipedia with decoder
+step two scraping IPC CC reports with
+EOD. The truck 3 does this, truck 4 does
+this and then you have the all the
+documents which you package in a
+document and then you send it over.
+Now why our enhanced system is
+incredible because Dakota integration is
+for enterprisegrade scraping. Enterprise
+grade scraping. And then we have a small
+batch which is always smooth which is up
+and running which is the most important
+part of it.
+And then we handle it very gracefully
+very gracefully. We have unified
+experience one just simple thing and
+enterprise features like metadata
+scalable architecture quality validation
+cost tracking and stuff like that. So
+it's creeps any website loads any file
+data routes everything automatically
+handles error gracefully and provides
+rich metadata for the better content.
+And as I always say the best highways
+connect everywhere. Our enhanced system
+brings the entire internet and all your
+files into one unified pipeline. Sorry,
+it's I think some latex error. I'm not
+sure why.
+So this is it about before where we are
+able to create a nice scraping API. And
+of course I know that I've not went into
+detail. I would just want to understand
+that how I'm actually doing all this.
+Then what then what we're going to do
+now is we're not going to talk about we
+have we are done with the web. We're
+going to talk about PDF and the
+documents that okay this is how we load
+the PDF documents. But I'll get that a
+little bit quickly because of course I
+wanted to figure it out because I've
+written 100 page document not just to
+read it out. I wanted to read it out.
+Right? So then we go to the step number
+six which is more interesting and then
+we keep on moving on. So now we go to
+the step number five. Now step number
+five is nothing but a specialized
+document loaders where what we did in
+the last one step is we were able to
+create an highway system where we able
+to script create a decoder integration
+that is able to scrape any website finds
+any figures the file type assign it to
+nice one and then we go ahead. So there
+is now what we'll do is we will go ahead
+and go inside the garage. So basically
+we have the smart highway system which
+we have which automatically routes the
+documents into the right trucks. Now we
+need to go inside the garage and meet
+each specialist truck and build them
+basically. So a fire truck has has
+ladders and horses for fire and
+ambulance has a medical equipment for
+emergencies and each vehicle is
+perfectly designed for this. So the same
+way we want to design each vehicle each
+trucks who is going to be using our
+thing to do to load the documents to
+load the PDFs to load the web to to surf
+the internet and even the master
+blueprint where the base thing the base
+model of the car like every car has an
+engine every vehicle has an engine every
+vehicle has a brake right the same way
+you have to this space loader where
+you have to this space loader where every
+specialist will be having these on top
+of that with their own mechanism of PDF
+loader web loader and document loader.
+So the master blueprint as we spoke
+about is nothing but our universal truck
+design. Basically you have this base
+loader and I already showed it to you
+over here which is the base.py
+and uh in that base.py the reason why we
+needed that without a master blueprint
+PDF truck might work differently than
+text truck. Some trucks might be missing
+the important features hard to add new
+truck types chaos and confusion.
+Correct? Right. All trucks work the same
+way from the outside. For example, if
+the ambulance is going on and then the
+fire alarm is going on, both are looking
+like a vehicle, right? So the same way
+we wanted to have the master blueprint
+of how it should look like like some of
+the most important features that
+everyone is having engine braing
+systems, everyone having same safety
+features. The same way this base pipe is
+like load single document, load a single
+document from the source. We have not
+implemented anything but this is the one
+of the feature which every specialist
+should have. Load multiple documents
+concurrently. So basically load multiple
+documents out there. Load stream which
+is load documents as a stream which is a
+generator right and all these features
+like a base features right.
+So then we have some of the which we
+call as universal safety features which
+is traffic control which is parallel
+loading. We can load multiple things out
+here. So you can see the so I I I told
+you in the last step that we'll come
+back to this again. So what does this
+mean? That multiple trucks can work at
+the same time. No traffic jams or system
+overload. basically building more lanes
+and failed trucks do not stop than
+another and maximum efficiency as simple
+as that. Then we have this get document
+type which eventually figures out what
+is the document type out there using
+this method and then you have this
+format detection as you can see then
+document creation factory then you go
+and then create a document where it
+creates a document instance with the
+standard metadata by looking at those
+and taking those document which we have
+created you can see that this document
+class is which we have created uh
+previously into our
+uh bot.py Pi basically and if you even
+if you go inside it then we have created
+those particular details. So that is
+one. Now I don't want to go too much of
+in detail about what does this all this
+means but yeah I hope you get the gist
+of what you're trying to do is we are
+trying to have some universal safety
+features into our base pipeline for it
+to be able to control the basically
+parallel loading some of the things
+which is universal safety features where
+all the specialist will inherit from
+this base class.
+So let's go to the first one which is
+the text master which is the document
+loader. So if you go to the document
+loader over here which is nothing but
+documents.py Pi and you just see the
+document loader and this is the document
+loader which you're focusing and this
+class basically what it does the
+specialist was what what it does it
+loads for the textbased document formats
+which is supports the txt format MD
+format and all and then it says okay
+supported formats are the following
+and um
+then we have this the again you can see
+over here the load single the
+implementation of this because every
+truck is different right so the load
+single is different over here that says
+okay with log context it loads the
+document if the document type is txt it
+loads the text if the document type is
+empty it loads the markdown all in all
+so you'll see that load text is also
+written over here which where we have
+written asynchronously load the text
+file and then it throws the text file
+then load the markdown so we've created
+all those methods and then we are
+calling based on the particular format
+basically routing to the appropriate
+loader method
+which is the multi-tool approach then we
+can go through which is where we are
+loading the document and then what we
+technically doing
+which is markdown handler it marks down
+then HTML text extractor if there's any
+HTML thing then JSON data converter
+which you have done and then tool 5 CSV
+so even the document loader has multiple
+tools inside it and then word document
+reader and all and all so these are this
+these these are for a few of the
+document now we have this PDF expert
+which is a PDF loader so I'll just a
+little bit zoom
+and go to the PDF.py and what this PDF
+loader does it loads for the PDFs
+documents and you can see over here that
+it loads the PDF document first of all
+it creates that document and when you
+call that creates document you can see
+that base.py Pi really has this create
+document and it creates the first of all
+document based on the PDF right and then
+extraction method it PDF loader dot um
+pyf now
+it uses the asynchronous function again
+you can see over here that the PDF it
+load singles and the heavy duty PDF work
+and then there's a PDF extraction tool
+which is the which you have created out
+here and you can also see over here that
+we have created the PDF extraction tool
+which extracts the text from that Right?
+So I don't want to go into more coding
+details. I know you you guys are great.
+You just based on GPD and try to
+understand what exactly each line of
+code does, but I just want you to know
+the gist of what you're trying to do.
+And then you have the internet server
+which is the web loader. So if you go to
+the web.py and the web loader which is
+over here which loads for the web
+content from URLs using professional
+scraping APIs and we have already talked
+about this into our last step. So it
+uses all those methods in the which is
+this website specialist. The first one
+which we load which is the website
+specialist. Basically the document type.
+The supported format for this class is
+nothing but the URL which is website
+specialist. And then we have this web
+surfing process which is just defining
+how to load that thing and you and using
+the codo
+we were able to do the right thing. For
+example as asynchronously we are
+fetching the URL content. We are
+visiting the website check if it worked.
+What type of content is this etc etc
+etc. And then we have this extract HTML
+text. If if Dakota integration does not
+works, we use beautiful soup to make it
+work. And then we have other methods,
+other supporting methods out there. Now,
+how does all of this works? So, let's
+say that you have the sources which is
+textbook.pdf into a current directory,
+notes.txt file, data.csv file, and then
+URL. So, for the source and sources, the
+source starts with it, you use the web
+loader. If the source ends with PDF, you
+use the PDF loader or else you use the
+document loader.
+And then whatever you have instantiated
+that particular truck you just call that
+particular load single and give the
+source of whatever it might be and it
+will get you the right set of data from
+it which is loading the document.
+Now I want to talk about how is it
+different at all and where it really
+combines where it really you know is
+brilliant is every truck and when I say
+truck every classes over here is
+expertly designed for its own document
+type. PDF truck knows about pages and
+fonts. Web truck knows about HTML and
+URLs, the text and everyone the perfect
+specialization which we were able to
+create. Then we have a consistent
+interface that all trucks follows the
+same blueprint and the blueprint is our
+base loader and every method they have
+the two most method which load single
+and load multiple with multiple
+additional methods in their specialized
+based on whatever their object type is
+and they all have the same output format
+which is document objects. Right? So we
+have also created the doc document
+object out there and we were able to use
+that to be able to do some sort of task.
+For example, if you go to the core and
+our models which we have we this is our
+document object output is nothing but in
+this particular format.
+So we did have the extremely good error
+handling extensible design. You can add
+a new PowerPoint support. You can handle
+video transcripts. You can handle image.
+you just keep on adding by extending
+that base loader and just using that on
+and on without even going in need to go
+and change anything out there. So it's
+scalable, defensive and readable at the
+same time. So I hope it makes sense. Now
+what we will do is we'll go to the step
+number six which is the which is the
+text kitchen. Now what does it mean that
+we'll be creating a text processing
+pipeline which cleans the text curs the
+document counts the words and packages
+everything for the next step basically
+for an AI to convert that data which you
+have loaded and the process data to be
+able to create the training data set you
+go to the step six which is the text
+processing pipeline it is very simple I
+want you to read all along but what
+we're trying to do is once we have those
+loaded data we now go ahead and convert
+that into much more clean text cuts the
+documents ments into manageable chunks
+so that every chunk can be used to
+create a training data set counts the
+words and packages everything perfectly
+for the next step which we going to use.
+So the chef tools the chef tools
+basically the master chef basically the
+the the initi the initiating basically
+the what is the logger we instantiate
+our logger for the pre-processor the
+chunk size basically each piece each
+piece into a particular document should
+have at least thousand words just like
+you cut your pizza into slices right and
+then each piece can overlap with the
+next next by 200 words to give like
+overlapping pizza slices so no toppings
+fall through the cracks so chunk overlap
+Right now
+this is the complete cooking process
+which is step number one clean the text.
+Step number two create the chunks and
+step number three which is log them. As
+simple as that. So you can see the
+document over here as well which I've
+created. This is the asynchronously
+processed document. Somebody has to call
+this. We call this two method two most
+important method. Clean clean text and
+create chunks. In clean text I had the
+basic things where you remove excessive
+white spaces. You remove very short
+lines. So you remove all those things
+and then you have the create chunks and
+this is the text chunk which is a
+document a document ob sorry the the
+text chunk object so that it outputs as
+an object so that it remains consistent
+whatever the data structure which we
+have defined over there um so document
+ID the content the start index the end
+index chunk index and token and then we
+append that that into a chunk now if
+there's multiple chunks then you
+actually have the multiple chunks and
+then you create every chunk into that
+text partular chunk object.
+Pretty simple, right? So what what we're
+doing lit literally is we are washing
+the machine where each machine is
+removing the any white spaces, removing
+tiny lines. For example, the best
+example is this. So this is converted
+into this after cleaning. Then we have
+the text chunking process. So just like
+that, as I said, you're trying to create
+eat an entire pizza in one bite, which
+is impossible. Same with AI. A book
+might have 100,000 words. AI can only
+process maybe a thousand word at a time.
+So we cut the book into 100 perfect
+slices that AI can handle in a way
+intelligently. Basically our AI client
+and that's why we have this a smart
+chunking algorithm. Now what the smart
+chunking algorithm I want you to worry
+about the code but later on but what
+does this do does it creates the chunk
+out there. So I'll come to that chunk in
+a bit. For example, why do we need? So
+the this is the chunk. Now we I also
+talked about the overlap thing. So
+without overlap you can see that chunk
+one is the dinosaur was walking through
+the forest when suddenly it heard as the
+then chunk two. So the the context is
+not being matched correct. So the story
+is broken. We lose the connection
+between chunks. To have the connection
+between chunks we usually have with
+overlap idea. Now what does this mean?
+The chunk one usually have the dinosaur
+was walking through the forest when
+suddenly it heard a loud noise. When
+suddenly it heard a loud noise and got
+scared then it looked around. So it took
+a context before and after as well to be
+able to make sense out of the previous
+one which is the success where we able
+to get the context of the previous and
+the next one as well. So overlap working
+is pretty pretty simple. You just you
+know use that into the which which which
+I've seen that we are overlapping and
+creating the chunks in a way that really
+really matters.
+For example the document which I've
+created the data set the title is the
+Rome Juliet then this is the content and
+document type is PDF. It cleans that. It
+creates the chunk and then the final
+result which comes out of it is the
+check text chunk document of ID of chunk
+001. The content of that particular is
+this. Then you have another one which is
+the the chunk number two and then it
+goes on and on.
+So you have other methods which you can
+go and learn about it. But what we are
+doing literally we are creating the AI
+optimized portions basically for AI to
+process and create the training data.
+Then every chunk knows exactly where it
+comes from. The parallel processing
+memory efficient configurable handles
+any document size graceful degradation
+consistent output which is in a
+particular format and much more.
+So we have the complete journey so far.
+The step number one is the loading of
+the document. Step number two is the
+text cleaning. Right. Step number three,
+text chunking where we chunked into a
+particular several things and then we
+now chunks which should be you given to
+AI to be able to process it in a way it
+AI to be able to process it in a way it should.
+So now we have the another step number
+seven. So step number seven what does
+this do which is the job assignment
+office basically now we have the hell
+lot of things ready which is the
+specialist who does the work. Now any
+document which comes in we should be
+able to create a the task manager who
+creates the job templates assign it to
+the right specialist tracks the progress
+handle multiple objects project at the
+same time and keep detailed records
+basically logs at the same task and now
+that's what we're going to to learn in
+the next step. So now we'll go ahead and
+learn about our step number seven. Now
+step number seven what does it say is
+that you have your everything ready
+right you have your factory and
+everything ready but now we also need a
+way once we load the document once we
+process the document we need a way to
+create something out of it which is the
+basically the data out of it the
+training data right and that's why we'll
+create a job assignment office so let's
+say that you're running a movie studio
+and in that movie studio you have
+different departments the departments
+might be directors for filming
+editors for cutting scenes, sound
+engineers for audio, special effect
+artists for magic, etc., etc. And then
+there's an production manager which
+decides which department should work on
+each scene and make sure everybody knows
+what to do. And that's what we're going
+to develop. We're going to develop a
+task management system for this project
+which creates the job templates/shots
+job descriptions. It assigns the right
+specialists to do each job. It tracks
+the progress and makes sure everything
+gets done. locks down the projects at
+the same time and multiple projects at
+the same time and keep detailed records
+of what really happened.
+So let's meet the production manager. So
+I want you to go to this uh manager.py
+and when you go to the manager.py,
+you'll be eventually having the task
+manager and this is the task manager
+where we initialize the logger, we
+initialize the templates and then we
+have the we initialize all the task
+generators there. There might be
+multiple generator over here. The
+generation, classification and
+generation, classification and summarization.
+So this is a production manager and um
+what it does. So I'll explain you in
+detail what it does is you just need to
+go and say that
+I need QA generation. This task manager
+will automatically pull up all the
+generation and then get you the QA
+generation task done. Right? So there
+are two things which I want you to know
+about the task templates and a keyword
+generation template. So the task
+template if you have seen that in our
+core thing we have developed in the
+models that what the task template
+should look like. It's like an object
+which represents what a task template
+would look like whenever we assign a
+task. That's the best practice which you
+talked about like a recipe card right
+and then for example let's say that you
+have a QA generation template right? So
+task template your name will be basic QA
+generation the task type is the QA
+generation the description and the
+prompt associated with that particular
+task template. So it's like a recipe
+cards we have not yet still implemented
+it but it's like a recipe card which we
+are doing for classification
+summarization as well as the task
+template which is like an object which
+tells okay what our really data looks
+like the task templates should look
+like the task templates should look like.
+So pretty simple right the step number
+one which we hold over here is job
+request comes in for example text chunk
+and then it someone wants Q generation
+from a text chunk so this is the text
+chunk which we create first of all so
+let's create the text chunk first of all
+and then we execute the task the task is
+the task type Q generate generate from
+that particular chunk text chunk and
+then you give this AI client the AI
+client is the one which is the AI brain
+which converts the text chunk into the
+training data and then you assign this
+so what happens is finds the right
+recipe, finds the right specialist and
+prepares the job and then the specialist
+takes over that by calling the execute
+method by calling that particular
+template whatever we have which is a get
+default template which is a get the
+recipe card. Basically it outputs that
+get recipe card and all of this has been
+implemented over here. Or when you go to
+the manager and then you come over here
+which is create template get default
+template of particular template and then
+create a basic template. The template
+might be of QA generation and you can
+see that the prompt is also written over
+here. The description about that and
+then for classification the prompt is
+also written over here and summarization
+the sum the prompt is also written over
+here. Right?
+So specialist takes over the results
+which is execute and then it goes ahead.
+Now step number four which is the
+quality control and packaging where we
+package everything into task result
+which is another object where whatever
+the result comes out of it as a keyword
+result it takes that up and running. So
+same way we have the several specialists
+where we have implemented that the
+manager which is base task generator. So
+this is the base base thing where as as
+I said this is a like a blueprint. Now
+this blueprint will have a multiple
+there's execute the render the same way
+you have the QA generation where it
+execute the method and in that it
+process those texts and based on the
+templates which you have designed the
+prompt which you have designed it and
+gives the prompt the text chunk and the
+task type it might be in this case it
+will be the QA generation this is a QA
+generation then it returns the task
+result into this particular object type
+which you have created in the models.py
+PI and then same you have a
+classification and summarization which I
+have not implemented. Please feel free
+to go ahead and implement that for by
+your own. These are specialist
+departments which we have added.
+Now we also have several um smart
+features. For example, we you can create
+a custom templates if you want to you
+know not just focus on that. You can get
+templates by type. You can specify the
+particular templates and all that thing
+which what I want is I want you to focus
+on that because all the details have
+been written into into this document. My
+whole idea is to tell you how to read
+this document in a way which I
+eventually works for you.
+So yeah I I hope it makes sense then
+this is a challenge. Now um the reason
+why I'm saying this that what it does is
+this task manager export organizes all
+types of AI work using smart templates
+assigns it to write specialists to each
+job executes multiple tasks in a
+parallel for most efficiency way and
+packages results like in templates way
+to be able to return for example if you
+just come over here execute task now
+execute task takes in task type the
+chunk and the client basically AI client
+and a template ID if there's a template
+ID out there that if the if you if you
+you first of all you get the template ID
+whatever the template ID is there uh or
+you create a default template which is
+the default template which is out there
+in the default template you define the
+task type the task type and the QA
+generation in this case then you get the
+appropriate date generator and then then
+you execute the task which is template
+the chunk and the client now this
+executes the generator now the generator
+is an instantiation of QA generation the
+QA generation generator which is execute
+really process those texts and then um
+now we'll we'll come to that client in a
+bit where how does the processing works
+but how what is the mechanism behind it
+but yeah this is how eventually it is
+done and then it finally says okay task
+is completed that's how it does now it
+automatically figures out okay what
+given the task type it figures out what
+sort of task needs to be executed
+I hope it makes complete sense now what
+we'll do is work about AI task
+generation which is our another part of
+it which we'll talk about in the next
+step. So now we finally come to our step
+number eight. I'm extremely sorry this
+is step number nine but um the previous
+step has been a little bit of some
+problem when I was when I'm recording.
+So when you get the document it will be
+step number eight but kindly ignore the
+previous document but however you can
+also view the step number eight which
+really uh makes you understand all the
+steps in more detail and stuff like that
+more more sort of task generators.
+So step number nine. So in step number
+nine what we're trying to do is we're
+trying to create the training data. So
+basically now we loaded the data we
+processed it we created into chunks we
+have a task manager to who assigns it to
+particular tasks but now we need to
+create an client AI client where you
+always see that every generator expects
+a client where an AI model right that's
+what we're going to do like an AI brain
+which is having access to the greatest
+models and then try to connect it. So
+that's what we're going to do today is
+the AI client is our facto's creative
+intelligence center that connects to
+powerful AI models. In this case, we'll
+be connecting to open AI. It generates
+the creative content from the text
+prompts. It manages costs and uses
+efficiently, handles errors and provides
+consistent results across all workshops.
+So I want you to go to this particular
+thing which is the
+AI and then you can see in they have
+imported the AI client and then
+client.bike. If you if you go here,
+first of all, you instantiate the logger
+for the AI client. Then you use your
+open AI API key and the entropic key
+from your ENV file so that it has the
+all the keys available. And then if
+there's no keys available, then you just
+sift to a default simulation. If this uh
+um so so that it does not fails
+then we have this process text. Now we
+call this an API call. We log the log
+that is API call. Then we process text
+using a IML services. So we'll come to
+decoder request in a bit. But what does
+decoder request will mean? We'll come to
+that in a bit. But this is what
+eventually we'll do is we say that if
+there's a simulation then we just
+simulate an AI call which doesn't give
+you any output. But if it's a real API
+call then we call the AI.self API self.
+Open AI API then we call open AI right.
+And when you call open AAI then
+eventually this is a system prompt where
+we take the required task type and then
+from this is the whatever the task might
+be and the user prompt which is what is
+the prompt which is given and the
+associated chunk and then what you do
+you have the model you have the messages
+played into you you must be knowing this
+the maximum tokens the temperature all
+these parameters
+and then what you do is you simply post
+that and um use the HTTP and post on
+this particular API and then you simply
+get an output which is the output where
+is the confidence the token uses the
+cost associated with it the processing
+time to get that same we do for the
+enthropic I don't have an anthropic key
+so I have not really tested it out but I
+tested out this open AI and then
+eventually it calls the open AI key and
+if it's self-enthropic call open API but
+if it is nothing then just simulate an
+AI call and then you have the decoder
+response object now what does request ID
+the output of that the confidence which
+you have the token usage and the cost.
+So after the decodos
+um scraping is done then you use an AI
+brain to be able to do something out of
+brain to be able to do something out of it.
+As you can see that I've also written
+that you connect your openi integrations
+then you have the
+then you have the um
+sorry yeah open integrations then you
+have enthropic integrations then we have
+a smart fallback system. So if in this
+there's a simulation develop simulation
+mode for development if there's anything
+goes on so we know okay it is it just
+does not breaks at all and then we have
+task specific uh system prompt. So for
+example, if you just come over here at
+last um build system prompt which is if
+the task type is this uh task type QA
+generation then you're an expert at
+creating highquality question answers
+basically the prompt which should be
+given to the AI system and which we are
+using here uh the s the the build system
+prompt for that where it tells based on
+the task type it just gets you the
+particular system prompt. So basically
+that's a bill system prompt for
+different different systems out here
+right so let's say that you put in a
+request which is generate three Q pairs
+from the biologic text the input text
+and the task type what it brain does it
+routes to open AAI builds a specialized
+system prompt based on this particular
+system prompt then sends optimized
+request to an AI service using that AI
+uh open AI open AI API client then
+process and format the response into a
+decoder response into a particular
+object which you can see over here um
+which I which we can be which can be
+seen over here in the particular format
+tracks usage and costes and returns a
+professional unit as a single source as
+simple as that right so this is what
+this AI client is trying to do now why
+this is extremely good I don't want to
+spend more more of a time because I know
+that I'm I you know I rush at the end
+the reason why because you guys already
+have spent more and more number of time
+in starting only to make you understand
+the base and the context of
+So there are multiple AI services
+there's automatically routing to the
+right service smart fallback system
+consistent interface regardless of the
+provider the robust error handling retry
+cost monitoring usage tracking
+performance and everything which is
+going to be used in streaml application
+so I hope it makes sense the AI client
+which we have developed now what we will
+do we'll go to the next step which is
+how we can quality control the lab uh
+which is quality control pipeline uh
+which we'll talk about in the next on.
+So now we're going to start off with our
+step number 10 which is step number nine
+in this case which is the quality
+control lab. Let me just see if this is
+working until
+yeah. So
+what is quality control lab? Now we have
+generated the data which is whatever the
+training data is generated from our task
+template. Right? Now we need to also
+inspect every training example for the
+quality issues. We want to measure
+multiple quality metrics such as
+toxicity, bias, relevance towards the
+specific context and approves high
+quality examples for use and rejects
+problematic content automatically and
+provides a detail quality reports for
+the improvement. So the architecture
+which we look out for is the quality
+evaluator for initialize the document
+basically logging and then we say the
+quality metric which we're going to
+check which is the harmful content bias
+variety consistency and topic relevance
+all these things which we're going to
+check as a matrix. So how does this
+really look like? So we as
+asynchronously define an evaluate
+example and what it does it inspect a
+single training example. So what it does
+it runs all the quality checks which is
+check toxicity check bias check
+diversity check go corance and check
+relevance and you can just go here and
+go to evaluation and then you can click
+on evaluator and then you'll finding all
+those code here and um over here you
+calculate the overall quality scores
+based on whatever you have taken and
+then you generate a detailed report
+based on that. So we check a toxicity
+and and toxicity and of course I've not
+implemented this because you can use AI
+and AI client to be able to detect if it
+has a toxic and nature and all but
+there's one station one which is
+inspection stations toxicity then you
+have bias detection then you have
+diversity coherence verification
+relevance testing and etc. And what it
+does that it gives you the quality
+report by the end. The quality report
+might be okay the target ID, the type,
+the overall score, the past and the
+matrix scores which we eventually get
+for everyone. And then you get a proper
+nice quality report based off from your
+data. Of course, I don't get too much in
+detail because it is super simple to
+understand it because I don't want to
+waste my time and your time as well to
+be able to tell you simple things
+because you it's it's a world of AI be
+involved into it as much as I can. And
+the reason why we do this is very simple
+which is safety first. We should be able
+to identify that it's a responsible AI
+and companies love it as at times when
+you actually develop something like this
+and then consistent excellence and the
+continuous improvement which we
+eventually use via the quality tracking
+metric analysis and feedback loop and
+optimizing the overall performance based
+on the quality data. I hope it makes
+sense completely. Now pretty simple
+right? It does not really has the all
+the overall thing but over here we are
+just putting the mock quality evaluation
+from from now on. What you can do you
+can actually create multiple um as
+asynchronous sort of thing for example
+toxicity dete detection then bias then
+diversity then corance from relevance
+and other methods out here itself and it
+eventually returns the object type which
+is a quality report given all these
+parameters inside it.
+So I I hope it makes sense. Let's go to
+the next step which we have which is
+more interesting step and uh um now we
+have tested it okay this is nice
+document the nice data produced now we
+need to package it up and ship it right
+and that's what we going to talk about
+the next one so now we come to the next
+step which is step number 11 uh 10
+basically so
+what we're trying to do is we do have
+everything now we need to do is package
+and ship it so bas so basically whatever
+we have training data into the
+particular object. We package it into
+multiple formats which is JSON format,
+CSV format, packet and etc. We want to
+label everything properly like a
+metadata and the quality scores
+associated with each data set. We
+organize the data efficiently for easy
+across and delivers a new preferred
+format and tracks what was shipped for
+quality assurance. So this is our master
+packager. You can go to export and this
+is a master packager where we
+instantiate our logger for the exporter
+and then this is asynchronous function
+which eventually exports the data set
+using the following method. So the
+format is the given the given format is
+a JSON format and the export format is
+again our object which we have created
+in models.py by and then you return by
+using the export JSON uh into that
+particular format by giving the required
+arguments or parameters inside it and
+then you have the CSV file and then
+you'd have the same one and then
+otherwise it defaults to JSON as simple
+as that then you have the specific uh
+methods associated with the export JSON
+then you have export CSV and all those
+code uh logic is has been written around
+that itself
+so then we have this as as I said
+universal packaging that if The export
+format is JSON, CSV, packet, hugging
+face and of course I've not implemented
+much more into this project. So what I
+want from you is you should be able to
+implement multiple export format and
+you'll be see how extensible it gets by
+just replicating the CSV and of course
+in the assignment file. You'll be also
+getting that multiple things which you
+do. That's why this this is not all like
+added with tons of features because you
+ultimately have to add those features
+into this project. So uh this is it
+about the sort of thing and I don't want
+to go in multiple details but yeah this
+is our step number uh 11 and sorry step
+number 10. So I hope it makes sense and
+this is our basically the base class
+where we are inheriting the database
+manager uh on that. So I I hope it makes
+sense. Now what we'll do is we'll go to
+the step number 12 which is the
+professional web scout which is the
+decodo step number 11 which is a decodo
+client. Now let's go to Dakota client
+and this go to because we have been
+always taking the name of this decod
+client where you must be thinking what
+does this do client means. So this is
+nothing but an API client for web
+scraping and data extraction in a way
+that enterprise grade setting would work
+around. For example um let's say that um
+you have a URL and that URL that's how
+we were able to and we were using this
+decoder client on and on into our
+project itself and now here we go with
+an actual explanation around it.
+So what it does it scripts any website
+with a professional grade extracts
+cleans handles error gracefully
+processes multiple stuff uses proper
+authentication and support multiple
+loces and geographica targeting to pro
+to bypass any bots. So we instantiate
+our logger this is a base URL which is
+the where we are going to this is an API
+endpoint where we're going to call by
+giving the URL to this particular
+endpoint. This is a timeout. there's a
+MAC retries and instantiation thing and
+then what we do we get authentication
+details from the um uh environment. So
+we get those authentication details and
+then we set up headers. Now headers in
+this case basically which means that
+this is basically uh how we're going to
+call. So as asynchronously we this is a
+base URL this is a timeout and this is a
+HTTP client and then we just call it
+right and then what what we say we
+scrape the URL right now how does the
+scraping for the URL works so if the
+target is universal so all these
+parameters and then based on the
+parameters it makes the request to the
+API and then post onto this v2 scrape on
+that particular endpoint on that
+particular endpoint base URL by calling
+this and then it logs the response for
+the debugging
+And then it returns those particular
+results into a particular format. And of
+course it does all this work. It remove
+HTML tags and all these clear white
+spaces and then returns the standardized
+format after standardizing or cleaning
+the bit of text. Pretty simple right now
+and this is what it does. I don't want
+to get again more in detail but we do
+have an intelligent fallback system. So
+this is a professional scraping
+features. Then we have fallback system
+whereby it automatically falls back to
+simple stuff which you have done in a
+web loader. And of course we haven't
+been continuously using this. And then
+you have a parallel processing power
+that can scrape multiple URLs at the
+same time and uh I hope it makes sense.
+And then we have multi-target scraping.
+Then you have geographic and local
+support. And all this is supported by
+Dakota itself. And that's why we were
+able to come with a pretty nice examples
+of how we could do such things. I hope
+it makes sense. I hope though because we
+have already talked about this. I don't
+want to get in much more detail. You can
+read more if you'd like. But this is it
+about the decoder thing. Now
+uh let me just see. Yeah, good. So now
+what we're going to do is we're going to
+work on command line interface. Those
+command line interface is based on a
+terminal. You can write those commands
+and then that command will be doing by
+providing some simple commands for the
+all factory operations not stream
+application but CLI interface where you
+provides a simple text commands process
+documents generates the data evaluates
+and launches the dashboard for the
+visual thing. So what I want is I want
+to go to the CLI and CLI is eventually
+has everything which is in.py. So what
+it does initializes the CLI API training
+data curation bot and then you have the
+command. So if somebody says process it
+should be able to
+uh process the source directory and then
+the output directory the task types to
+be mentioned the format to be mentioned
+the quality filters the number of max
+workers and asynchronously doing it. Now
+what eventually happens the the reason
+why we do this it should be able to we
+should be we should be able to do it in
+the right way. For example, a TDB
+process source directory. This is the
+documents available out there and the
+output directory should be in results.
+Then you specify the task type. Now TDB
+process from this source directory. The
+task type is QA generation. We're going
+to generate the Q generation data set
+and the task type is classification.
+Choose output format. We can choose the
+output format to be particular CSV file.
+And all of this is possible if you're
+able to
+um um
+follow these commands to be able to do a
+particular set of task. Now
+given that all these things are done
+what I want you can just go ahead go
+through the process document asyn as and
+this is also very simple right this is
+pretty pretty simple it is not really
+hard to understand it that what every
+even one commands does into this
+particular format is nothing but really
+really asking um calling this and then
+calling a particular method from the
+class which you have created uh and then
+doing things accordingly so I hope it
+makes sense again I don't I don't want
+to really get into too much of detail
+but yeah that is it about the CLI and I
+want you to explore by your own uh
+rather than me going step by step
+because it's super comprehensive and you
+can just uh use GPT because if I I don't
+really explain one by one but the whole
+point of this command line interface
+that we could uh interact with with our
+project via the terminal itself and we
+should be able to use it in a way which
+we aspire
+and then we have our important so coming
+back to the our bot.py Pi and we have
+already I've already explained you what
+this bot.py does which is like a
+this bot.py does which is like a pipeline.
+Now we have the CLI now we have the
+dashboard which is the most important
+part of it and any.py basically we have
+a dashboard where it says the stream
+stream application SD set page config
+and then title traineration bot the
+sidebars and um the dashboard the
+documents generate data the analytics
+the settings and then for the dashboard
+page we had all of this. So I don't want
+to explain all of this but what
+eventually we're doing we're creating
+the nice stream application app from
+this and again all these are in your
+assignments where we ask you itself to
+uh understand this very easily it's very
+simple what my main point was to help
+you understand the core part of it the
+core part we have already completed and
+the documents is there please go ahead
+and go through it one by one and you'll
+be able to understand it much more
+detail we have made it super
+comprehensive at one time and you should
+be able to understand how the whole
+application was built. Uh I don't want
+to go in coding one by one details but
+eventually all the we have created the
+four different tabs the and then for
+every tab you have the logic and then we
+are literally calling the stuff from
+whatever we have created for part of it
+and then when you actually do one by
+line of line the reading of the code
+you'll truly understand where and what
+things are being used. I hope it makes
+sense completely makes sense. We are
+done with the project we are done with
+everything. What we'll do is we will
+finalize with our assignments and you
+can find the assignment PDF in the
+description down box below which simple
+stuff which we have created for you for
+you to work on. Work on that and I hope
+you really loved this project
+explanation. Again, all this project
+source files and everything is available
+for absolutely free in the description
+brown box below. Go ahead, check it out
+and then we catch up in the next one.

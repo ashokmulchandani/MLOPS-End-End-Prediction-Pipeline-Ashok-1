@@ -1,0 +1,38 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# ZenML
+.zen/
+
+# MLflow
+mlruns/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+__MACOSX/
+Thumbs.db
+
+# Data (large files)
+*.zip
+extracted_data/
+data/*.csv
+
+# Environment
+.env
+
+# Jupyter
+.ipynb_checkpoints/
