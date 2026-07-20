@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 1: ML System Design Thinking — Interactive Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06090f;
+  --bg-card: #0d1117;
+  --bg-raised: #161b22;
+  --border: #21262d;
+  --border-active: #30363d;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --text-muted: #484f58;
+  --cyan: #39d2ff;
+  --cyan-bg: #39d2ff15;
+  --cyan-border: #39d2ff40;
+  --amber: #ffb347;
+  --amber-bg: #ffb34715;
+  --green: #3fb950;
+  --green-bg: #3fb95015;
+  --magenta: #ff6ec7;
+  --magenta-bg: #ff6ec715;
+  --red: #f85149;
+  --violet: #a371f7;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* Light theme */
+body.light {
+  --bg: #f6f8fa;
+  --bg-card: #ffffff;
+  --bg-raised: #e8ecf0;
+  --border: #d0d7de;
+  --border-active: #afb8c1;
+  --text: #1f2328;
+  --text-dim: #656d76;
+  --text-muted: #8b949e;
+  --cyan: #0969da;
+  --cyan-bg: #ddf4ff;
+  --cyan-border: #54aeff;
+  --amber: #9a6700;
+  --amber-bg: #fff8c5;
+  --green: #1a7f37;
+  --green-bg: #dafbe1;
+  --magenta: #bf3989;
+  --magenta-bg: #fbefff;
+  --red: #cf222e;
+  --violet: #8250df;
+}
+body.light .topbar { background: rgba(246,248,250,0.9); }
+body.light .eq-box { background: rgba(0,0,0,0.03); }
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  line-height: 1.65;
+  transition: background 0.3s, color 0.3s;
+}
+
+.bg-canvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
+
+.app { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:2rem; }
+
+/* ── Theme Toggle ── */
+.theme-toggle {
+  position: fixed; top: 0.7rem; right: 2rem; z-index: 200;
+  background: var(--bg-raised); border: 1px solid var(--border);
+  color: var(--text); font-size: 1.1rem; cursor: pointer;
+  padding: 0.35rem 0.6rem; border-radius: 6px;
+  transition: var(--transition);
+  font-family: 'JetBrains Mono', monospace;
+}
+.theme-toggle:hover { border-color: var(--cyan); color: var(--cyan); }
+
+/* ── Top Bar ── */
+.topbar {
+  position: sticky; top:0; z-index:100;
+  background: rgba(6,9,15,0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0.6rem 2rem;
+  display: flex; align-items: center; gap: 1rem;
+  font-size: 0.8rem;
+}
+.topbar .logo {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.7rem; letter-spacing: 0.15em;
+  color: var(--cyan);
+  white-space: nowrap;
+}
+.topbar .step-dots {
+  display: flex; gap: 0.4rem; flex:1; justify-content: center;
+}
+.topbar .step-dot {
+  width: 28px; height: 4px; border-radius: 2px;
+  background: var(--border);
+  transition: var(--transition);
+  cursor: pointer;
+}
+.topbar .step-dot.done { background: var(--green); }
+.topbar .step-dot.active { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+.topbar .step-dot:hover { background: var(--text-dim); }
+.topbar .step-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem; color: var(--text-dim);
+  white-space: nowrap;
+}
+
+/* ── Header ── */
+.header {
+  text-align: center;
+  padding: 3rem 0 1rem;
+}
+.header .phase-badge {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem; letter-spacing: 0.2em;
+  color: var(--green); border: 1px solid var(--green-bg);
+  border-radius: 100px; padding: 0.4em 1.4em;
+  margin-bottom: 1rem;
+}
+.header h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--cyan), var(--violet));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+.header .tagline {
+  color: var(--text-dim); font-size: 1rem;
+}
+
+/* ── Topic Chips ── */
+.topic-list {
+  display: flex; flex-wrap: wrap; gap: 0.4rem;
+  justify-content: center; margin: 1.5rem 0 1rem;
+}
+.topic-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem; letter-spacing: 0.04em;
+  padding: 0.3rem 0.7rem; border-radius: 100px;
+  border: 1px solid var(--border);
+  color: var(--text-muted); cursor: pointer;
+  transition: var(--transition);
+  background: transparent;
+}
+.topic-chip.visited { border-color: var(--green-border, var(--green)); color: var(--green); background: var(--green-bg); }
+.topic-chip.current { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-bg); box-shadow: 0 0 10px var(--cyan-border); }
+.topic-chip:hover { border-color: var(--text-dim); color: var(--text-dim); }
+
+/* ── Fun Fact ── */
+.fun-fact {
+  background: linear-gradient(135deg, var(--amber-bg), var(--magenta-bg));
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 0.65rem 1.2rem; margin-bottom: 1.5rem;
+  font-size: 0.78rem; color: var(--text-dim);
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.fun-fact .bulb { font-size: 1.2rem; flex-shrink: 0; }
+.fun-fact strong { color: var(--amber); }
+
+/* ── Slide ── */
+.slide { animation: slideIn 0.35s ease; }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2rem;
+}
+.card h2 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.1rem; font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: flex; align-items: center; gap: 0.5rem;
+  color: var(--text);
+}
+.card h2 .num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem; color: var(--cyan);
+  background: var(--cyan-bg); border-radius: 6px;
+  padding: 0.2em 0.6em;
+}
+.card p { color: var(--text-dim); margin-bottom: 1rem; font-size: 0.95rem; }
+.card h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.85rem; color: var(--cyan);
+  margin: 1.2rem 0 0.5rem;
+}
+.card ul, .card ol {
+  color: var(--text-dim); padding-left: 1.5rem;
+  margin-bottom: 1rem; font-size: 0.9rem;
+}
+.card ul li, .card ol li { margin-bottom: 0.4rem; }
+
+/* ── Eq Box (Code) ── */
+.eq-box {
+  background: rgba(0,0,0,0.4);
+  border-left: 3px solid var(--cyan);
+  border-radius: var(--radius-sm);
+  padding: 1.2rem 1.5rem; margin: 1rem 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem; line-height: 1.8;
+  color: var(--text); white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+/* ── Compare Grid ── */
+.compare-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;
+  margin: 1rem 0;
+}
+.compare-grid.two-col { grid-template-columns: 1fr 1fr; }
+.compare-card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1.2rem;
+  transition: var(--transition);
+}
+.compare-card:hover { transform: translateY(-3px); border-color: var(--border-active); }
+.compare-card.pick-a { border-left: 3px solid var(--red); }
+.compare-card.pick-b { border-left: 3px solid var(--cyan); }
+.compare-card.pick-c { border-left: 3px solid var(--green); }
+.compare-card h4 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.78rem; margin-bottom: 0.5rem;
+}
+.compare-card.pick-a h4 { color: var(--red); }
+.compare-card.pick-b h4 { color: var(--cyan); }
+.compare-card.pick-c h4 { color: var(--green); }
+.compare-card p { font-size: 0.82rem !important; color: var(--text-dim) !important; }
+.compare-card .tag-row {
+  display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem;
+}
+.compare-card .tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem; padding: 0.2em 0.6em;
+  border-radius: 100px;
+}
+.tag.low { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+.tag.med { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber); }
+.tag.high { background: #f8514920; color: var(--red); border: 1px solid var(--red); }
+
+/* ── Pipeline / Ladder ── */
+.pipeline {
+  display: flex; align-items: center; gap: 0.6rem;
+  justify-content: center; flex-wrap: wrap;
+  margin: 1.2rem 0;
+}
+.pipeline-stage {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.8rem 1rem; text-align: center;
+  transition: var(--transition);
+  min-width: 120px;
+}
+.pipeline-stage.highlight { border-color: var(--cyan); background: var(--cyan-bg); }
+.pipeline-stage .stage-icon { font-size: 1.5rem; margin-bottom: 0.3rem; }
+.pipeline-stage .stage-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.65rem; color: var(--cyan);
+  line-height: 1.3;
+}
+.pipeline-stage .stage-desc {
+  font-size: 0.72rem; color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+.pipeline-arrow {
+  font-size: 1.4rem; color: var(--cyan);
+  animation: arrowPulse 1.5s ease-in-out infinite;
+}
+@keyframes arrowPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* Ladder variant (vertical steps) */
+.ladder {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  margin: 1rem 0;
+}
+.ladder-rung {
+  display: flex; align-items: center; gap: 0.8rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 1rem;
+  transition: var(--transition);
+}
+.ladder-rung:hover { border-color: var(--cyan); }
+.ladder-rung .rung-icon { font-size: 1.3rem; flex-shrink: 0; }
+.ladder-rung .rung-bar {
+  width: 6px; height: 36px; border-radius: 3px; flex-shrink: 0;
+}
+.ladder-rung .rung-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem; color: var(--text);
+  min-width: 90px;
+}
+.ladder-rung .rung-metric {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.72rem; color: var(--cyan);
+  flex: 1;
+}
+.ladder-rung .rung-example {
+  font-size: 0.72rem; color: var(--text-muted);
+}
+
+/* ── Data Type Cards ── */
+.data-types {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem;
+  margin: 1rem 0;
+}
+.data-types.two { grid-template-columns: repeat(2, 1fr); }
+.data-type-card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  transition: var(--transition);
+  cursor: default;
+}
+.data-type-card:nth-child(1) { border-top-color: var(--cyan); }
+.data-type-card:nth-child(2) { border-top-color: var(--amber); }
+.data-type-card:nth-child(3) { border-top-color: var(--magenta); }
+.data-type-card:nth-child(4) { border-top-color: var(--green); }
+.data-type-card:nth-child(5) { border-top-color: var(--violet); }
+.data-type-card:hover { transform: translateY(-3px); border-color: var(--border-active); }
+.data-type-card .dt-icon { font-size: 1.5rem; margin-bottom: 0.3rem; }
+.data-type-card h4 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.78rem; margin-bottom: 0.3rem;
+}
+.data-type-card :nth-child(2) { color: var(--cyan); }
+.data-type-card p { font-size: 0.78rem !important; color: var(--text-muted) !important; margin-bottom: 0 !important; }
+
+/* ── Flashcard ── */
+.flashcard-wrap {
+  perspective: 800px; margin: 1rem 0;
+  cursor: pointer;
+}
+.flashcard {
+  position: relative;
+  width: 100%; min-height: 90px;
+  transform-style: preserve-3d;
+  transition: transform 0.5s;
+}
+.flashcard.flipped { transform: rotateY(180deg); }
+.flashcard .front, .flashcard .back {
+  position: absolute; inset: 0;
+  backface-visibility: hidden;
+  border-radius: var(--radius-sm);
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  padding: 1rem;
+}
+.flashcard .front {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.85rem;
+  color: var(--cyan);
+}
+.flashcard .front .hint {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem; color: var(--text-muted);
+  margin-top: 0.4rem;
+}
+.flashcard .back {
+  background: var(--bg-raised);
+  border: 1px solid var(--cyan);
+  transform: rotateY(180deg);
+  color: var(--text-dim);
+  font-size: 0.85rem; text-align: center;
+}
+
+/* ── Quiz ── */
+.quiz {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1.2rem; margin-top: 1.5rem;
+}
+.quiz .question {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.82rem; color: var(--text);
+  margin-bottom: 0.8rem;
+}
+.quiz .options { display: flex; flex-direction: column; gap: 0.4rem; }
+.quiz .option {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.6rem 1rem;
+  font-size: 0.82rem; color: var(--text-dim);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.quiz .option:hover { border-color: var(--cyan); color: var(--cyan); }
+.quiz .option.correct { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+.quiz .option.wrong { border-color: var(--red); background: #f8514920; color: var(--red); }
+.quiz .feedback {
+  display: none;
+  margin-top: 0.8rem; padding: 0.6rem 1rem;
+  border-radius: 6px; font-size: 0.82rem;
+}
+.quiz .feedback.show { display: block; }
+.quiz .feedback.correct { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+.quiz .feedback.wrong { background: #f8514920; color: var(--red); border: 1px solid var(--red); }
+
+/* ── Step Flow ── */
+.step-flow {
+  display: flex; align-items: center; gap: 0.5rem;
+  justify-content: center; flex-wrap: wrap;
+  margin: 1.2rem 0;
+}
+.flow-step {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.8rem; text-align: center;
+  font-size: 0.72rem; color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+  transition: var(--transition);
+}
+.flow-step.alert { border-color: var(--red); color: var(--red); }
+.flow-step.action { border-color: var(--green); color: var(--green); }
+.flow-arrow { color: var(--text-muted); font-size: 1rem; }
+
+/* ── Nav Row ── */
+.nav-row {
+  display: flex; gap: 1rem; justify-content: center;
+  margin-top: 1.5rem;
+}
+.nav-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem; padding: 0.6rem 1.8rem;
+  border-radius: 100px; border: 1px solid var(--border);
+  background: transparent; color: var(--text-dim);
+  cursor: pointer; transition: var(--transition);
+}
+.nav-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.nav-btn.primary {
+  border-color: var(--cyan); color: var(--cyan);
+  background: var(--cyan-bg);
+}
+
+/* ── Checklist ── */
+.checklist { margin: 1rem 0; }
+.checklist .check-item {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.5rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem; color: var(--text-dim);
+}
+.checklist .check-box {
+  font-size: 1rem; flex-shrink: 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .app { padding: 1rem; }
+  .topbar { padding: 0.5rem 1rem; }
+  .compare-grid { grid-template-columns: 1fr; }
+  .data-types { grid-template-columns: 1fr; }
+  .pipeline { flex-direction: column; }
+  .pipeline-arrow { transform: rotate(90deg); }
+  .header h1 { font-size: 1.3rem; }
+  .card { padding: 1.2rem; }
+  .theme-toggle { right: 0.5rem; top: 0.5rem; font-size: 0.9rem; padding: 0.3rem 0.5rem; }
+}
+</style>
+</head>
+<body>
+
+<canvas class="bg-canvas" id="bgCanvas"></canvas>
+
+<button class="theme-toggle" id="themeToggle" title="Toggle light/dark theme" onclick="toggleTheme()">☀️</button>
+
+<nav class="topbar">
+  <span class="logo">MLOPS — PHASE 1</span>
+  <div class="step-dots" id="stepDots"></div>
+  <span class="step-label" id="stepLabel">1/10</span>
+</nav>
+
+<div class="app">
+  <header class="header">
+    <div class="phase-badge">📖 IN PROGRESS</div>
+    <h1>Phase 1: ML System Design Thinking</h1>
+    <p class="tagline">Think before you build — the 10-step framework that separates production ML from toy projects</p>
+  </header>
+
+  <div class="topic-list" id="topicChips"></div>
+
+  <div class="fun-fact" id="funFact">
+    <span class="bulb">💡</span>
+    <span class="fact-text" id="funFactText"></span>
+  </div>
+
+  <div id="slideContainer"></div>
+
+  <div class="nav-row">
+    <button class="nav-btn" id="prevBtn" onclick="goTo(currentSlide-1)">← Previous</button>
+    <button class="nav-btn primary" id="nextBtn" onclick="goTo(currentSlide+1)">Next →</button>
+  </div>
+</div>
+
+<script>
+// ── Theme Toggle ──
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  const btn = document.getElementById('themeToggle');
+  btn.textContent = document.body.classList.contains('light') ? '🌙' : '☀️';
+  localStorage.setItem('mlops-phase1-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+(function() {
+  if (localStorage.getItem('mlops-phase1-theme') === 'light') {
+    document.body.classList.add('light');
+    document.getElementById('themeToggle').textContent = '🌙';
+  }
+})();
+
+// ── Background Particles ──
+(function() {
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize(); window.addEventListener('resize', resize);
+
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      r: Math.random() * 2 + 0.5,
+      a: Math.random() * 0.3 + 0.1,
+    });
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const isLight = document.body.classList.contains('light');
+    const lineColor = isLight ? 'rgba(9,105,218,0.06)' : 'rgba(57,210,255,0.06)';
+    const dotColor = isLight ? 'rgba(9,105,218,0.3)' : 'rgba(57,210,255,0.3)';
+
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+    });
+
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 100) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = lineColor;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+
+    particles.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = dotColor;
+      ctx.fill();
+    });
+
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
+
+// ── Slide Data ──
+const slides = [
+  // ═══════ SLIDE 1: Does This Problem Even Need ML? ═══════
+  {
+    id: '1.1',
+    title: 'Does This Problem Even Need ML?',
+    fact: '<strong>Most ML projects fail at the definition stage</strong>, not the modeling stage. The 6-word test saves you months of wasted effort.',
+    render() { return `
+<div class="slide">
+  <div class="card">
+    <h2><span class="num">1.1</span> Does This Problem Even Need ML?</h2>
+    <p>Before writing a single line of code, ask: <strong style="color:var(--cyan)">does this problem actually need machine learning?</strong> Many problems are better solved with rules, heuristics, or a database query. ML is expensive — use it only when you <em>must</em>.</p>
+
+    <h3>🧪 The 6-Word Test</h3>
+    <p>A problem is a good ML candidate if ALL six words apply:</p>
+
+    <div class="data-types">
+      <div class="data-type-card">
+        <div class="dt-icon">📚</div>
+        <h4>Learn</h4>
+        <p>The solution cannot be derived from first principles — it must be <em>learned</em> from data</p>
+      </div>
+      <div class="data-type-card">
+        <div class="dt-icon">🌀</div>
+        <h4>Complex</h4>
+        <p>The relationship between inputs and outputs is too complex for hand-coded rules</p>
+      </div>
+      <div class="data-type-card">
+        <div class="dt-icon">🔁</div>
+        <h4>Patterns</h4>
+        <p>There are recurring <em>patterns</em> in the data that a model can capture</p>
+      </div>
+      <div class="data-type-card">
+        <div class="dt-icon">💾</div>
+        <h4>Existing Data</h4>
+        <p>Labeled (or labelable) data already <em>exists</em> — you're not starting from zero</p>
+      </div>
+      <div class="data-type-card">
+        <div class="dt-icon">🎯</div>
+        <h4>Predictions</h4>
+        <p>The task involves <em>predictions</em> on <em>unseen</em> cases, not just describing the past</p>
+      </div>
+      <div class="data-type-card">
+        <div class="dt-icon">👁️</div>
+        <h4>Unseen Data</h4>
+        <p>The model must generalize to examples it has <em>never seen</em> before</p>
+      </div>
+    </div>
+
+    <h3>🏠 Applied: House Price Predictor</h3>
+    <div class="eq-box">
+<span style="color:var(--text-muted)">// Applying the 6-word test to the Ames Housing dataset</span>
+<span style="color:var(--cyan)">Learn</span>       ✅ Price depends on 80+ interacting features — no formula exists
+<span style="color:var(--cyan)">Complex</span>     ✅ Location quality, basement finish, lot slope — too many rules
+<span style="color:var(--cyan)">Patterns</span>    ✅ Similar houses sell for similar prices (OverallQual = 0.80 correlation)
+<span style="color:var(--cyan)">Exist Data</span>  ✅ 2,930 rows of historical sales with 82 features
+<span style="color:var(--cyan)">Predictions</span> ✅ Goal is to predict price for <em>new</em> listings, not summarize history
+<span style="color:var(--cyan)">Unseen</span>      ✅ Model must price houses it has never seen during training
+
+<span style="color:var(--green)">→ Verdict: This problem PASSES the 6-word test. ML is justified.</span></div>
+
+    <div class="quiz" id="quiz1">
+      <div class="question">🧪 A bank wants to detect whether a transaction should be flagged for review. They have 10M labeled transactions. Which 6-word-test item is the RISKIEST gap?</div>
+      <div class="options">
+        <div class="option" data-correct="true" onclick="checkQuiz('quiz1', this)">A. Patterns — fraud patterns evolve constantly; yesterday's patterns may not predict tomorrow's</div>
+        <div class="option" onclick="checkQuiz('quiz1', this)">B. Existing Data — 10M rows might not be enough for rare fraud events</div>
+        <div class="option" onclick="checkQuiz('quiz1', this)">C. Complex — fraud rules are simple enough to hand-code</div>
+      </div>
+      <div class="feedback" id="quiz1-fb"></div>
+    </div>
+  </div>
+</div>`; }
+  },
+
+  // ═══════ SLIDE 2: Three Options ═══════
+  {
+    id: '1.2',
+    title: 'Three Options: Rules vs ML vs Not Now',
+    fact: '<strong>80% of ML PoCs never reach production.</strong> Often the right answer is "a SQL query and a spreadsheet" — and that\'s perfectly fine.',
+    render() { return `
+<div class="slide">
+  <div class="card">
+    <h2><span class="num">1.2</span> Three Options: Rules vs ML vs Not Now</h2>
+    <p>Even if ML <em>could</em> work, you have three paths. Evaluate all of them honestly — don't default to ML just because it's exciting.</p>
+
+    <div class="compare-grid">
+      <div class="compare-card pick-a">
+        <h4>🔴 Option A: Rules / Heuristic</h4>
+        <p>Hand-coded logic based on domain expertise. "Price = $150 × sqft + $20K if garage"</p>
+        <div class="tag-row">
+          <span class="tag low">Cost: Low</span>
+          <span class="tag low">Risk: Low</span>
+          <span class="tag low">Accuracy: Medium</span>
+        </div>
+        <p style="margin-top:0.5rem"><strong>House Prices:</strong> A simple $/sqft formula gives ~60% accuracy. Quick to build, zero training cost.</p>
+      </div>
+      <div class="compare-card pick-b">
+        <h4>🔵 Option B: ML Model</h4>
+        <p>Train a model on historical data. Linear Regression → XGBoost pipeline with 82 features.</p>
+        <div class="tag-row">
+          <span class="tag med">Cost: Medium</span>
+          <span class="tag med">Risk: Medium</span>
+          <span class="tag high">Accuracy: High</span>
+        </div>
+        <p style="margin-top:0.5rem"><strong>House Prices:</strong> Linear Regression achieves R² ~0.85. Requires data pipeline, monitoring, retraining.</p>
+      </div>
+      <div class="compare-card pick-c">
+        <h4>🟢 Option C: Not Now</h4>
+        <p>Collect more data first. Run the rule-based system for 6 months, log everything, <em>then</em> revisit ML.</p>
+        <div class="tag-row">
+          <span class="tag low">Cost: Minimal</span>
+          <span class="tag low">Risk: Minimal</span>
+          <span class="tag med">Value: Learning</span>
+        </div>
+        <p style="margin-top:0.5rem"><strong>House Prices:</strong> Not ideal here — we already have labeled data. But for a new market with no sales history, this is the right call.</p>
+      </div>
+    </div>
+
+    <h3>🎯 Decision Framework</h3>
+    <div class="eq-box">
+<span style="color:var(--text-muted)">Ask these 3 questions before committing to ML:</span>
+1. <span style="color:var(--cyan)">What's the simplest thing that could possibly work?</span> → Start there.
+2. <span style="color:var(--amber)">How much lift does ML give over the simple baseline?</span> → If < 10%, not worth it.
+3. <span style="color:var(--magenta)">Do we have the infra to maintain an ML system?</span> → If no, collect data first.</div>
+
+    <div class="quiz" id="quiz2">
+      <div class="question">🧪 When is "Not Now" the BEST answer?</div>
+      <div class="options">
+        <div class="option" onclick="checkQuiz('quiz2', this)">A. When you have a large labeled dataset ready to go</div>
+        <div class="option" data-correct="true" onclick="checkQuiz('quiz2', this)">B. When you have zero labeled data and no way to get labels for 6+ months</div>
+        <div class="option" onclick="checkQuiz('quiz2', this)">C. When the problem is too complex for rules</div>
+      </div>
+      <div class="feedback" id="quiz2-fb"></div>
+    </div>
+  </div>
+</div>`; }
+  },
+
+  // ═══════ SLIDE 3: Problem Framing ═══════
+  {
+    id: '1.3',
+    title: 'Problem Framing: The One-Sentence Magic',
+    fact: '<strong>A well-framed problem is half-solved.</strong> If you cannot state your ML problem in one precise sentence, you are not ready to build.',
+    render() { return `
+<div class="slide">
+  <div class="card">
+    <h2><span class="num">1.3</span> Problem Framing: The One-Sentence Magic</h2>
+    <p>Vague: <em>"Let's use AI to predict house prices."</em><br>
+    Precise: Use the template below. Every blank forces a design decision.</p>
+
+    <div class="eq-box">
+<span style="color:var(--text-muted)">// The Universal Problem Framing Template</span>
+<span style="color:var(--cyan)">Given</span>  [input features available at prediction time]
+<span style="color:var(--cyan)">Predict</span> [target variable with type and unit]
+<span style="color:var(--cyan)">For</span>    [end user or downstream system]
+<span style="color:var(--cyan)">At</span>     [decision time / latency requirement]
+<span style="color:var(--cyan)">To</span>     [business outcome this prediction drives]</div>
+
+    <h3>🏠 Applied: House Price Predictor</h3>
+    <div class="eq-box">
+<span style="color:var(--text-muted)">// Filled-in template for the Ames Housing project</span>
+<span style="color:var(--cyan)">Given</span>  82 property features (sqft, bedrooms, overall quality, year built,
+        neighborhood, garage size, basement finish, lot size...)
+
+<span style="color:var(--cyan)">Predict</span> SalePrice in USD (continuous value, regression)
+
+<span style="color:var(--cyan)">For</span>    Real estate agents and home buyers evaluating property listings
+
+<span style="color:var(--cyan)">At</span>     < 500ms (web page load — the prediction appears as user browses)
+
+<span style="color:var(--cyan)">To</span>     Help buyers make informed offers within 5% of fair market value,
+        reducing negotiation time by 30%</div>
+
+    <div class="flashcard-wrap" onclick="this.querySelector('.flashcard').classList.toggle('flipped')">
+      <div class="flashcard">
+        <div class="front">
+          <span>⚠️ Why does "For" matter?</span>
+          <span class="hint">Click to reveal ↻</span>
+        </div>
+        <div class="back">
+          <strong>The user determines the interface.</strong> Real estate agents need a simple price + confidence interval. Data scientists might want feature importance. If you frame for the wrong user, you build the wrong product.
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz" id="quiz3">
+      <div class="question">🧪 What's wrong with this framing: "Given user behavior, predict churn, to reduce churn"?</div>
+      <div class="options">
+        <div class="option" onclick="checkQuiz('quiz3', this)">A. Churn prediction should use classification, not regression</div>
+        <div class="option" data-correct="true" onclick="checkQuiz('quiz3', this)">B. It's missing WHEN (decision time), WHICH users, and the specific business action</div>
+        <div class="option" onclick="checkQuiz('quiz3', this)">C. User behavior is not a valid input for churn models</div>
+      </div>
+      <div class="feedback" id="quiz3-fb"></div>
+    </div>
+  </div>
+</div>`; }
+  },
+
+  // ═══════ SLIDE 4: Metrics Ladder ═══════
+  {
+    id: '1.4',
+    title: 'The Metrics Ladder',
+    fact: '<strong>Model metrics don\'t pay the bills.</strong> A 0.01 improvement in R² means nothing unless it translates to a business outcome.',
+    render() { return `
+<div class="slide">
+  <div class="card">
+    <h2><span class="num">1.4</span> The Metrics Ladder</h2>
+    <p>Metrics form a hierarchy. If your model metric improves but the business metric doesn't move — you optimized the wrong thing. Every layer must connect to the one above it.</p>
+
+    <div class="ladder">
+      <div class="ladder-rung">
+        <div class="rung-icon">💼</div>
+        <div class="rung-bar" style="background:var(--violet)"></div>
+        <div class="rung-label">Business</div>
+        <div class="rung-metric">Revenue from faster sales</div>
+        <div class="rung-example">"Reduce negotiation time by 30%"</div>
+      </div>
+      <div class="ladder-rung">
+        <div class="rung-icon">📱</div>
+        <div class="rung-bar" style="background:var(--cyan)"></div>
+        <div class="rung-label">Product</div>
+        <div class="rung-metric">% of predictions within 5% of sale price</div>
+        <div class="rung-example">"90% of estimates within ±5%"</div>
+      </div>
+      <div class="ladder-rung">
+        <div class="rung-icon">🤖</div>
+        <div class="rung-bar" style="background:var(--amber)"></div>
+        <div class="rung-label">Model</div>
+        <div class="rung-metric">R² Score + RMSE</div>
+        <div class="rung-example">"R² > 0.85, RMSE < $25,000"</div>
+      </div>
+      <div class="ladder-rung">
+        <div class="rung-icon">📊</div>
+        <div class="rung-bar" style="background:var(--green)"></div>
+        <div class="rung-label">Data Quality</div>
+        <div class="rung-metric">% missing values, feature drift score</div>
+        <div class="rung-example">"< 5% missing, PSI < 0.1"</div>
+      </div>
+    </div>
+
+    <h3>🔗 The Connection Test</h3>
+    <p>For each rung, ask: <em>"If this metric improves, does the rung above it also improve?"</em> If not, your ladder is broken.</p>
+    <div class="eq-box">
+<span style="color:var(--text-muted)">Broken ladder example:</span>
+<span style="color:var(--red)">✗</span> Model R² improves 0.89 → 0.91  →  but product metric stays flat
+    <span style="color:var(--text-muted)">→ You overfit to outliers the business doesn't care about</span>
+
+<span style="color:var(--text-muted)">Working ladder:</span>
+<span style="color:var(--green)">✓</span> Model R² 0.85 → predictions within 5% for 90% of listings
+    <span style="color:var(--green)">→ Agents trust the tool → adoption ↑ → negotiation time ↓ 30%</span></div>
+
+    <div class="quiz" id="quiz4">
+      <div class="question">🧪 Why is the Data Quality rung at the BOTTOM of the ladder?</div>
+      <div class="options">
+        <div class="option" onclick="checkQuiz('quiz4', this)">A. Data quality is less important than model accuracy</div>
+        <div class="option" data-correct="true" onclick="checkQuiz('quiz4', this)">B. It's the FOUNDATION — if data quality degrades, every rung above it breaks</div>
+        <div class="option" onclick="checkQuiz('quiz4', this)">C. Data quality metrics are easier to measure than business metrics</div>
+      </div>
+      <div class="feedback" id="quiz4-fb"></div>
+    </div>
+  </div>
+</div>`; }
+  },
+
+  // ═══════ SLIDE 5: North Star & Guardrails ═══════
+  {
+    id: '1.5',
+    title: 'North Star & Guardrail Metrics',
+    fact: '<strong>Every ML system needs 1 North Star and 2-3 guardrails.</strong> Without guardrails, you\'ll optimise your North Star right off a cliff.',
+    render() { return `
+<div class="slide">
+  <div class="card">
+    <h2><span class="num">1.5</span> North Star & Guardrail Metrics</h2>
+    <p>You can't optimize for everything at once. Pick <strong style="color:var(--cyan)">ONE North Star metric</strong> that defines success, and <strong style="color:var(--amber)">2-3 guardrails</strong> that must not degrade.</p>
+
+    <div class="data-types two">
+      <div class="data-type-card" style="border-top-color:var(--cyan)">
+        <div class="dt-icon">⭐</div>
+        <h4>North Star: R² Score</h4>
+        <p><strong>Why:</strong> R² captures how much variance in price the model explains. It's scale-independent and intuitive ("85% of price variation explained").</p>
+        <p style="margin-top:0.4rem"><strong>Target:</strong> R² > 0.85 on test set</p>
+      </div>
+      <div class="data-type-card" style="border-top-color:var(--amber)">
+        <div class="dt-icon">🛡️</div>
+        <h4>Guardrail 1: RMSE < $25,000</h4>
+        <p>Prevents the model from making large errors on expensive homes. R² can be high while still making $100K mistakes.</p>
+      </div>
+      <div class="data-type-card" style="border-top-color:var(--green)">
+        <div class="dt-icon">🛡️</div>
+        <h4>Guardrail 2: Overfit Delta < 0.05</h4>
+        <p>R²_train − R²_test must stay below 0.05. Prevents deploying a model that memorized the training set but fails in production.</p>
+      </div>
+      <div class="data-type-card" style="border-top-color:var(--magenta)">
+        <div class="dt-icon">🛡️</div>
+        <h4>Guardrail 3: MAE < $18,000</h4>
+        <p>Mean Absolute Error is more robust to outliers than RMSE. If RMSE is fine but MAE spikes, a few houses are getting terrible predictions.</p>
+      </div>
+    </div>
+
+    <h3>⚠️ The Guardrail Contract</h3>
+    <div class="eq-box">
+<span style="color:var(--text-muted)">Before deploying any new model version:</span>
+<span style="color:var(--green)">✓</span> North Star (R²) improved <span style="color:var(--text-muted)">OR</span> stayed within 1% of previous
+<span style="color:var(--green)">✓</span> All 3 guardrails are <span style="color:var(--cyan)">NOT WORSE</span> than the previous model
+<span style="color:var(--red)">✗</span> If any guardrail degrades → <span style="color:var(--red)">BLOCK deployment</span>, investigate why</div>
+
+    <div class="quiz" id="quiz5">
+      <div class="question">🧪 Your new model has R² = 0.91 (up from 0.87) but RMSE jumped from $24K to $35K. What do you do?</div>
+      <div class="options">
+        <div class="option" onclick="checkQuiz('quiz5', this)">A. Deploy it — R² improvement is all that matters</div>
+        <div class="option" data-correct="true" onclick="checkQuiz('quiz5', this)">B. BLOCK deployment — a guardrail failed. Investigate why RMSE degraded despite better R²</div>
+        <div class="option" onclick="checkQuiz('quiz5', this)">C. Average the two models together and deploy the ensemble</div>
+      </div>
+      <div class="feedback" id="quiz5-fb"></div>
+    </div>
+  </div>
+</div>`; }
+  },
+
+  // ═══════ SLIDE 6: Anticipate Failure ═══════
+  {
+    id: '1.6',
+    title: 'Anticipate Failure (Before Writing Code)',
+    fact: '<strong>"What could go wrong?" is the most under-asked question in ML.</strong> List 5 failure modes before you train your first model.',
+    render() { return `
+<div class="slide">
+  <div class="card">
+    <h2><span class="num">1.6</span> Anticipate Failure (Before Writing Code)</h2>
+    <p>Failure mode analysis is not pessimism — it's <strong style="color:var(--cyan)">engineering discipline</strong>. If you can't list 5 ways your model could fail, you don't understand the problem well enough.</p>
+
+    <div class="data-types">
+      <div class="data-type-card">
+        <div class="dt-icon">🏚️</div>
+        <h4>1. Outlier Contamination</h4>
+        <p>A few $500K+ mansions skew the model. Linear Regression is sensitive to extreme values — predictions for normal homes become inflated.</p>
+        <p style="color:var(--cyan);font-size:0.72rem;margin-top:0.4rem">Mitigation: Z-score outlier detection (threshold=3), log-transform SalePrice</p>
+      </div>
+      <div class="data-type-card">
+        <div class="dt-icon">📉</div>
+        <h4>2. Data Drift</h4>
+        <p>Housing market shifts (2020→2026). A model trained on 2010 data won't know about post-pandemic price patterns.</p>
+        <p style="color:var(--cyan);font-size:0.72rem;margin-top:0.4rem">Mitigation: Monitor PSI on key features, retrain when drift > 0.1</p>
+      </div>
+      <div class="data-type-card">
+        <div class="dt-icon">🕳️</div>
+        <h4>3. Missing Value Catastrophe</h4>
+        <p>Production data arrives with 40% nulls in PoolQC (most homes have no pool). Drop-naive handling deletes half the input.</p>
+        <p style="color:var(--cyan);font-size:0.72rem;margin-top:0.4rem">Mitigation: ColumnTransformer with SimpleImputer (mean/mode per column)</p>
+      </div>
+      <div class="data-type-card">
+        <div class="dt-icon">🎭</div>
+        <h4>4. Train/Serve Skew</h4>
+        <p>Training pipeline applies StandardScaler, but serving pipeline forgets to subtract the SAME mean. Predictions are silently wrong.</p>
+        <p style="color:var(--cyan);font-size:0.72rem;margin-top:0.4rem">Mitigation: sklearn.Pipeline ensures identical transforms. Version the scaler.</p>
+      </div>
+      <div class="data-type-card">
+        <div class="dt-icon">🦄</div>
+        <h4>5. The Unicorn Listing</h4>
+        <p>A brand-new property type appears (e.g., converted church). Model has never seen anything like it — extrapolation produces nonsense.</p>
+        <p style="color:var(--cyan);font-size:0.72rem;margin-top:0.4rem">Mitigation: Prediction interval + flag predictions outside training distribution</p>
+      </div>
+    </div>
+
+    <div class="quiz" id="quiz6">
+      <div class="question">🧪 Which failure mode is the HARDEST to detect in production?</div>
+      <div class="options">
+        <div class="option" onclick="checkQuiz('quiz6', this)">A. Outlier contamination — you can see extreme predictions in logs</div>
+        <div class="option" data-correct="true" onclick="checkQuiz('quiz6', this)">B. Train/serve skew — predictions look normal but are systematically wrong; no crash or alert fires</div>
+        <div class="option" onclick="checkQuiz('quiz6', this)">C. Missing values — null rates are easy to monitor with a dashboard</div>
+      </div>
+      <div class="feedback" id="quiz6-fb"></div>
+    </div>
+  </div>
+</div>`; }
+  },
+
+  // ═══════ SLIDE 7: Feedback Loop ═══════
+  {
+    id: '1.7',
+    title: 'The Feedback Loop',
+    fact: '<strong>Without a feedback loop, your model is flying blind.</strong> You deploy once and never know if it\'s getting better or worse.',
+    render() { return `
+<div class="slide">
+  <div class="card">
+    <h2><span class="num">1.7</span> The Feedback Loop</h2>
+    <p>A deployed ML model is not a static artifact — it's part of a <strong style="color:var(--cyan)">living system</strong>. Predictions change user behavior, which generates new data, which should feed back into training.</p>
+
+    <div class="pipeline">
+      <div class="pipeline-stage highlight">
+        <div class="stage-icon">🔮</div>
+        <div class="stage-name">PREDICT</div>
+        <div class="stage-desc">Model serves<br>price estimate</div>
+      </div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-stage">
+        <div class="stage-icon">👤</div>
+        <div class="stage-name">USER ACTS</div>
+        <div class="stage-desc">Buyer makes<br>offer based on it</div>
+      </div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-stage">
+        <div class="stage-icon">📝</div>
+        <div class="stage-name">LOG</div>
+        <div class="stage-desc">Prediction + actual<br>sale price stored</div>
+      </div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-stage">
+        <div class="stage-icon">🏷️</div>
+        <div class="stage-name">LABEL</div>
+        <div class="stage-desc">Actual sale price<br>becomes ground truth</div>
+      </div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-stage">
+        <div class="stage-icon">🔄</div>
+        <div class="stage-name">RETRAIN</div>
+        <div class="stage-desc">New (prediction, actual)<br>pairs added to training</div>
+      </div>
+    </div>
+
+    <h3>⚠️ The Hidden Danger: Feedback Loop Distortion</h3>
+    <div class="compare-grid two-col">
+      <div class="compare-card pick-a">
+        <h4>🔴 Bad Loop (Self-Fulfilling)</h4>
+        <p>Model overprices houses → buyers avoid those listings → no sales data collected for those prices → model thinks "I was right, those houses never sold" → keeps overpricing.</p>
+      </div>
+      <div class="compare-card pick-b">
+        <h4>🟢 Good Loop (Self-Correcting)</h4>
+        <p>Model predicts → actual sale price logged regardless of whether prediction was used → both overpriced AND underpriced errors are captured → model learns from mistakes.</p>
+      </div>
+    </div>
+
+    <div class="quiz" id="quiz7">
+      <div class="question">🧪 What's the most common reason feedback loops break in production?</div>
+      <div class="options">
+        <div class="option" onclick="checkQuiz('quiz7', this)">A. Models are too complex to retrain frequently</div>
+        <div class="option" data-correct="true" onclick="checkQuiz('quiz7', this)">B. The logging pipeline is never built — predictions are served but actual outcomes are never captured</div>
+        <div class="option" onclick="checkQuiz('quiz7', this)">C. Users refuse to interact with ML-powered features</div>
+      </div>
+      <div class="feedback" id="quiz7-fb"></div>
+    </div>
+  </div>
+</div>`; }
+  },
+
+  // ═══════ SLIDE 8: Operational Constraints ═══════
+  {
+    id: '1.8',
+    title: 'Operational Constraints',
+    fact: '<strong>An ML model that takes 10 seconds to predict is useless</strong> for a real-time pricing widget — no matter how accurate it is.',
+    render() { return `
+<div class="slide">
+  <div class="card">
+    <h2><span class="num">1.8</span> Operational Constraints</h2>
+    <p>ML doesn't run in a vacuum. Every deployment has <strong style="color:var(--cyan)">hard constraints</strong> that limit what models you can use, how fast they must respond, and what data they can access.</p>
+
+    <div class="checklist">
+      <div class="check-item"><span class="check-box">⏱️</span> <strong>Latency Budget:</strong> &lt; 500ms per prediction (web page load). Rules out large ensembles.</div>
+      <div class="check-item"><span class="check-box">📊</span> <strong>Throughput:</strong> ~100 predictions/second peak (normal browsing traffic). Single server sufficient.</div>
+      <div class="check-item"><span class="check-box">🔒</span> <strong>Privacy/GDPR:</strong> Property data is public record — no PII. <span style="color:var(--green)">Low risk.</span></div>
+      <div class="check-item"><span class="check-box">📖</span> <strong>Interpretability:</strong> MEDIUM — agents need to explain "why this price?" to clients. Linear Regression coefficients help.</div>
+      <div class="check-item"><span class="check-box">💰</span> <strong>Cost per Prediction:</strong> &lt; $0.001 (local inference on CPU). No GPU needed for Linear Regression.</div>
+      <div class="check-item"><span class="check-box">📅</span> <strong>Retraining Cadence:</strong> Monthly (housing market doesn't shift daily). Keeps infra costs low.</div>
+      <div class="check-item"><span class="check-box">🌐</span> <strong>Availability:</strong> 99.5% uptime. Single instance with health check is sufficient for initial launch.</div>
+    </div>
+
+    <h3>🏠 Why Linear Regression Fits These Constraints</h3>
+    <div class="eq-box">
+<span style="color:var(--text-muted)">Constraint → Design Decision:</span>
+<span style="color:var(--cyan)">500ms latency</span>   → Linear Regression predicts in &lt;1ms (vs 50ms for XGBoost on CPU)
+<span style="color:var(--cyan)">Interpretability</span> → Coefficients are directly explainable: "+$15K per garage car"
+<span style="color:var(--cyan)">Low cost</span>        → No GPU, no API calls, runs on a $20/month VM
+<span style="color:var(--cyan)">Monthly retrain</span> → scikit-learn pipeline retrains in seconds on 2,930 rows</div>
+
+    <div class="quiz" id="quiz8">
+      <div class="question">🧪 Your model must run on a user's phone with no internet. Which constraint dominates?</div>
+      <div class="options">
+        <div class="option" onclick="checkQuiz('quiz8', this)">A. Privacy — on-device means data never leaves the phone</div>
+        <div class="option" data-correct="true" onclick="checkQuiz('quiz8', this)">B. Model size + inference speed — must fit in < 50MB and predict in < 50ms on mobile CPU</div>
+        <div class="option" onclick="checkQuiz('quiz8', this)">C. Cost — mobile inference is more expensive than cloud inference</div>
+      </div>
+      <div class="feedback" id="quiz8-fb"></div>
+    </div>
+  </div>
+</div>`; }
+  },
+
+  // ═══════ SLIDE 9: Rollback Path ═══════
+  {
+    id: '1.9',
+    title: 'The Rollback Path',
+    fact: '<strong>"What happens if the model misbehaves?"</strong> If you can\'t answer this in 30 seconds, you\'re not ready to deploy.',
+    render() { return `
+<div class="slide">
+  <div class="card">
+    <h2><span class="num">1.9</span> The Rollback Path</h2>
+    <p>Every deployment needs a <strong style="color:var(--red)">pre-planned escape route</strong>. You don't design the rollback <em>after</em> something breaks — you design it <em>before</em> you deploy.</p>
+
+    <div class="step-flow">
+      <div class="flow-step">🚀 Deploy<br>v1.0</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">📊 Monitor<br>72 hours</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step alert">⚠️ R² drops<br>&lt; 0.75?</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step action">✅ Auto-rollback<br>to v0.9</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">🔍 Investigate<br>root cause</div>
+    </div>
+
+    <h3>🛡️ Three Rollback Strategies</h3>
+    <div class="compare-grid two-col">
+      <div class="compare-card pick-b">
+        <h4>🔵 Shadow Mode (Safest)</h4>
+        <p>New model runs in parallel with old model. Predictions are logged and compared but NOT shown to users. After 2 weeks of healthy comparison, switch over.</p>
+        <p style="color:var(--cyan);font-size:0.78rem">Best for: High-stakes deployments where wrong predictions cost money.</p>
+      </div>
+      <div class="compare-card pick-c">
+        <h4>🟢 MLflow Model Registry (Fastest)</h4>
+        <p>Every trained model is versioned in MLflow. Rollback = point the serving endpoint to the previous version tag. Takes < 10 seconds.</p>
+        <p style="color:var(--green);font-size:0.78rem">Best for: The House Prices project. Simple, fast, built into MLflow.</p>
+      </div>
+    </div>
+
+    <h3>🏠 House Prices Rollback Plan</h3>
+    <div class="eq-box">
+<span style="color:var(--text-muted)">// Concrete rollback triggers for the Prices Predictor:</span>
+<span style="color:var(--red)">Trigger 1:</span> R² on live data drops below 0.75 for 3 consecutive hours
+<span style="color:var(--red)">Trigger 2:</span> RMSE exceeds $35,000 on the daily evaluation batch
+<span style="color:var(--red)">Trigger 3:</span> Prediction distribution shifts > 2 std dev from training baseline
+
+<span style="color:var(--cyan)">Rollback Action:</span>
+  → <span style="color:var(--green)">mlflow models serve</span> with previous model version (stored in registry)
+  → Alert on-call with rollback reason + affected prediction IDs
+  → Investigate: was it data drift? pipeline bug? upstream schema change?</div>
+
+    <div class="quiz" id="quiz9">
+      <div class="question">🧪 When is shadow mode BETTER than immediate rollback?</div>
+      <div class="options">
+        <div class="option" data-correct="true" onclick="checkQuiz('quiz9', this)">A. When you're deploying to a new market segment and don't know what "normal" looks like yet</div>
+        <div class="option" onclick="checkQuiz('quiz9', this)">B. When your model is a minor bug fix with 0.01 R² improvement</div>
+        <div class="option" onclick="checkQuiz('quiz9', this)">C. When you have fewer than 100 predictions per day</div>
+      </div>
+      <div class="feedback" id="quiz9-fb"></div>
+    </div>
+  </div>
+</div>`; }
+  },
+
+  // ═══════ SLIDE 10: The 1-Page ML Proposal ═══════
+  {
+    id: '1.10',
+    title: 'The 1-Page ML Proposal',
+    fact: '<strong>If you can\'t fit your ML project on one page, you don\'t understand it yet.</strong> The proposal is your thinking made visible.',
+    render() { return `
+<div class="slide">
+  <div class="card">
+    <h2><span class="num">1.10</span> The 1-Page ML Proposal</h2>
+    <p>This is the capstone of Phase 1 — a single page that synthesizes <strong style="color:var(--cyan)">everything from slides 1.1–1.9</strong>. If a stakeholder reads only this, they should understand the what, why, and how.</p>
+
+    <div class="eq-box">
+<span style="color:var(--text-muted)">╔══════════════════════════════════════════════════════════════╗</span>
+<span style="color:var(--text-muted)">║</span>  <span style="color:var(--cyan);font-weight:600">ML PROPOSAL: House Price Predictor</span>                          <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">╠══════════════════════════════════════════════════════════════╣</span>
+<span style="color:var(--text-muted)">║</span>                                                            <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  <span style="color:var(--amber)">PROBLEM:</span> Real estate agents spend hours manually estimating   <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  fair market value. Inconsistent pricing leads to longer      <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  negotiations and lost deals.                                  <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>                                                            <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  <span style="color:var(--amber)">SOLUTION:</span> ML model predicting SalePrice from 82 property      <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  features, served via API at <500ms latency.                   <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>                                                            <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  <span style="color:var(--amber)">VALUE:</span> Reduce negotiation time by 30%. Agents close deals     <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  faster with data-backed price estimates.                      <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>                                                            <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  <span style="color:var(--amber)">NORTH STAR:</span> R² > 0.85                                          <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  <span style="color:var(--amber)">GUARDRAILS:</span> RMSE < $25K, Overfit Δ < 0.05, MAE < $18K          <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>                                                            <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  <span style="color:var(--amber)">BASELINE:</span> $/sqft heuristic → then Linear Regression → then     <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  XGBoost if needed. Start simple, add complexity only when      <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  data proves it's needed.                                      <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>                                                            <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  <span style="color:var(--amber)">CONSTRAINTS:</span> <500ms latency, <$0.001/prediction, monthly        <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  retrain, 99.5% uptime. Linear Regression fits all.             <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>                                                            <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  <span style="color:var(--amber)">TOP RISKS:</span> Outlier contamination, train/serve skew, data        <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  drift. All have documented mitigations.                        <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>                                                            <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  <span style="color:var(--amber)">ROLLBACK:</span> MLflow registry version pin. Auto-rollback if R²     <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  drops below 0.75 for 3 hours.                                 <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">╚══════════════════════════════════════════════════════════════╝</span></div>
+
+    <h3>✅ Phase 1 Complete — What You've Learned</h3>
+    <div class="data-types">
+      <div class="data-type-card">
+        <div class="dt-icon">🧪</div>
+        <h4>Test Before Build</h4>
+        <p>Use the 6-word test to justify ML before writing code</p>
+      </div>
+      <div class="data-type-card">
+        <div class="dt-icon">📐</div>
+        <h4>Frame Precisely</h4>
+        <p>Given X, Predict Y, For Z, At T, To B — every blank is a decision</p>
+      </div>
+      <div class="data-type-card">
+        <div class="dt-icon">🪜</div>
+        <h4>Ladder Up</h4>
+        <p>Data → Model → Product → Business. Every rung must connect.</p>
+      </div>
+      <div class="data-type-card">
+        <div class="dt-icon">⭐</div>
+        <h4>One North Star</h4>
+        <p>1 metric to optimize + 2-3 guardrails that must not degrade</p>
+      </div>
+      <div class="data-type-card">
+        <div class="dt-icon">⚠️</div>
+        <h4>Fail First</h4>
+        <p>List 5 failure modes before training. Mitigation is cheaper than recovery.</p>
+      </div>
+      <div class="data-type-card">
+        <div class="dt-icon">🔄</div>
+        <h4>Close the Loop</h4>
+        <p>Prediction → Log → Label → Retrain. Without logging, you're blind.</p>
+      </div>
+    </div>
+
+    <div class="quiz" id="quiz10">
+      <div class="question">🧪 A stakeholder reads your ML proposal and asks: "What happens if this doesn't work?" Which section answers that question?</div>
+      <div class="options">
+        <div class="option" onclick="checkQuiz('quiz10', this)">A. The North Star metrics section — metrics tell you if it's working</div>
+        <div class="option" data-correct="true" onclick="checkQuiz('quiz10', this)">B. The Rollback section + Risk section together — they define what "not working" means and exactly what happens next</div>
+        <div class="option" onclick="checkQuiz('quiz10', this)">C. The Value section — if there's no value, the project failed</div>
+      </div>
+      <div class="feedback" id="quiz10-fb"></div>
+    </div>
+  </div>
+</div>`; }
+  }
+];
+
+// ── Quiz Logic ──
+window.checkQuiz = function(quizId, clickedEl) {
+  const quiz = document.getElementById(quizId);
+  if (quiz.dataset.answered === 'true') return;
+
+  const options = quiz.querySelectorAll('.option');
+  const feedback = document.getElementById(quizId + '-fb');
+  const isCorrect = clickedEl.dataset.correct === 'true';
+
+  options.forEach(o => {
+    if (o.dataset.correct === 'true') o.classList.add('correct');
+  });
+  if (!isCorrect) clickedEl.classList.add('wrong');
+
+  feedback.className = 'feedback show ' + (isCorrect ? 'correct' : 'wrong');
+  feedback.textContent = isCorrect
+    ? '✅ Correct! Well done.'
+    : '❌ Not quite. The correct answer is highlighted in green.';
+  quiz.dataset.answered = 'true';
+};
+
+// ── Navigation State ──
+let currentSlide = 0;
+const visitedSlides = new Set([0]);
+
+function renderSlide(index) {
+  currentSlide = index;
+  visitedSlides.add(index);
+  document.getElementById('slideContainer').innerHTML = slides[index].render();
+  updateDots();
+  updateChips();
+  document.getElementById('funFactText').innerHTML = '<strong>' + slides[index].id + ':</strong> ' + slides[index].fact;
+  document.getElementById('stepLabel').textContent = (index + 1) + '/' + slides.length;
+  document.getElementById('prevBtn').disabled = index === 0;
+  const nextBtn = document.getElementById('nextBtn');
+  if (index === slides.length - 1) {
+    nextBtn.textContent = '✓ Complete';
+    nextBtn.style.background = 'var(--green-bg)';
+    nextBtn.style.borderColor = 'var(--green)';
+    nextBtn.style.color = 'var(--green)';
+  } else {
+    nextBtn.textContent = 'Next →';
+    nextBtn.style.background = 'var(--cyan-bg)';
+    nextBtn.style.borderColor = 'var(--cyan)';
+    nextBtn.style.color = 'var(--cyan)';
+  }
+  document.getElementById('slideContainer').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function goTo(index) {
+  if (index < 0 || index >= slides.length) return;
+  renderSlide(index);
+}
+
+function updateDots() {
+  document.getElementById('stepDots').innerHTML = slides.map(function(s, i) {
+    var cls = i === currentSlide ? 'active' : visitedSlides.has(i) ? 'done' : '';
+    return '<div class="step-dot ' + cls + '" onclick="goTo(' + i + ')" title="' + s.id + ': ' + s.title + '"></div>';
+  }).join('');
+}
+
+function updateChips() {
+  document.getElementById('topicChips').innerHTML = slides.map(function(s, i) {
+    var cls = i === currentSlide ? 'current' : visitedSlides.has(i) ? 'visited' : '';
+    return '<span class="topic-chip ' + cls + '" onclick="goTo(' + i + ')">' + s.id + ' ' + s.title + '</span>';
+  }).join('');
+}
+
+// ── Keyboard Navigation ──
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' && currentSlide < slides.length - 1) goTo(currentSlide + 1);
+  if (e.key === 'ArrowLeft' && currentSlide > 0) goTo(currentSlide - 1);
+});
+
+// ── Init ──
+renderSlide(0);
+</script>
+</body>
+</html>

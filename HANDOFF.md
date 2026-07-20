@@ -15,22 +15,25 @@ All files are in: `C:\Users\ashok\OneDrive\NOblox\MLOPS_System_Design_Thinking\`
 | `MLOPS_SYSTEM_DESIGN_PLAN.md` | Master plan — 8 phases, 22 sessions, all steps and deliverables |
 | `CLAUDE.md` | Guidance for Claude Code when working in this repo |
 | `README.md` | Project overview with phase status and setup instructions |
+| `phase1_system_design.html` | Phase 1 interactive learning module — 10 slides, 10 quizzes |
+| `Phase_1_System_Design/` | 10 template documents (decision doc, framing, metrics ladder, etc.) |
 | `prices-predictor-system/` | Phase 5 reference project — complete ZenML + MLflow pipeline |
-| `Phase_1_System_Design/` through `Phase_8_Capstone/` | Phase directories (currently scaffolds) |
+| `Phase_2_Data_Strategy/` through `Phase_8_Capstone/` | Phase directories (currently scaffolds) |
 | `notebooks/` | Shared Jupyter notebooks |
 | Transcript `.txt` files | YouTube learning references (5 transcripts) |
 
 ## Current State
 
-- **Phase 1-4**: Plans exist in `MLOPS_SYSTEM_DESIGN_PLAN.md` but no implementations yet. These are learned in context during Phase 5.
+- **Phase 1 (ML System Design Thinking)**: ✅ Complete — `phase1_system_design.html` interactive module built (10 slides, 10 quizzes) + 10 template documents in `Phase_1_System_Design/` covering all 10 design steps applied to the House Prices Predictor.
+- **Phase 2-4**: Plans exist in `MLOPS_SYSTEM_DESIGN_PLAN.md` but no implementations yet.
 - **Phase 5 (Prices Predictor)**: Reference project exists in `prices-predictor-system/` with full code (ZenML steps, MLflow tracking, design patterns). The code still has hardcoded paths from the original author (`ayushsingh`) that need updating for local execution.
 - **Phases 6-8**: Architecture plans exist but not implemented. These are stretch goals.
 
 ## What Needs to Happen Next
 
-1. **Set up and run Phase 5 locally** — Update hardcoded paths, set up ZenML/MLflow, run the training pipeline end-to-end
-2. **Build Phase 5 interactive HTML** — Similar to the Fine-tuning project's pattern (interactive learning modules with slides, quizzes, visualizations)
-3. **Work through Phases 1-4 concepts** — Document the "WHY" behind each Phase 5 decision as markdown cells
+1. **Phase 2 (Data Strategy)** — Build interactive HTML + template documents for data strategy & engineering
+2. **Set up and run Phase 5 locally** — Update hardcoded paths, set up ZenML/MLflow, run the training pipeline end-to-end
+3. **Phases 3-4** — Feature engineering and baseline first modules
 4. **Phase 6 (Enterprise Pipeline)** — Stretch goal after Phase 5 is mastered
 
 ## User Preferences (From Fine-Tuning Project)

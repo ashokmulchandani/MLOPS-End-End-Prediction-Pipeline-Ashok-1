@@ -6,7 +6,7 @@ An end-to-end MLOps and ML System Design learning project built from scratch fol
 
 | Phase | Topic | Status |
 |-------|-------|--------|
-| Phase 1 | ML System Design Thinking (problem framing, metrics, constraints) | 📖 Plan ready |
+| Phase 1 | ML System Design Thinking (problem framing, metrics, constraints) | ✅ Theory complete |
 | Phase 2 | Data Strategy & Engineering (sampling, labeling, versioning) | 📖 Plan ready |
 | Phase 3 | Feature Engineering & Pipeline (scaling, encoding, leakage detection) | 📖 Plan ready |
 | Phase 4 | Baseline First (rules → simple model → measure → iterate) | 📖 Plan ready |
