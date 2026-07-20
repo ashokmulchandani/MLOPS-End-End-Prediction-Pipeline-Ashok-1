@@ -287,32 +287,85 @@
 
 ---
 
-## Execution Order (Recommended)
+## ⚡ RECOMMENDED PATH: Project-First Approach (Phase 5 as the Vehicle)
 
-| Session | What to Complete | Time | Focus |
-|---------|-----------------|------|-------|
-| Session 1 | Phase 1: Steps 1.1–1.5 (problem framing, metrics) | 2-3 hrs | Thinking |
-| Session 2 | Phase 1: Steps 1.6–1.10 (failures, feedback, constraints, proposal) | 2-3 hrs | Thinking |
-| Session 3 | Phase 2: Steps 2.1–2.5 (data sources, sampling, labels, lineage) | 3-4 hrs | Data |
-| Session 4 | Phase 2: Steps 2.6–2.10 (imbalance, splits, validation, DVC) | 3-4 hrs | Data |
-| Session 5 | Phase 3: Steps 3.1–3.5 (missing values, scaling, encoding) | 3-4 hrs | Features |
-| Session 6 | Phase 3: Steps 3.6–3.10 (crosses, leakage, pipeline, monitoring) | 3-4 hrs | Features |
-| Session 7 | Phase 4: Steps 4.1–4.8 (baseline, measure, ship, iterate) | 3-4 hrs | Baseline |
-| Session 8 | Phase 5A: Steps 5A.1–5A.6 (ZenML setup, blueprint pipeline) | 2-3 hrs | MLOps |
-| Session 9 | Phase 5B: Steps 5B.1–5B.6 (implement all steps with design patterns) | 4-5 hrs | MLOps |
-| Session 10 | Phase 5C: Steps 5C.1–5C.6 (MLflow experiment tracking) | 2-3 hrs | MLOps |
-| Session 11 | Phase 5D: Steps 5D.1–5D.6 (deployment pipeline + inference) | 3-4 hrs | MLOps |
-| Session 12 | Phase 5E: Steps 5E.1–5E.4 (Streamlit app) | 2-3 hrs | MLOps |
-| Session 13 | Phase 6A: Steps 6A.1–6A.7 (enterprise architecture, models, config) | 3-4 hrs | Enterprise |
-| Session 14 | Phase 6B: Steps 6B.1–6B.7 (document loading highway) | 4-5 hrs | Enterprise |
-| Session 15 | Phase 6C: Steps 6C.1–6C.5 (text processing + chunking) | 3-4 hrs | Enterprise |
-| Session 16 | Phase 6D: Steps 6D.1–6D.8 (task management + AI generation) | 4-5 hrs | Enterprise |
-| Session 17 | Phase 6E: Steps 6E.1–6E.7 (quality evaluation + export) | 3-4 hrs | Enterprise |
-| Session 18 | Phase 6F: Steps 6F.1–6F.6 (CLI + dashboard + orchestration) | 3-4 hrs | Enterprise |
-| Session 19 | Phase 7: Steps 7.1–7.5 (monitoring, drift, retraining) | 3-4 hrs | Production |
-| Session 20 | Phase 7: Steps 7.6–7.10 (canary, A/B, registry, runbook) | 3-4 hrs | Production |
-| Session 21 | Phase 8: Steps 8.1–8.5 (capstone: design + data + baseline + model) | 4-5 hrs | Capstone |
-| Session 22 | Phase 8: Steps 8.6–8.10 (capstone: pipeline + deploy + monitor + docs) | 4-5 hrs | Capstone |
+> **Jump straight into Phase 5 (Prices Predictor)** — learn Phase 1-4 concepts
+> IN CONTEXT as they naturally arise during the project.
+> Come back to Phase 6 later as a stretch goal.
+> **Phase 5 alone gives you the "50 LPA job" project ready.**
+>
+> ### Why Project-First?
+> - Phase 1-4 are thinking/documents — you learn them BETTER when applied to a real problem
+> - Every EDA decision in Phase 5 IS Phase 1-4 in action
+> - You'll understand the INTUITION because you're seeing it work on real data
+> - You can VISUALISE each concept (plots, dashboards, pipeline DAGs) instead of just reading about it
+>
+> ### How Phase 1-4 Concepts Are Married Into Phase 5:
+>
+> | Phase 5 Step | Phase 1-4 Concept You're Learning | Intuition / Visualisation |
+> |---|---|---|
+> | 5C.3: Inspect data (82 cols, skewed SalePrice) | **Phase 1.1**: Does this need ML? Yes — complex patterns, 82 features, can't write rules | You SEE the complexity in the data shape |
+> | 5C.7: SalePrice histogram shows positive skew | **Phase 1.4**: Metrics ladder — offline metric (MSE) must connect to business (accurate pricing) | You SEE the skew in the histogram, understand WHY log transform is needed |
+> | 5C.12: Correlation heatmap (OverallQual=0.80) | **Phase 1.5**: North Star metric — R2 score + guardrails (no overfitting) | You SEE which features matter in the heatmap colors |
+> | 5C.13: "Need outlier handling, log transform" | **Phase 1.6**: Anticipate failures — model will fail on outliers if not handled | You SEE outliers as dots outside the scatter plot cluster |
+> | 5D.1-5D.3: Handle missing values (drop/fill) | **Phase 2.1-2.5**: Data strategy — where is data missing? Random or structured? | You SEE yellow bands in the missing value heatmap |
+> | 5D.4-5D.5: Log transformation on SalePrice | **Phase 3.3-3.4**: Feature engineering — scaling, transformation for algorithm assumptions | You SEE the distribution change from skewed → normal after transform |
+> | 5D.6-5D.8: Z-score outlier detection | **Phase 3.7**: Leakage detection / ablation — remove suspicious data points | You SEE outliers disappear from scatter plot after handling |
+> | 5D.9-5D.10: Train/test split (80/20) | **Phase 2.7**: Splits — no leakage, stratified, representative | You SEE the split in ZenML dashboard as separate artifacts |
+> | 5E.1-5E.2: LinearRegression (simplest model) | **Phase 4.1-4.3**: Baseline first — start simple, measure, then add complexity | You SEE the baseline MSE/R2 in MLflow as your benchmark |
+> | 5E.9-5E.10: Compare runs in MLflow | **Phase 4.4-4.7**: Compare baseline vs iterations — does complexity help? | You SEE side-by-side metrics in MLflow UI |
+> | 5F.1-5F.7: Deploy model, get prediction URL | **Phase 1.8-1.9**: Operational constraints + rollback path | You SEE the model serving at localhost, can stop/restart |
+> | Phase 7: Add drift detection | **Phase 1.7**: Feedback loop — monitor, detect drift, retrain | You SEE alerts when input distribution changes |
+>
+> ### The Rule:
+> **At every step in Phase 5, PAUSE and ask: "Which Phase 1-4 concept am I applying here? WHY am I doing this? What would go WRONG if I skipped it?"**
+> Document these answers in your EDA notebook as markdown cells — this becomes your interview talking points.
+>
+> ---
+>
+> - **Project-first path = 7-8 sessions, ~25-30 hours**
+> - At 3 sessions/week → **~3 weeks** to have a complete MLOps portfolio deployed
+> - Phase 6 (Enterprise Pipeline) = stretch goal, add 6 more sessions later
+> - Phase 7 (Monitoring) = add 1 more session after project is deployed
+>
+> **Note:** Deployment infrastructure (Docker/K8s/CI-CD) and system design patterns
+> (cache, queue, circuit breaker) are already covered in the DevOps Hackathon Plan.
+> Model optimization/serving (TensorRT/Triton) is already in the CUDA Plan.
+> This MLOps plan focuses on what's UNIQUE: ML thinking, data strategy, feature pipelines,
+> experiment tracking, and design patterns in Python code.
+
+---
+
+## Execution Order (Project-First Approach)
+
+> Phase 1-4 concepts are learned IN CONTEXT during Phase 5 steps.
+> At every step, you understand the intuition + visualise the result.
+
+| Session | What to Complete | Phase 1-4 Concepts Covered | Time |
+|---------|-----------------|---------------------------|------|
+| Session 1 | Phase 5A: Setup + 3 Design Patterns (Factory, Strategy, Template) | — (coding foundations) | 2-3 hrs |
+| Session 2 | Phase 5B: Data Ingestion (Factory Pattern) | Phase 1.1 (does it need ML?), Phase 2.1 (data sources) | 3-4 hrs |
+| Session 3 | Phase 5C.1–5C.7: EDA Part 1 (inspection, missing values, univariate) | Phase 1.4-1.6 (metrics, failures), Phase 2.4-2.5 (lineage, quality) | 4-5 hrs |
+| Session 4 | Phase 5C.8–5C.13: EDA Part 2 (bivariate, multivariate, conclusions) | Phase 1.7-1.8 (feedback loop, constraints), Phase 3.1 (feature profiling) | 3-4 hrs |
+| Session 5 | Phase 5D: Processing Steps (missing values, features, outliers, split) | Phase 2.6-2.7 (imbalance, splits), Phase 3.2-3.7 (all feature engineering) | 4-5 hrs |
+| Session 6 | Phase 5E: Model Building + MLflow Tracking | Phase 4.1-4.7 (baseline first, measure, compare) | 3-4 hrs |
+| Session 7 | Phase 5F: Deployment + Inference + sample_predict | Phase 1.8-1.9 (constraints, rollback), Phase 4.8 (ship it) | 3-4 hrs |
+| Session 8 | Phase 7: Monitoring, drift detection, retraining triggers | Phase 1.7 (feedback loop), Phase 2.8 (data validation) | 3-4 hrs |
+| **✅ DONE** | **Full project deployed + all Phase 1-4 concepts understood in context** | **All of Phase 1-4 covered** | **~28-33 hrs** |
+| --- | --- | --- | --- |
+| *STRETCH* | *Phase 6A-6F (Enterprise Training Data Pipeline)* | *Advanced architecture* | *21-27 hrs* |
+| *STRETCH* | *Phase 8 (Capstone — Churn Prediction end-to-end)* | *Apply independently* | *8-10 hrs* |
+| Session 13 | Phase 5F: Steps 5F.1–5F.10 (deployment pipeline + inference + sample_predict) | 3-4 hrs | MLOps |
+| Session 14 | Phase 7: Steps 7.1–7.5 (monitoring, drift, retraining) | 3-4 hrs | Production |
+| **✅ DONE** | **Phase 1-5 + 7 complete — portfolio ready, project deployed** | **~50 hrs** | **✅** |
+
+> ⚠️ **NOTE: The above 14-session table is the ORIGINAL sequential path (if you prefer theory-first).**
+> **The RECOMMENDED project-first path above (8 sessions, ~28-33 hrs) covers the same content faster.**
+> Choose whichever suits your learning style.
+
+| --- | --- | --- | --- |
+| *STRETCH* | *Phase 6A-6F (Enterprise Training Data Pipeline)* | *21-27 hrs* | *Later* |
+| *STRETCH* | *Phase 8 (Capstone — Churn Prediction end-to-end)* | *8-10 hrs* | *Later* |
 
 ---
 
@@ -481,7 +534,14 @@ MLOPS_System_Design_Thinking/
 
 ---
 
-## Estimated Total Time: ~75-90 hours (22 sessions × 3-4 hrs average)
+## Estimated Total Time
 
-> This is not a sprint. Do 1-2 sessions per week. Each session produces a tangible deliverable.
-> By the end, you have: a system design portfolio, a full MLOps pipeline, an enterprise-grade data pipeline, and a capstone project.
+| Path | Sessions | Hours | Timeline (3/week) |
+|------|----------|-------|-------------------|
+| **⚡ Project-First (RECOMMENDED)** | **8 sessions** | **~28-33 hrs** | **~3 weeks** |
+| Sequential (Phase 1-5 + 7 separately) | 14 sessions | ~40-50 hrs | ~5 weeks |
+| Full plan (+ Phase 6 + 8) | 22 sessions | ~75-90 hrs | ~8 weeks |
+
+> **Project-first approach:** You learn Phase 1-4 concepts WHILE building the project.
+> At every step you PAUSE, understand the intuition, and VISUALISE the result.
+> By session 8, you have: the full MLOps pipeline deployed + all concepts understood in context — ready for interviews.

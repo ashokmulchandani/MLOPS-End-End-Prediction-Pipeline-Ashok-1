@@ -6,14 +6,14 @@ An end-to-end MLOps and ML System Design learning project built from scratch fol
 
 | Phase | Topic | Status |
 |-------|-------|--------|
-| Phase 1 | ML System Design Thinking (problem framing, metrics, constraints) | ⬜ |
-| Phase 2 | Data Strategy & Engineering (sampling, labeling, versioning) | ⬜ |
-| Phase 3 | Feature Engineering & Pipeline (scaling, encoding, leakage detection) | ⬜ |
-| Phase 4 | Baseline First (rules → simple model → measure → iterate) | ⬜ |
-| Phase 5 | **House Prices Predictor System** (ZenML + MLflow + Design Patterns) | ⬜ |
-| Phase 6 | Enterprise Training Data Pipeline (async, AI generation, quality eval) | ⬜ |
-| Phase 7 | Monitoring & Production Ops (drift, retraining, A/B testing) | ⬜ |
-| Phase 8 | Capstone Project (end-to-end from design to deployment) | ⬜ |
+| Phase 1 | ML System Design Thinking (problem framing, metrics, constraints) | 📖 Plan ready |
+| Phase 2 | Data Strategy & Engineering (sampling, labeling, versioning) | 📖 Plan ready |
+| Phase 3 | Feature Engineering & Pipeline (scaling, encoding, leakage detection) | 📖 Plan ready |
+| Phase 4 | Baseline First (rules → simple model → measure → iterate) | 📖 Plan ready |
+| Phase 5 | **House Prices Predictor System** (ZenML + MLflow + Design Patterns) | ✅ Reference code |
+| Phase 6 | Enterprise Training Data Pipeline (async, AI generation, quality eval) | 📖 Plan ready |
+| Phase 7 | Monitoring & Production Ops (drift, retraining, A/B testing) | 📖 Plan ready |
+| Phase 8 | Capstone Project (end-to-end from design to deployment) | 📖 Plan ready |
 
 ## Key Project: Prices Predictor System (Phase 5)
 
@@ -44,7 +44,19 @@ A house price prediction system that demonstrates:
 MLOPS_System_Design_Thinking/
 ├── MLOPS_SYSTEM_DESIGN_PLAN.md      # Full learning plan (22 sessions)
 ├── README.md                         # This file
+├── CLAUDE.md                         # Guidance for Claude Code
+├── HANDOFF.md                        # Session handoff document
 ├── .gitignore
+├── LICENSE
+├── Phase_1_System_Design/           # ML System Design Thinking
+├── Phase_2_Data_Strategy/           # Data Strategy & Engineering
+├── Phase_3_Feature_Engineering/     # Feature Engineering & Pipeline
+├── Phase_4_Baseline_First/          # Baseline First
+├── Phase_5_House_Prices_Predictor/  # House Prices Predictor (ZenML + MLflow)
+├── Phase_6_Enterprise_Pipeline/     # Enterprise Training Data Pipeline
+├── Phase_7_Monitoring_Ops/          # Monitoring & Production Ops
+├── Phase_8_Capstone/                # Capstone Project
+├── notebooks/                        # Shared Jupyter notebooks
 ├── prices-predictor-system/          # Phase 5 reference project
 │   ├── analysis/                     # EDA with strategy pattern
 │   ├── src/                          # Core logic (design patterns)
@@ -53,12 +65,12 @@ MLOPS_System_Design_Thinking/
 │   ├── run_pipeline.py
 │   ├── run_deployment.py
 │   └── sample_predict.py
-├── Transcripts (learning reference)
-│   ├── ML System Design & MLOps For Beginners.txt
-│   ├── Build ML Production Grade Projects.txt
-│   ├── First-Ever Production-Grade AI Project.txt
-│   └── This AI PROJECT Got My Student 50 LPA Job.txt
-└── (phases 1-8 folders created as you progress)
+└── Transcripts (learning reference)
+    ├── ML System Design & MLOps For Beginners.txt
+    ├── Build ML Production Grade Projects For Free.txt
+    ├── First-Ever Production-Grade AI Project.txt
+    ├── This AI PROJECT Got My Student 50 LPA Job.txt
+    └── End To End Deep Learning Project Using MLOPS DVC Pipeline.txt
 ```
 
 ## How to Use This Repo
@@ -80,8 +92,8 @@ MLOPS_System_Design_Thinking/
 
 ```bash
 # Clone
-git clone https://github.com/ashokmulchandani/MLOPS-System-Design-Ashok-1.git
-cd MLOPS-System-Design-Ashok-1
+git clone https://github.com/ashokmulchandani/MLOPS-End-End-Prediction-Pipeline-Ashok-1.git
+cd MLOPS-End-End-Prediction-Pipeline-Ashok-1
 
 # Virtual environment
 python -m venv .venv

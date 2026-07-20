@@ -36,3 +36,20 @@ data/*.csv
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Testing & Linting
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Saved models
+models/
+
+# Socket files
+*.sock
+
+# Python version
+.python-version
+
+# Logs
+*.log
