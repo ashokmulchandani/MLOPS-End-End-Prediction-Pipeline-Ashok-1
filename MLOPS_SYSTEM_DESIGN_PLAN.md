@@ -26,22 +26,24 @@
 
 ---
 
-## Phase 2: Data Strategy & Engineering (Data Beats Clever Models)
+## ✅ Phase 2: Data Strategy & Engineering (Data Beats Clever Models) — COMPLETE
 
 > "If your labels are wrong, if your sampling is biased, even the cleverest model will behave badly."
+> **Status:** All 10 steps complete. Interactive module: [`phase2_data_strategy.html`](phase2_data_strategy.html)
+> **Deliverables:** [`Phase_2_Data_Strategy/`](Phase_2_Data_Strategy/) — 10 template documents
 
-| Step | Task | Deliverable |
-|------|------|-------------|
-| 2.1 | Identify data sources — where does data come from? APIs, logs, databases, scraping? | Data source inventory |
-| 2.2 | Sampling strategy — simple random vs stratified vs weighted vs reservoir | Sampling plan document |
-| 2.3 | Label strategy — hand labels vs natural labels (clicks, completions) vs weak supervision vs active learning | Labeling plan |
-| 2.4 | Define implicit negatives — "no click within X seconds = negative" (choose window length) | Implicit negative rules |
-| 2.5 | Data lineage — track source, annotator, injection date, label version for every sample | Lineage schema design |
-| 2.6 | Handle class imbalance — oversampling, undersampling, SMOTE, class weights, focal loss | Imbalance strategy + code |
-| 2.7 | Train/validation/test split — time-based, stratified, entity-based (no leakage) | Split strategy document |
-| 2.8 | Data quality checks — schema validation, range checks, null rate monitoring, drift detection | Data validation pipeline |
-| 2.9 | Build a data versioning system with DVC — track data changes like code | DVC setup + `dvc.yaml` |
-| 2.10 | Create a data changelog — "changed sampling on this date, fixed labels on that date" | Changelog file |
+| Step | Task | Deliverable | Status |
+|------|------|-------------|--------|
+| 2.1 | Identify data sources — where does data come from? APIs, logs, databases, scraping? | Data source inventory | ✅ |
+| 2.2 | Sampling strategy — simple random vs stratified vs weighted vs reservoir | Sampling plan document | ✅ |
+| 2.3 | Label strategy — hand labels vs natural labels (clicks, completions) vs weak supervision vs active learning | Labeling plan | ✅ |
+| 2.4 | Define implicit negatives — "no click within X seconds = negative" (choose window length) | Implicit negative rules | ✅ |
+| 2.5 | Data lineage — track source, annotator, injection date, label version for every sample | Lineage schema design | ✅ |
+| 2.6 | Handle class imbalance — oversampling, undersampling, SMOTE, class weights, focal loss | Imbalance strategy + code | ✅ |
+| 2.7 | Train/validation/test split — time-based, stratified, entity-based (no leakage) | Split strategy document | ✅ |
+| 2.8 | Data quality checks — schema validation, range checks, null rate monitoring, drift detection | Data validation pipeline | ✅ |
+| 2.9 | Build a data versioning system with DVC — track data changes like code | DVC setup + `dvc.yaml` | ✅ |
+| 2.10 | Create a data changelog — "changed sampling on this date, fixed labels on that date" | Changelog file | ✅ |
 
 ---
 

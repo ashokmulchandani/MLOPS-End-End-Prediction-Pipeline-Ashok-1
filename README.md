@@ -7,7 +7,7 @@ An end-to-end MLOps and ML System Design learning project built from scratch fol
 | Phase | Topic | Status |
 |-------|-------|--------|
 | Phase 1 | ML System Design Thinking (problem framing, metrics, constraints) | ✅ Theory complete |
-| Phase 2 | Data Strategy & Engineering (sampling, labeling, versioning) | 📖 Plan ready |
+| Phase 2 | Data Strategy & Engineering (sampling, labeling, versioning) | ✅ Theory complete |
 | Phase 3 | Feature Engineering & Pipeline (scaling, encoding, leakage detection) | 📖 Plan ready |
 | Phase 4 | Baseline First (rules → simple model → measure → iterate) | 📖 Plan ready |
 | Phase 5 | **House Prices Predictor System** (ZenML + MLflow + Design Patterns) | ✅ Reference code |

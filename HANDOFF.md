@@ -24,14 +24,15 @@ All files are in: `C:\Users\ashok\OneDrive\NOblox\MLOPS_System_Design_Thinking\`
 
 ## Current State
 
-- **Phase 1 (ML System Design Thinking)**: ✅ Complete — `phase1_system_design.html` interactive module built (10 slides, 10 quizzes) + 10 template documents in `Phase_1_System_Design/` covering all 10 design steps applied to the House Prices Predictor.
-- **Phase 2-4**: Plans exist in `MLOPS_SYSTEM_DESIGN_PLAN.md` but no implementations yet.
+- **Phase 1 (ML System Design Thinking)**: ✅ Complete — `phase1_system_design.html` + 10 template documents in `Phase_1_System_Design/`.
+- **Phase 2 (Data Strategy & Engineering)**: ✅ Complete — `phase2_data_strategy.html` + 10 template documents in `Phase_2_Data_Strategy/`.
+- **Phase 3-4**: Plans exist in `MLOPS_SYSTEM_DESIGN_PLAN.md` but no implementations yet.
 - **Phase 5 (Prices Predictor)**: Reference project exists in `prices-predictor-system/` with full code (ZenML steps, MLflow tracking, design patterns). The code still has hardcoded paths from the original author (`ayushsingh`) that need updating for local execution.
 - **Phases 6-8**: Architecture plans exist but not implemented. These are stretch goals.
 
 ## What Needs to Happen Next
 
-1. **Phase 2 (Data Strategy)** — Build interactive HTML + template documents for data strategy & engineering
+1. **Phase 3 (Feature Engineering)** — Build interactive HTML + template documents
 2. **Set up and run Phase 5 locally** — Update hardcoded paths, set up ZenML/MLflow, run the training pipeline end-to-end
 3. **Phases 3-4** — Feature engineering and baseline first modules
 4. **Phase 6 (Enterprise Pipeline)** — Stretch goal after Phase 5 is mastered

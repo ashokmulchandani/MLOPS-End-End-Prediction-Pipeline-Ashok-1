@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 2: Data Strategy & Engineering — Interactive Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06090f; --bg-card: #0d1117; --bg-raised: #161b22;
+  --border: #21262d; --border-active: #30363d;
+  --text: #e6edf3; --text-dim: #8b949e; --text-muted: #484f58;
+  --cyan: #39d2ff; --cyan-bg: #39d2ff15; --cyan-border: #39d2ff40;
+  --amber: #ffb347; --amber-bg: #ffb34715;
+  --green: #3fb950; --green-bg: #3fb95015;
+  --magenta: #ff6ec7; --magenta-bg: #ff6ec715;
+  --red: #f85149; --violet: #a371f7;
+  --radius: 14px; --radius-sm: 8px;
+  --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+body.light {
+  --bg: #f6f8fa; --bg-card: #ffffff; --bg-raised: #e8ecf0;
+  --border: #d0d7de; --border-active: #afb8c1;
+  --text: #1f2328; --text-dim: #656d76; --text-muted: #8b949e;
+  --cyan: #0969da; --cyan-bg: #ddf4ff; --cyan-border: #54aeff;
+  --amber: #9a6700; --amber-bg: #fff8c5;
+  --green: #1a7f37; --green-bg: #dafbe1;
+  --magenta: #bf3989; --magenta-bg: #fbefff;
+  --red: #cf222e; --violet: #8250df;
+}
+body.light .topbar { background: rgba(246,248,250,0.9); }
+body.light .eq-box { background: rgba(0,0,0,0.03); }
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; line-height: 1.65; transition: background 0.3s, color 0.3s; }
+.bg-canvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
+.app { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:2rem; }
+.theme-toggle { position: fixed; top: 0.7rem; right: 2rem; z-index: 200; background: var(--bg-raised); border: 1px solid var(--border); color: var(--text); font-size: 1.1rem; cursor: pointer; padding: 0.35rem 0.6rem; border-radius: 6px; transition: var(--transition); font-family: 'JetBrains Mono', monospace; }
+.theme-toggle:hover { border-color: var(--cyan); color: var(--cyan); }
+.topbar { position: sticky; top:0; z-index:100; background: rgba(6,9,15,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0.6rem 2rem; display: flex; align-items: center; gap: 1rem; font-size: 0.8rem; }
+.topbar .logo { font-family: 'Orbitron', sans-serif; font-size: 0.7rem; letter-spacing: 0.15em; color: var(--cyan); white-space: nowrap; }
+.topbar .step-dots { display: flex; gap: 0.4rem; flex:1; justify-content: center; }
+.topbar .step-dot { width: 28px; height: 4px; border-radius: 2px; background: var(--border); transition: var(--transition); cursor: pointer; }
+.topbar .step-dot.done { background: var(--green); }
+.topbar .step-dot.active { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+.topbar .step-dot:hover { background: var(--text-dim); }
+.topbar .step-label { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--text-dim); white-space: nowrap; }
+.header { text-align: center; padding: 3rem 0 1rem; }
+.header .phase-badge { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.2em; color: var(--green); border: 1px solid var(--green-bg); border-radius: 100px; padding: 0.4em 1.4em; margin-bottom: 1rem; }
+.header h1 { font-family: 'Orbitron', sans-serif; font-size: clamp(1.6rem, 4vw, 2.6rem); font-weight: 700; background: linear-gradient(135deg, var(--cyan), var(--violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.5rem; }
+.header .tagline { color: var(--text-dim); font-size: 1rem; }
+.topic-list { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin: 1.5rem 0 1rem; }
+.topic-chip { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.04em; padding: 0.3rem 0.7rem; border-radius: 100px; border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; transition: var(--transition); background: transparent; }
+.topic-chip.visited { border-color: var(--green); color: var(--green); background: var(--green-bg); }
+.topic-chip.current { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-bg); box-shadow: 0 0 10px var(--cyan-border); }
+.topic-chip:hover { border-color: var(--text-dim); color: var(--text-dim); }
+.fun-fact { background: linear-gradient(135deg, var(--amber-bg), var(--magenta-bg)); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.65rem 1.2rem; margin-bottom: 1.5rem; font-size: 0.78rem; color: var(--text-dim); display: flex; align-items: center; gap: 0.6rem; }
+.fun-fact .bulb { font-size: 1.2rem; flex-shrink: 0; }
+.fun-fact strong { color: var(--amber); }
+.slide { animation: slideIn 0.35s ease; }
+@keyframes slideIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; }
+.card h2 { font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; color: var(--text); }
+.card h2 .num { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--cyan); background: var(--cyan-bg); border-radius: 6px; padding: 0.2em 0.6em; }
+.card p { color: var(--text-dim); margin-bottom: 1rem; font-size: 0.95rem; }
+.card h3 { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; color: var(--cyan); margin: 1.2rem 0 0.5rem; }
+.card ul, .card ol { color: var(--text-dim); padding-left: 1.5rem; margin-bottom: 1rem; font-size: 0.9rem; }
+.card ul li, .card ol li { margin-bottom: 0.4rem; }
+.eq-box { background: rgba(0,0,0,0.4); border-left: 3px solid var(--cyan); border-radius: var(--radius-sm); padding: 1.2rem 1.5rem; margin: 1rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; line-height: 1.8; color: var(--text); white-space: pre-wrap; overflow-x: auto; }
+.compare-grid { display: grid; gap: 1rem; margin: 1rem 0; }
+.compare-grid.col2 { grid-template-columns: 1fr 1fr; }
+.compare-grid.col3 { grid-template-columns: 1fr 1fr 1fr; }
+.compare-grid.col4 { grid-template-columns: repeat(4, 1fr); }
+.compare-card { background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.2rem; transition: var(--transition); }
+.compare-card:hover { transform: translateY(-3px); border-color: var(--border-active); }
+.compare-card h4 { font-family: 'Orbitron', sans-serif; font-size: 0.78rem; margin-bottom: 0.5rem; }
+.compare-card p { font-size: 0.82rem !important; color: var(--text-dim) !important; }
+.tag-row { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem; }
+.tag { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; padding: 0.2em 0.6em; border-radius: 100px; }
+.tag.low { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+.tag.med { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber); }
+.tag.high { background: #f8514920; color: var(--red); border: 1px solid var(--red); }
+.pipeline { display: flex; align-items: center; gap: 0.6rem; justify-content: center; flex-wrap: wrap; margin: 1.2rem 0; }
+.pipeline-stage { background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.8rem 1rem; text-align: center; transition: var(--transition); min-width: 100px; }
+.pipeline-stage.highlight { border-color: var(--cyan); background: var(--cyan-bg); }
+.pipeline-stage .stage-icon { font-size: 1.5rem; margin-bottom: 0.3rem; }
+.pipeline-stage .stage-name { font-family: 'Orbitron', sans-serif; font-size: 0.6rem; color: var(--cyan); line-height: 1.3; }
+.pipeline-stage .stage-desc { font-size: 0.68rem; color: var(--text-muted); margin-top: 0.2rem; }
+.pipeline-arrow { font-size: 1.4rem; color: var(--cyan); animation: arrowPulse 1.5s ease-in-out infinite; }
+@keyframes arrowPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+.data-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin: 1rem 0; }
+.data-types.two { grid-template-columns: repeat(2, 1fr); }
+.data-type-card { background: var(--bg-raised); border: 1px solid var(--border); border-top: 3px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; transition: var(--transition); cursor: default; }
+.data-type-card:nth-child(1) { border-top-color: var(--cyan); }
+.data-type-card:nth-child(2) { border-top-color: var(--amber); }
+.data-type-card:nth-child(3) { border-top-color: var(--magenta); }
+.data-type-card:nth-child(4) { border-top-color: var(--green); }
+.data-type-card:nth-child(5) { border-top-color: var(--violet); }
+.data-type-card:hover { transform: translateY(-3px); border-color: var(--border-active); }
+.data-type-card .dt-icon { font-size: 1.5rem; margin-bottom: 0.3rem; }
+.data-type-card h4 { font-family: 'Orbitron', sans-serif; font-size: 0.78rem; margin-bottom: 0.3rem; }
+.data-type-card p { font-size: 0.78rem !important; color: var(--text-muted) !important; margin-bottom: 0 !important; }
+.flashcard-wrap { perspective: 800px; margin: 1rem 0; cursor: pointer; }
+.flashcard { position: relative; width: 100%; min-height: 90px; transform-style: preserve-3d; transition: transform 0.5s; }
+.flashcard.flipped { transform: rotateY(180deg); }
+.flashcard .front, .flashcard .back { position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius-sm); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 1rem; }
+.flashcard .front { background: var(--bg-raised); border: 1px solid var(--border); font-family: 'Orbitron', sans-serif; font-size: 0.85rem; color: var(--cyan); }
+.flashcard .front .hint { font-family: 'DM Sans', sans-serif; font-size: 0.7rem; color: var(--text-muted); margin-top: 0.4rem; }
+.flashcard .back { background: var(--bg-raised); border: 1px solid var(--cyan); transform: rotateY(180deg); color: var(--text-dim); font-size: 0.85rem; text-align: center; }
+.quiz { background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.2rem; margin-top: 1.5rem; }
+.quiz .question { font-family: 'Orbitron', sans-serif; font-size: 0.82rem; color: var(--text); margin-bottom: 0.8rem; }
+.quiz .options { display: flex; flex-direction: column; gap: 0.4rem; }
+.quiz .option { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 0.6rem 1rem; font-size: 0.82rem; color: var(--text-dim); cursor: pointer; transition: var(--transition); }
+.quiz .option:hover { border-color: var(--cyan); color: var(--cyan); }
+.quiz .option.correct { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+.quiz .option.wrong { border-color: var(--red); background: #f8514920; color: var(--red); }
+.quiz .feedback { display: none; margin-top: 0.8rem; padding: 0.6rem 1rem; border-radius: 6px; font-size: 0.82rem; }
+.quiz .feedback.show { display: block; }
+.quiz .feedback.correct { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+.quiz .feedback.wrong { background: #f8514920; color: var(--red); border: 1px solid var(--red); }
+.step-flow { display: flex; align-items: center; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin: 1.2rem 0; }
+.flow-step { background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; text-align: center; font-size: 0.7rem; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
+.flow-arrow { color: var(--text-muted); font-size: 1rem; }
+.checklist { margin: 1rem 0; }
+.checklist .check-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; color: var(--text-dim); }
+.checklist .check-box { font-size: 1rem; flex-shrink: 0; }
+.ladder { display: flex; flex-direction: column; gap: 0.5rem; margin: 1rem 0; }
+.ladder-rung { display: flex; align-items: center; gap: 0.8rem; background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.7rem 1rem; }
+.ladder-rung .rung-icon { font-size: 1.3rem; flex-shrink: 0; }
+.ladder-rung .rung-bar { width: 6px; height: 36px; border-radius: 3px; flex-shrink: 0; }
+.nav-row { display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem; }
+.nav-btn { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; padding: 0.6rem 1.8rem; border-radius: 100px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); cursor: pointer; transition: var(--transition); }
+.nav-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.nav-btn.primary { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-bg); }
+@media (max-width: 768px) { .app { padding: 1rem; } .compare-grid.col3, .compare-grid.col4 { grid-template-columns: 1fr; } .data-types { grid-template-columns: 1fr; } .pipeline { flex-direction: column; } .pipeline-arrow { transform: rotate(90deg); } .header h1 { font-size: 1.3rem; } .card { padding: 1.2rem; } .theme-toggle { right: 0.5rem; top: 0.5rem; } }
+</style>
+</head>
+<body>
+
+<canvas class="bg-canvas" id="bgCanvas"></canvas>
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀️</button>
+
+<nav class="topbar">
+  <span class="logo">MLOPS — PHASE 2</span>
+  <div class="step-dots" id="stepDots"></div>
+  <span class="step-label" id="stepLabel">1/10</span>
+</nav>
+
+<div class="app">
+  <header class="header">
+    <div class="phase-badge">📖 IN PROGRESS</div>
+    <h1>Phase 2: Data Strategy & Engineering</h1>
+    <p class="tagline">Data beats clever models — strategy, sampling, labeling, versioning, and quality before training</p>
+  </header>
+
+  <div class="topic-list" id="topicChips"></div>
+  <div class="fun-fact" id="funFact"><span class="bulb">💡</span><span class="fact-text" id="funFactText"></span></div>
+  <div id="slideContainer"></div>
+
+  <div class="nav-row">
+    <button class="nav-btn" id="prevBtn" onclick="goTo(currentSlide-1)">← Previous</button>
+    <button class="nav-btn primary" id="nextBtn" onclick="goTo(currentSlide+1)">Next →</button>
+  </div>
+</div>
+
+<script>
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  document.getElementById('themeToggle').textContent = document.body.classList.contains('light') ? '🌙' : '☀️';
+  localStorage.setItem('mlops-p2-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+if (localStorage.getItem('mlops-p2-theme') === 'light') { document.body.classList.add('light'); document.getElementById('themeToggle').textContent = '🌙'; }
+
+(function() {
+  const c=document.getElementById('bgCanvas'),ctx=c.getContext('2d'); let p=[];
+  function rz(){ c.width=innerWidth; c.height=innerHeight; }
+  rz(); window.addEventListener('resize',rz);
+  for(let i=0;i<60;i++) p.push({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-0.5)*0.4,vy:(Math.random()-0.5)*0.4,r:Math.random()*2+0.5});
+  function anim(){
+    ctx.clearRect(0,0,c.width,c.height);
+    const isL=document.body.classList.contains('light'),lc=isL?'rgba(9,105,218,0.06)':'rgba(57,210,255,0.06)',dc=isL?'rgba(9,105,218,0.3)':'rgba(57,210,255,0.3)';
+    p.forEach(pp=>{pp.x+=pp.vx;pp.y+=pp.vy;if(pp.x<0)pp.x=c.width;if(pp.x>c.width)pp.x=0;if(pp.y<0)pp.y=c.height;if(pp.y>c.height)pp.y=0;});
+    for(let i=0;i<p.length;i++)for(let j=i+1;j<p.length;j++){const dx=p[i].x-p[j].x,dy=p[i].y-p[j].y;if(Math.sqrt(dx*dx+dy*dy)<100){ctx.beginPath();ctx.moveTo(p[i].x,p[i].y);ctx.lineTo(p[j].x,p[j].y);ctx.strokeStyle=lc;ctx.lineWidth=0.5;ctx.stroke();}}
+    p.forEach(pp=>{ctx.beginPath();ctx.arc(pp.x,pp.y,pp.r,0,Math.PI*2);ctx.fillStyle=dc;ctx.fill();});
+    requestAnimationFrame(anim);
+  }
+  anim();
+})();
+
+const slides = [
+  // ═══ SLIDE 1: Data Sources ═══
+  { id:'2.1', title:'Where Does Data Come From?',
+    fact:'<strong>If you don\'t know where your data came from, you don\'t know what biases it carries.</strong> Every dataset has a story — and the story matters.',
+    render(){return `<div class="slide"><div class="card">
+<h2><span class="num">2.1</span> Where Does Data Come From?</h2>
+<p>Before training, ask: <strong style="color:var(--cyan)">where did this data originate?</strong> The source determines what biases exist, what's missing, and whether the data can even answer your question.</p>
+
+<h3>🗺️ Data Source Types</h3>
+<div class="data-types">
+<div class="data-type-card"><div class="dt-icon">🗄️</div><h4>Internal Databases</h4><p>Your company's transactional data. Most reliable, but only captures existing customers.</p></div>
+<div class="data-type-card"><div class="dt-icon">🌐</div><h4>Public APIs</h4><p>Government, weather, financial data. Free but rate-limited and may have gaps.</p></div>
+<div class="data-type-card"><div class="dt-icon">📊</div><h4>Third-Party Datasets</h4><p>Kaggle, data marketplaces. Convenient but you don't control collection methodology.</p></div>
+<div class="data-type-card"><div class="dt-icon">🕸️</div><h4>Web Scraping</h4><p>Custom-collected from websites. Flexible but legally risky, fragile to site changes.</p></div>
+<div class="data-type-card"><div class="dt-icon">📝</div><h4>Human Labels</h4><p>Crowdsourced or expert annotations. Expensive, slow, but often the only way.</p></div>
+<div class="data-type-card"><div class="dt-icon">📡</div><h4>Sensor / IoT</h4><p>Real-time streams from devices. High volume, but noisy and needs calibration.</p></div>
+</div>
+
+<h3>🏠 House Prices: Data Source Inventory</h3>
+<div class="eq-box">
+<span style="color:var(--text-muted)">// Ames Housing Dataset — Source Analysis</span>
+<span style="color:var(--cyan)">Source:</span>       Kaggle / Ames City Assessor's Office (public records)
+<span style="color:var(--cyan)">Collector:</span>    Dean De Cock, Truman State University
+<span style="color:var(--cyan)">Time Period:</span>  2006–2010 (all sales in Ames, Iowa)
+<span style="color:var(--cyan)">Size:</span>         2,930 rows × 82 columns
+<span style="color:var(--cyan)">Schema:</span>       Mix of numerical (38) and categorical (43) + 1 target (SalePrice)
+
+<span style="color:var(--amber)">⚠️ Bias alert:</span> Only Ames, Iowa. Model will NOT generalize to NYC or rural Texas.
+<span style="color:var(--amber)">⚠️ Temporal:</span>   Data is 16+ years old. Post-pandemic market patterns are different.
+<span style="color:var(--amber)">⚠️ Missing:</span>    PoolQC is 99.7% null (most homes have no pool). Alley is 93% null.</div>
+
+<div class="quiz" id="quiz1"><div class="question">🧪 Your model uses only data from paying customers. What's the biggest risk?</div>
+<div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz1',this)">A. Survivorship bias — you have no data on users who churned or never signed up</div>
+<div class="option" onclick="checkQuiz('quiz1',this)">B. The data is too large to process efficiently</div>
+<div class="option" onclick="checkQuiz('quiz1',this)">C. Paying customers provide lower-quality data than free users</div>
+</div><div class="feedback" id="quiz1-fb"></div></div>
+</div></div>`;}},
+  // ═══ SLIDE 2: Sampling ═══
+  { id:'2.2', title:'Sampling Strategy',
+    fact:'<strong>How you sample determines what your model learns.</strong> A biased sample = a biased model. No amount of clever architecture can fix bad sampling.',
+    render(){return `<div class="slide"><div class="card">
+<h2><span class="num">2.2</span> Sampling Strategy</h2>
+<p>You rarely have ALL the data. Sampling is how you pick a <strong style="color:var(--cyan)">representative subset</strong>. Get this wrong, and your model learns the wrong patterns.</p>
+
+<div class="compare-grid col4">
+<div class="compare-card"><h4 style="color:var(--cyan)">🎲 Simple Random</h4><p>Every row has equal probability of being picked.</p><div class="tag-row"><span class="tag low">Easy</span><span class="tag low">Fair</span></div><p style="margin-top:0.5rem"><strong>Risk:</strong> Rare categories may get zero samples.</p></div>
+<div class="compare-card"><h4 style="color:var(--amber)">📐 Stratified</h4><p>Split into groups (strata), then sample proportionally from each.</p><div class="tag-row"><span class="tag med">Balanced</span></div><p style="margin-top:0.5rem"><strong>Best for:</strong> When you have important subgroups.</p></div>
+<div class="compare-card"><h4 style="color:var(--magenta)">⚖️ Weighted</h4><p>Give important rows higher probability of selection.</p><div class="tag-row"><span class="tag med">Targeted</span></div><p style="margin-top:0.5rem"><strong>Best for:</strong> Oversampling rare but important cases.</p></div>
+<div class="compare-card"><h4 style="color:var(--green)">🪣 Reservoir</h4><p>Sample from a STREAM when you don't know total size in advance.</p><div class="tag-row"><span class="tag low">Streaming</span></div><p style="margin-top:0.5rem"><strong>Best for:</strong> Real-time data pipelines.</p></div>
+</div>
+
+<h3>🏠 House Prices: Sampling Decision</h3>
+<div class="eq-box">
+<span style="color:var(--text-muted)">// Applied to Ames Housing dataset (2,930 rows)</span>
+<span style="color:var(--cyan)">Strategy:</span> Simple Random Split (80/20)
+<span style="color:var(--cyan)">Why not stratified?</span> SalePrice is continuous, not categorical.
+    We COULD bin prices into quartiles and stratify, but 2,930 rows is
+    small enough that random split is sufficient.
+<span style="color:var(--cyan)">Cross-validation:</span> 5-fold CV ensures every row is in test set exactly once.
+<span style="color:var(--green)">→ This is the right choice for regression with a small dataset.</span></div>
+
+<div class="quiz" id="quiz2"><div class="question">🧪 You have 1M users but only 100 are from Alaska. Random sampling gives you 0 Alaskans in training. What should you use?</div>
+<div class="options">
+<div class="option" onclick="checkQuiz('quiz2',this)">A. Bigger random sample — eventually you'll catch some</div>
+<div class="option" data-correct="true" onclick="checkQuiz('quiz2',this)">B. Stratified sampling — guarantee every region is represented proportionally</div>
+<div class="option" onclick="checkQuiz('quiz2',this)">C. Weighted sampling — oversample Alaskans 1000x</div>
+</div><div class="feedback" id="quiz2-fb"></div></div>
+</div></div>`;}},
+  // ═══ SLIDE 3: Label Strategy ═══
+  { id:'2.3', title:'Label Strategy',
+    fact:'<strong>Labels are the most expensive part of ML.</strong> A $10M GPU cluster is useless without labels to train on. Think hard about how you get them.',
+    render(){return `<div class="slide"><div class="card">
+<h2><span class="num">2.3</span> Label Strategy</h2>
+<p>Supervised ML needs labels. But <strong style="color:var(--cyan)">how</strong> you get them dramatically affects cost, quality, and speed. Pick the wrong strategy and your project dies in the labeling phase.</p>
+
+<div class="data-types">
+<div class="data-type-card"><div class="dt-icon">✍️</div><h4>Hand Labels</h4><p style="font-size:0.7rem;color:var(--amber);margin-bottom:0.2rem">High quality, high cost</p><p>Humans manually label each example. Used for medical imaging, legal docs.</p></div>
+<div class="data-type-card"><div class="dt-icon">🖱️</div><h4>Natural Labels</h4><p style="font-size:0.7rem;color:var(--green);margin-bottom:0.2rem">Free, auto-generated</p><p>User actions ARE the label. Click = positive. Purchase = positive. No human needed.</p></div>
+<div class="data-type-card"><div class="dt-icon">🏷️</div><h4>Weak Supervision</h4><p style="font-size:0.7rem;color:var(--amber);margin-bottom:0.2rem">Noisy but scalable</p><p>Use rules/heuristics to auto-label, then train on the noisy labels.</p></div>
+<div class="data-type-card"><div class="dt-icon">🔍</div><h4>Active Learning</h4><p style="font-size:0.7rem;color:var(--cyan);margin-bottom:0.2rem">Smart sampling</p><p>Model picks the MOST confusing examples for humans to label. Fewer labels needed.</p></div>
+<div class="data-type-card"><div class="dt-icon">🤖</div><h4>LLM-as-Labeler</h4><p style="font-size:0.7rem;color:var(--magenta);margin-bottom:0.2rem">New, cost-effective</p><p>GPT-4/Claude labels your data. Good for text classification. Validate with humans.</p></div>
+<div class="data-type-card"><div class="dt-icon">📋</div><h4>Existing Records</h4><p style="font-size:0.7rem;color:var(--green);margin-bottom:0.2rem">Already labeled</p><p>Historical data where the outcome is already recorded. The House Prices approach.</p></div>
+</div>
+
+<h3>🏠 House Prices: Label Strategy</h3>
+<div class="eq-box">
+<span style="color:var(--text-muted)">// We use Existing Records — the simplest, best-case scenario</span>
+<span style="color:var(--cyan)">Label:</span>     SalePrice (actual sale price in USD)
+<span style="color:var(--cyan)">Source:</span>    Public property records — no labeling cost
+<span style="color:var(--cyan)">Quality:</span>   HIGH — legally recorded sale prices, minimal noise
+<span style="color:var(--cyan)">Timeline:</span>  Label available ~30-60 days after listing (closing period)
+
+<span style="color:var(--green)">→ This is the IDEAL scenario: labels are free, accurate, and historical.</span>
+<span style="color:var(--text-muted)">   Not all projects are this lucky.</span></div>
+
+<div class="quiz" id="quiz3"><div class="question">🧪 Which labeling strategy has the highest risk of garbage-in-garbage-out?</div>
+<div class="options">
+<div class="option" onclick="checkQuiz('quiz3',this)">A. Expert hand labels — too expensive to scale</div>
+<div class="option" data-correct="true" onclick="checkQuiz('quiz3',this)">B. LLM-as-Labeler without human validation — model biases become label biases silently</div>
+<div class="option" onclick="checkQuiz('quiz3',this)">C. Natural labels — users don't always mean what they click</div>
+</div><div class="feedback" id="quiz3-fb"></div></div>
+</div></div>`;}},
+  // ═══ SLIDE 4: Implicit Negatives ═══
+  { id:'2.4', title:'Implicit Negatives',
+    fact:'<strong>Not all negatives are labeled.</strong> In recommendation systems, "no click" is a negative — but you must define the time window carefully.',
+    render(){return `<div class="slide"><div class="card">
+<h2><span class="num">2.4</span> Implicit Negatives</h2>
+<p>In many ML systems, you only have <strong style="color:var(--cyan)">positive labels</strong> (user clicked, user purchased). But for training, you also need negative examples. Where do they come from? <strong style="color:var(--amber)">You infer them.</strong></p>
+
+<h3>⏱️ The Time Window Problem</h3>
+<div class="compare-grid col2">
+<div class="compare-card"><h4 style="color:var(--red)">🔴 Window Too Short (1 sec)</h4><p>User didn't click in 1 second → labeled "not interested". But they hadn't even READ the title yet. False negative.</p><div class="tag-row"><span class="tag high">High noise</span></div></div>
+<div class="compare-card"><h4 style="color:var(--red)">🔴 Window Too Long (30 days)</h4><p>User didn't click in 30 days → labeled "not interested". But they were on vacation. Training data is stale and inaccurate.</p><div class="tag-row"><span class="tag high">Stale labels</span></div></div>
+</div>
+<div class="compare-grid col2">
+<div class="compare-card"><h4 style="color:var(--green)">🟢 Good Window (10 min)</h4><p>User viewed listing, didn't click for 10 min → likely not interested in THIS listing specifically.</p><div class="tag-row"><span class="tag low">Reasonable</span></div></div>
+<div class="compare-card"><h4 style="color:var(--cyan)">🔵 Even Better (A/B test)</h4><p>Show item to 1000 users. If click rate < baseline click rate → implicit negative signal.</p><div class="tag-row"><span class="tag low">Statistical</span></div></div>
+</div>
+
+<h3>🏠 House Prices: Implicit Negatives?</h3>
+<div class="eq-box">
+<span style="color:var(--text-muted)">// Short answer: Not applicable to this project.</span>
+<span style="color:var(--cyan)">Why?</span> We have EXPLICIT labels — the actual sale price. Every row has a
+    clear ground truth. No need to infer anything.
+
+<span style="color:var(--amber)">Where WOULD this apply?</span>
+<span style="color:var(--cyan)">•</span> A real estate recommendation system: "Users who viewed X also liked Y"
+<span style="color:var(--cyan)">•</span> Impressions → clicks → saves → inquiries → offers
+<span style="color:var(--cyan)">•</span> "Showed listing to user, they scrolled past in < 3 seconds" = implicit negative
+<span style="color:var(--cyan)">•</span> "Showed listing, user saved it" = implicit positive
+
+<span style="color:var(--text-muted)">// For NOW: Skip this step. Come back when you build the recommendation system.</span></div>
+
+<div class="quiz" id="quiz4"><div class="question">🧪 A video platform labels "watched < 5 seconds" as negative. What's the risk?</div>
+<div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz4',this)">A. Autoplay videos get false negatives — the user didn't CHOOSE to watch but gets labeled "not interested"</div>
+<div class="option" onclick="checkQuiz('quiz4',this)">B. The model will recommend only short videos</div>
+<div class="option" onclick="checkQuiz('quiz4',this)">C. 5 seconds is too long for short-form content</div>
+</div><div class="feedback" id="quiz4-fb"></div></div>
+</div></div>`;}},
+  // ═══ SLIDE 5: Data Lineage ═══
+  { id:'2.5', title:'Data Lineage',
+    fact:'<strong>Every row in your training set has a story.</strong> If you can\'t trace a prediction back to its training data, you can\'t debug production failures.',
+    render(){return `<div class="slide"><div class="card">
+<h2><span class="num">2.5</span> Data Lineage</h2>
+<p>Data lineage means <strong style="color:var(--cyan)">tracking the full journey</strong> of every training example: where it came from, who touched it, when, and what version of the label it carries.</p>
+
+<div class="pipeline">
+<div class="pipeline-stage"><div class="stage-icon">📥</div><div class="stage-name">SOURCE</div><div class="stage-desc">Where data<br>originated</div></div>
+<span class="pipeline-arrow">→</span>
+<div class="pipeline-stage"><div class="stage-icon">👤</div><div class="stage-name">ANNOTATOR</div><div class="stage-desc">Who created<br>the label</div></div>
+<span class="pipeline-arrow">→</span>
+<div class="pipeline-stage"><div class="stage-icon">📅</div><div class="stage-name">INJECTION</div><div class="stage-desc">When it entered<br>the dataset</div></div>
+<span class="pipeline-arrow">→</span>
+<div class="pipeline-stage"><div class="stage-icon">🏷️</div><div class="stage-name">LABEL VER</div><div class="stage-desc">Which labeling<br>schema was used</div></div>
+<span class="pipeline-arrow">→</span>
+<div class="pipeline-stage highlight"><div class="stage-icon">📊</div><div class="stage-name">TRAINING<br>ROW</div><div class="stage-desc">The final<br>example</div></div>
+</div>
+
+<h3>🏠 House Prices: Lineage Schema</h3>
+<div class="eq-box">
+<span style="color:var(--text-muted)">// Each row in the Ames dataset should carry:</span>
+<span style="color:var(--cyan)">source:</span>        "Ames City Assessor, parcel ID 12345"
+<span style="color:var(--cyan)">collector:</span>     "Dean De Cock, Truman State University"
+<span style="color:var(--cyan)">sale_date:</span>     "2008-06-15"
+<span style="color:var(--cyan)">recorded_date:</span> "2008-08-01"  ← when it hit the database
+<span style="color:var(--cyan)">label_version:</span> "v1.0 — raw sale price, not inflation-adjusted"
+<span style="color:var(--cyan)">data_version:</span>  "ames_v1.0 — original Kaggle release"
+
+<span style="color:var(--amber)">⚠️ WITHOUT THIS:</span> If predictions suddenly shift, you can't check
+    whether the TRAINING DATA changed or the MODEL changed.</div>
+
+<div class="quiz" id="quiz5"><div class="question">🧪 A model's accuracy drops 5%. You check: model hasn't changed. What's the NEXT thing to check with lineage?</div>
+<div class="options">
+<div class="option" onclick="checkQuiz('quiz5',this)">A. Rewrite the model architecture — it's clearly failing</div>
+<div class="option" data-correct="true" onclick="checkQuiz('quiz5',this)">B. Trace whether the training data source, schema, or label definition changed since the last retrain</div>
+<div class="option" onclick="checkQuiz('quiz5',this)">C. Add more layers to the model to compensate</div>
+</div><div class="feedback" id="quiz5-fb"></div></div>
+</div></div>`;}},
+  // ═══ SLIDE 6: Class Imbalance ═══
+  { id:'2.6', title:'Class Imbalance',
+    fact:'<strong>When 99% of your data is "normal" and 1% is "fraud,"</strong> a model that always predicts "normal" is 99% accurate — and completely useless.',
+    render(){return `<div class="slide"><div class="card">
+<h2><span class="num">2.6</span> Class Imbalance</h2>
+<p>When one class dominates, models learn to <strong style="color:var(--red)">ignore the minority class</strong>. A model that predicts "not fraud" for every transaction gets 99% accuracy. It also catches exactly ZERO fraud cases.</p>
+
+<h3>⚖️ Five Ways to Handle Imbalance</h3>
+<div class="ladder">
+<div class="ladder-rung"><div class="rung-icon">✂️</div><div class="rung-bar" style="background:var(--red)"></div><div style="flex:1"><strong style="color:var(--text)">Undersampling</strong> — <span style="color:var(--text-dim);font-size:0.8rem">Delete majority class rows until balanced</span></div><span style="font-family:mono;font-size:0.7rem;color:var(--red)">⚠️ Loses data</span></div>
+<div class="ladder-rung"><div class="rung-icon">📋</div><div class="rung-bar" style="background:var(--amber)"></div><div style="flex:1"><strong style="color:var(--text)">Oversampling</strong> — <span style="color:var(--text-dim);font-size:0.8rem">Duplicate minority class rows</span></div><span style="font-family:mono;font-size:0.7rem;color:var(--amber)">⚠️ Overfitting risk</span></div>
+<div class="ladder-rung"><div class="rung-icon">🧬</div><div class="rung-bar" style="background:var(--cyan)"></div><div style="flex:1"><strong style="color:var(--text)">SMOTE</strong> — <span style="color:var(--text-dim);font-size:0.8rem">Synthesize NEW minority examples by interpolating between neighbors</span></div><span style="font-family:mono;font-size:0.7rem;color:var(--cyan)">✅ Better</span></div>
+<div class="ladder-rung"><div class="rung-icon">⚖️</div><div class="rung-bar" style="background:var(--violet)"></div><div style="flex:1"><strong style="color:var(--text)">Class Weights</strong> — <span style="color:var(--text-dim);font-size:0.8rem">Penalize wrong predictions on minority class more heavily</span></div><span style="font-family:mono;font-size:0.7rem;color:var(--violet)">✅ No data change</span></div>
+<div class="ladder-rung"><div class="rung-icon">🎯</div><div class="rung-bar" style="background:var(--green)"></div><div style="flex:1"><strong style="color:var(--text)">Focal Loss</strong> — <span style="color:var(--text-dim);font-size:0.8rem">Down-weight easy examples, focus on hard ones. Auto-balances.</span></div><span style="font-family:mono;font-size:0.7rem;color:var(--green)">✅ State-of-art</span></div>
+</div>
+
+<h3>🏠 House Prices: Is Imbalance Relevant?</h3>
+<div class="eq-box">
+<span style="color:var(--text-muted)">// House Prices is REGRESSION, not classification.</span>
+<span style="color:var(--cyan)">Class imbalance applies to categorical targets:</span> fraud/not-fraud, churn/not-churn
+<span style="color:var(--cyan)">Regression imbalance:</span> If 90% of houses are $100K-$300K and only 1% are $500K+,
+    the model may underpredict expensive homes.
+
+<span style="color:var(--amber)">Mitigation for regression:</span>
+<span style="color:var(--cyan)">•</span> Log-transform SalePrice (compresses the tail, already planned in Phase 5)
+<span style="color:var(--cyan)">•</span> Sample weights: give expensive homes higher weight in loss function
+<span style="color:var(--cyan)">•</span> Stratified sampling by price quartile for train/test split
+
+<span style="color:var(--text-muted)">For NOW: This step is more relevant to CLASSIFICATION projects.
+    For regression, log-transform handles most of the "imbalance" problem.</span></div>
+
+<div class="quiz" id="quiz6"><div class="question">🧪 A fraud detection model has 99.9% accuracy. Why is this suspicious?</div>
+<div class="options">
+<div class="option" onclick="checkQuiz('quiz6',this)">A. No model should be that accurate — it must be overfitting</div>
+<div class="option" data-correct="true" onclick="checkQuiz('quiz6',this)">B. If fraud is 0.1% of transactions, always predicting "not fraud" gives 99.9% accuracy with zero actual fraud caught</div>
+<div class="option" onclick="checkQuiz('quiz6',this)">C. The model is using too many features for such high accuracy</div>
+</div><div class="feedback" id="quiz6-fb"></div></div>
+</div></div>`;}},
+  // ═══ SLIDE 7: Train/Test Split ═══
+  { id:'2.7', title:'Train / Validation / Test Split',
+    fact:'<strong>The most common data leakage: splitting randomly when you should split by time.</strong> If future data leaks into training, your metrics are fake.',
+    render(){return `<div class="slide"><div class="card">
+<h2><span class="num">2.7</span> Train / Validation / Test Split</h2>
+<p>You MUST test on data the model has <strong style="color:var(--red)">never seen</strong>. But "never seen" means different things depending on your data structure.</p>
+
+<div class="compare-grid col3">
+<div class="compare-card"><h4 style="color:var(--cyan)">🎲 Random Split</h4><p>Shuffle all rows, split 70/15/15 randomly.</p><div class="tag-row"><span class="tag low">Simplest</span></div><p style="margin-top:0.5rem;color:var(--cyan) !important">✅ House Prices: rows are independent houses. Random is fine.</p></div>
+<div class="compare-card"><h4 style="color:var(--amber)">📅 Time-Based Split</h4><p>Train on older data, test on newer data.</p><div class="tag-row"><span class="tag low">Realistic</span></div><p style="margin-top:0.5rem;color:var(--amber) !important">✅ Stock prediction, sales forecasting. MUST use this or you leak the future into training.</p></div>
+<div class="compare-card"><h4 style="color:var(--magenta)">👤 Entity-Based Split</h4><p>All rows for User #123 go to the SAME split.</p><div class="tag-row"><span class="tag med">Harder</span></div><p style="margin-top:0.5rem;color:var(--magenta) !important">✅ User recommendation: if user's data is in both train AND test, you're cheating.</p></div>
+</div>
+
+<h3>⚠️ The Leakage Test</h3>
+<div class="flashcard-wrap" onclick="this.querySelector('.flashcard').classList.toggle('flipped')"><div class="flashcard"><div class="front"><span>Can a data point in the test set be predicted from data points in the training set?</span><span class="hint">Click to reveal ↻</span></div><div class="back"><strong>If YES → you have leakage.</strong> Example: User's Jan-June purchases in training, July purchases in test — the model already knows this user's patterns. The test metrics will be artificially high and will NOT hold in production on NEW users.</div></div></div>
+
+<h3>🏠 House Prices: Split Decision</h3>
+<div class="eq-box">
+<span style="color:var(--text-muted)">// Ames Housing: houses are independent. Random split is correct.</span>
+<span style="color:var(--cyan)">Strategy:</span>    Simple Random Split
+<span style="color:var(--cyan)">Ratio:</span>       80% train / 20% test
+<span style="color:var(--cyan)">Validation:</span>  5-fold cross-validation on the 80% training portion
+<span style="color:var(--cyan)">Why not time?</span> Sale years (2006-2010) are in the data, but market
+    conditions are similar across those years in Ames, Iowa.
+<span style="color:var(--green)">→ This is the right call for cross-sectional housing data.</span></div>
+
+<div class="quiz" id="quiz7"><div class="question">🧪 You're building a model to predict which users will churn NEXT month. You randomly split 80/20. What's wrong?</div>
+<div class="options">
+<div class="option" onclick="checkQuiz('quiz7',this)">A. Nothing — random split is always fine</div>
+<div class="option" data-correct="true" onclick="checkQuiz('quiz7',this)">B. The same user could appear in BOTH train and test — the model "memorizes" the user, not learn churn patterns. Production accuracy will be much lower.</div>
+<div class="option" onclick="checkQuiz('quiz7',this)">C. 80/20 is too aggressive — should be 70/30 for churn</div>
+</div><div class="feedback" id="quiz7-fb"></div></div>
+</div></div>`;}},
+  // ═══ SLIDE 8: Data Quality ═══
+  { id:'2.8', title:'Data Quality Checks',
+    fact:'<strong>Garbage in, garbage out is the first law of ML.</strong> A data quality pipeline catches garbage BEFORE it poisons your model.',
+    render(){return `<div class="slide"><div class="card">
+<h2><span class="num">2.8</span> Data Quality Checks</h2>
+<p>Before ANY row enters training, it should pass <strong style="color:var(--cyan)">automated quality gates</strong>. This is not optional in production — it's the difference between a model that degrades gracefully and one that fails silently.</p>
+
+<h3>🔍 Four Layers of Data Quality</h3>
+<div class="data-types">
+<div class="data-type-card"><div class="dt-icon">📐</div><h4>Schema Validation</h4><p>Does every row have the right columns? Right types? No extra/missing columns?</p><p style="color:var(--cyan);font-size:0.7rem;margin-top:0.3rem">House Prices: 82 columns expected, all present ✅</p></div>
+<div class="data-type-card"><div class="dt-icon">📏</div><h4>Range Checks</h4><p>Are values within physically possible bounds? Year Built = 2027? Bedrooms = -3?</p><p style="color:var(--cyan);font-size:0.7rem;margin-top:0.3rem">House Prices: Year Built 1872-2010, Lot Area 1,300-215,245 ✅</p></div>
+<div class="data-type-card"><div class="dt-icon">🕳️</div><h4>Null Rate Monitor</h4><p>Is any feature suddenly 50%+ null? Did a data source stop sending a column?</p><p style="color:var(--cyan);font-size:0.7rem;margin-top:0.3rem">House Prices: PoolQC 99.7% null — EXPECTED. Alley 93% null — EXPECTED.</p></div>
+<div class="data-type-card"><div class="dt-icon">📊</div><h4>Drift Detection</h4><p>Has the distribution of inputs shifted from training? PSI > 0.1 = investigate.</p><p style="color:var(--cyan);font-size:0.7rem;margin-top:0.3rem">House Prices: Monthly PSI check on GrLivArea, OverallQual, LotArea</p></div>
+</div>
+
+<h3>🏠 House Prices: Quality Gate</h3>
+<div class="eq-box">
+<span style="color:var(--text-muted)">// Automated checks that run BEFORE each training run:</span>
+<span style="color:var(--green)">[PASS]</span> Schema: 82 features + SalePrice target — all columns present
+<span style="color:var(--green)">[PASS]</span> Types: 38 numerical + 43 categorical + 1 target — as expected
+<span style="color:var(--amber)">[WARN]</span> Nulls: PoolQC=99.7%, Alley=93%, Fence=80%, Fireplace=47% —
+      these are EXPECTED (most homes have no pool/alley/fence).
+      If null rate SUDDENLY changes → alert!
+<span style="color:var(--green)">[PASS]</span> Range: SalePrice $12,789–$755,000 (no negative prices, no $1 outliers)
+<span style="color:var(--green)">[PASS]</span> Duplicates: 0 duplicate rows found</div>
+
+<div class="quiz" id="quiz8"><div class="question">🧪 A data pipeline that normally has 5% nulls in "income" suddenly shows 45% nulls. What's the FIRST action?</div>
+<div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz8',this)">A. Pause training — investigate the data source. A field may have been renamed or a service may be down.</div>
+<div class="option" onclick="checkQuiz('quiz8',this)">B. Impute the missing values with the median and continue training</div>
+<div class="option" onclick="checkQuiz('quiz8',this)">C. Drop the income column — it's unreliable now</div>
+</div><div class="feedback" id="quiz8-fb"></div></div>
+</div></div>`;}},
+  // ═══ SLIDE 9: DVC ═══
+  { id:'2.9', title:'Data Versioning with DVC',
+    fact:'<strong>"Which version of the data was this model trained on?"</strong> If you can\'t answer this in 10 seconds, you need DVC.',
+    render(){return `<div class="slide"><div class="card">
+<h2><span class="num">2.9</span> Data Versioning with DVC</h2>
+<p>Git is great for code. It's <strong style="color:var(--red)">terrible for data</strong> (a 1GB CSV will bloat your repo). DVC (Data Version Control) solves this: it tracks data files like Git, but stores the actual data elsewhere (S3, GCS, local).</p>
+
+<h3>🔄 How DVC Works</h3>
+<div class="step-flow">
+<div class="flow-step">📦<br>dvc init</div><span class="flow-arrow">→</span>
+<div class="flow-step">➕<br>dvc add<br>data.csv</div><span class="flow-arrow">→</span>
+<div class="flow-step">📝<br>git commit<br>.dvc file</div><span class="flow-arrow">→</span>
+<div class="flow-step">☁️<br>dvc push<br>to remote</div><span class="flow-arrow">→</span>
+<div class="flow-step">🔄<br>dvc pull<br>to restore</div>
+</div>
+
+<div class="eq-box">
+<span style="color:var(--text-muted)"># What actually happens:</span>
+<span style="color:var(--cyan)">$ dvc add data/AmesHousing.csv</span>
+→ Creates <span style="color:var(--amber)">data/AmesHousing.csv.dvc</span> (tiny text file with hash)
+→ Adds <span style="color:var(--amber)">data/AmesHousing.csv</span> to .gitignore
+→ The .dvc file is committed to Git. The actual CSV goes to DVC cache.
+
+<span style="color:var(--cyan)">$ git commit -m "Add Ames Housing v1.0"</span>
+→ Only the .dvc file is committed (a few bytes)
+→ Git history now tracks WHICH version of the data was used
+
+<span style="color:var(--cyan)">$ dvc push</span>
+→ Uploads the actual CSV to remote storage (S3/GCS/local)
+→ Anyone can <span style="color:var(--cyan)">dvc pull</span> to get the exact same data</div>
+
+<h3>🏠 House Prices: DVC Setup</h3>
+<div class="eq-box">
+<span style="color:var(--text-muted)">// Track the Ames Housing dataset with DVC:</span>
+<span style="color:var(--cyan)">1.</span> dvc init
+<span style="color:var(--cyan)">2.</span> dvc add extracted_data/AmesHousing.csv
+<span style="color:var(--cyan)">3.</span> git add extracted_data/AmesHousing.csv.dvc extracted_data/.gitignore
+<span style="color:var(--cyan)">4.</span> git commit -m "Track Ames Housing v1.0 with DVC"
+<span style="color:var(--cyan)">5.</span> dvc remote add -d myremote s3://my-bucket/dvc-store
+<span style="color:var(--cyan)">6.</span> dvc push
+
+<span style="color:var(--green)">Now:</span> Any team member can <span style="color:var(--cyan)">git clone</span> + <span style="color:var(--cyan)">dvc pull</span>
+    and get the EXACT data this model was trained on.</div>
+
+<div class="quiz" id="quiz9"><div class="question">🧪 You change the data cleaning logic and regenerate the dataset. What DVC command do you run?</div>
+<div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz9',this)">A. dvc add data.csv → git commit the new .dvc file. DVC will detect the hash changed and version it.</div>
+<div class="option" onclick="checkQuiz('quiz9',this)">B. dvc init again to reset the tracking</div>
+<div class="option" onclick="checkQuiz('quiz9',this)">C. git add data.csv directly — DVC isn't needed for small changes</div>
+</div><div class="feedback" id="quiz9-fb"></div></div>
+</div></div>`;}},
+  // ═══ SLIDE 10: Data Changelog ═══
+  { id:'2.10', title:'The Data Changelog',
+    fact:'<strong>"Why did model accuracy drop?"</strong> is often answered by "someone changed the data pipeline last Tuesday." A changelog tells you who, what, and when.',
+    render(){return `<div class="slide"><div class="card">
+<h2><span class="num">2.10</span> The Data Changelog</h2>
+<p>A data changelog is a <strong style="color:var(--cyan)">human-readable log</strong> of every meaningful change to your dataset. DVC tracks the files; the changelog explains the <strong style="color:var(--amber)">WHY</strong>.</p>
+
+<h3>🏠 House Prices: Sample Changelog</h3>
+<div class="eq-box">
+<span style="color:var(--text-muted)"># DATA CHANGELOG — Ames Housing Dataset</span>
+<span style="color:var(--text-muted)">═══════════════════════════════════════════════</span>
+
+<span style="color:var(--cyan)">[2026-07-21] v1.0 — Initial import</span>
+  • Downloaded ames_housing.csv from Kaggle (Dean De Cock)
+  • 2,930 rows × 82 features + SalePrice target
+  • Verified: no duplicate rows, SalePrice range $12K–$755K
+  • DVC hash: a1b2c3d4
+
+<span style="color:var(--cyan)">[2026-07-22] v1.1 — Outlier removal</span>
+  • Removed 12 rows with Z-score > 3 on SalePrice
+  • Removed 5 rows with GrLivArea > 4,000 sqft (commercial properties)
+  • New count: 2,913 rows
+  • DVC hash: e5f6g7h8
+  • <span style="color:var(--amber)">⚠️ Model retrained — R² changed from 0.85 → 0.87</span>
+
+<span style="color:var(--cyan)">[2026-08-15] v1.2 — Feature engineering</span>
+  • Added: Log_SalePrice (log-transformed target)
+  • Added: House_Age (2026 − Year_Built)
+  • Dropped: PoolQC (99.7% null, not useful)
+  • New count: 2,913 rows × 84 features
+  • DVC hash: i9j0k1l2
+  • <span style="color:var(--amber)">⚠️ Breaking change — retrain required</span></div>
+
+<h3>📋 Changelog Template</h3>
+<div class="checklist">
+<div class="check-item"><span class="check-box">📅</span> <strong>Date</strong> — when the change happened</div>
+<div class="check-item"><span class="check-box">🏷️</span> <strong>Version</strong> — semantic version of the dataset</div>
+<div class="check-item"><span class="check-box">📝</span> <strong>What changed</strong> — rows added/removed, features added/dropped, labels updated</div>
+<div class="check-item"><span class="check-box">❓</span> <strong>Why</strong> — the REASON (not just "cleaned data")</div>
+<div class="check-item"><span class="check-box">#️⃣</span> <strong>DVC hash</strong> — link to the exact data version</div>
+<div class="check-item"><span class="check-box">⚠️</span> <strong>Impact</strong> — did model metrics change after retraining?</div>
+</div>
+
+<h3>✅ Phase 2 Complete — What You've Learned</h3>
+<div class="data-types">
+<div class="data-type-card"><div class="dt-icon">🗺️</div><h4>Source It</h4><p>Know where data comes from and what biases it carries</p></div>
+<div class="data-type-card"><div class="dt-icon">🎯</div><h4>Sample Right</h4><p>Random vs stratified vs time-based — pick based on data structure</p></div>
+<div class="data-type-card"><div class="dt-icon">🏷️</div><h4>Label Smart</h4><p>Hand vs natural vs weak vs active — cost vs quality tradeoff</p></div>
+<div class="data-type-card"><div class="dt-icon">🔗</div><h4>Trace Lineage</h4><p>Every row has a story — track source, annotator, date, version</p></div>
+<div class="data-type-card"><div class="dt-icon">⚖️</div><h4>Balance Classes</h4><p>99% accuracy can mean 0% fraud caught — handle imbalance</p></div>
+<div class="data-type-card"><div class="dt-icon">📂</div><h4>Version Data</h4><p>DVC + changelog = never wonder "what data was this trained on?"</p></div>
+</div>
+
+<div class="quiz" id="quiz10"><div class="question">🧪 You discover the training data had 500 duplicate rows. You remove them and retrain. What goes in the changelog?</div>
+<div class="options">
+<div class="option" onclick="checkQuiz('quiz10',this)">A. "Cleaned data"</div>
+<div class="option" data-correct="true" onclick="checkQuiz('quiz10',this)">B. Date, version bump, "Removed 500 duplicate rows (3% of dataset). Caused by ingestion bug on 2026-07-15. Model retrained — R² dropped 0.87→0.84 (duplicates were inflating metrics)."</div>
+<div class="option" onclick="checkQuiz('quiz10',this)">C. Just bump the DVC hash — the changelog is overkill for duplicates</div>
+</div><div class="feedback" id="quiz10-fb"></div></div>
+</div></div>`;}}
+];
+
+window.checkQuiz=function(qid,el){
+  const q=document.getElementById(qid); if(q.dataset.answered==='true')return;
+  q.querySelectorAll('.option').forEach(o=>{if(o.dataset.correct==='true')o.classList.add('correct');});
+  if(el.dataset.correct!=='true')el.classList.add('wrong');
+  const fb=document.getElementById(qid+'-fb'),ok=el.dataset.correct==='true';
+  fb.className='feedback show '+(ok?'correct':'wrong');
+  fb.textContent=ok?'✅ Correct! Well done.':'❌ Not quite. The correct answer is highlighted in green.';
+  q.dataset.answered='true';
+};
+
+let currentSlide=0; const visitedSlides=new Set([0]);
+function renderSlide(i){
+  currentSlide=i; visitedSlides.add(i);
+  document.getElementById('slideContainer').innerHTML=slides[i].render();
+  updateDots(); updateChips();
+  document.getElementById('funFactText').innerHTML='<strong>'+slides[i].id+':</strong> '+slides[i].fact;
+  document.getElementById('stepLabel').textContent=(i+1)+'/'+slides.length;
+  document.getElementById('prevBtn').disabled=i===0;
+  const nb=document.getElementById('nextBtn');
+  if(i===slides.length-1){nb.textContent='✓ Complete';nb.style.background='var(--green-bg)';nb.style.borderColor='var(--green)';nb.style.color='var(--green)';}
+  else {nb.textContent='Next →';nb.style.background='var(--cyan-bg)';nb.style.borderColor='var(--cyan)';nb.style.color='var(--cyan)';}
+  document.getElementById('slideContainer').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function goTo(i){if(i>=0&&i<slides.length)renderSlide(i);}
+function updateDots(){document.getElementById('stepDots').innerHTML=slides.map((s,i)=>'<div class="step-dot '+(i===currentSlide?'active':visitedSlides.has(i)?'done':'')+'" onclick="goTo('+i+')" title="'+s.id+': '+s.title+'"></div>').join('');}
+function updateChips(){document.getElementById('topicChips').innerHTML=slides.map((s,i)=>'<span class="topic-chip '+(i===currentSlide?'current':visitedSlides.has(i)?'visited':'')+'" onclick="goTo('+i+')">'+s.id+' '+s.title+'</span>').join('');}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'&&currentSlide<slides.length-1)goTo(currentSlide+1);if(e.key==='ArrowLeft'&&currentSlide>0)goTo(currentSlide-1);});
+renderSlide(0);
+</script>
+</body>
+</html>
