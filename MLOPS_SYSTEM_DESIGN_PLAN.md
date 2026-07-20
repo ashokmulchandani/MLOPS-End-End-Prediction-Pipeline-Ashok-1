@@ -5,22 +5,24 @@
 
 ---
 
-## Phase 1: ML System Design Thinking (Before You Write Code)
+## ✅ Phase 1: ML System Design Thinking (Before You Write Code) — COMPLETE
 
 > "Most ML projects fail at the definition stage, not the modeling stage."
+> **Status:** All 10 steps complete. Interactive module: [`phase1_system_design.html`](phase1_system_design.html)
+> **Deliverables:** [`Phase_1_System_Design/`](Phase_1_System_Design/) — 10 template documents
 
-| Step | Task | Deliverable |
-|------|------|-------------|
-| 1.1 | Pick a problem — decide if it even needs ML (6-word test: Learn, Complex, Patterns, Existing data, Predictions, Unseen data) | 1-page decision doc |
-| 1.2 | Compare 3 options: Rule/heuristic vs Simple ML model vs "Not Now" (collect data first) | Comparison table with cost/risk/value |
-| 1.3 | Frame the problem precisely: "Given input X, predict Y, for user Z, at decision time T, to optimize business outcome B" | Problem framing statement |
-| 1.4 | Build the metrics ladder: Business metric → Product metric → Model metric → Feature/data quality metric | Metrics ladder diagram |
-| 1.5 | Choose 1 North Star metric + 2-3 guardrail metrics | Documented metric choices with rationale |
-| 1.6 | Anticipate failures — list 5 ways the model could fail before writing code | Failure mode analysis doc |
-| 1.7 | Define the feedback loop: Prediction → User behavior → Logging → Labels → Training data → New model | Feedback loop diagram |
-| 1.8 | Identify operational constraints: latency budget, throughput, privacy/GDPR, interpretability, cost | Constraints checklist |
-| 1.9 | Design the rollback path — what happens if model misbehaves? | Rollback plan |
-| 1.10 | Write the 1-page ML proposal (problem, value, risk, baseline, metrics, constraints) | ML proposal document |
+| Step | Task | Deliverable | Status |
+|------|------|-------------|--------|
+| 1.1 | Pick a problem — decide if it even needs ML (6-word test: Learn, Complex, Patterns, Existing data, Predictions, Unseen data) | 1-page decision doc | ✅ |
+| 1.2 | Compare 3 options: Rule/heuristic vs Simple ML model vs "Not Now" (collect data first) | Comparison table with cost/risk/value | ✅ |
+| 1.3 | Frame the problem precisely: "Given input X, predict Y, for user Z, at decision time T, to optimize business outcome B" | Problem framing statement | ✅ |
+| 1.4 | Build the metrics ladder: Business metric → Product metric → Model metric → Feature/data quality metric | Metrics ladder diagram | ✅ |
+| 1.5 | Choose 1 North Star metric + 2-3 guardrail metrics | Documented metric choices with rationale | ✅ |
+| 1.6 | Anticipate failures — list 5 ways the model could fail before writing code | Failure mode analysis doc | ✅ |
+| 1.7 | Define the feedback loop: Prediction → User behavior → Logging → Labels → Training data → New model | Feedback loop diagram | ✅ |
+| 1.8 | Identify operational constraints: latency budget, throughput, privacy/GDPR, interpretability, cost | Constraints checklist | ✅ |
+| 1.9 | Design the rollback path — what happens if model misbehaves? | Rollback plan | ✅ |
+| 1.10 | Write the 1-page ML proposal (problem, value, risk, baseline, metrics, constraints) | ML proposal document | ✅ |
 
 ---
 

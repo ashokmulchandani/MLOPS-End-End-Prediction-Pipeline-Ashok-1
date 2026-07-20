@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MLOps & ML System Design — Learning Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06090f;
+  --bg-card: #0d1117;
+  --bg-raised: #161b22;
+  --border: #21262d;
+  --border-active: #30363d;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --text-muted: #484f58;
+  --cyan: #39d2ff;
+  --cyan-bg: #39d2ff15;
+  --cyan-border: #39d2ff40;
+  --amber: #ffb347;
+  --amber-bg: #ffb34715;
+  --green: #3fb950;
+  --green-bg: #3fb95015;
+  --magenta: #ff6ec7;
+  --violet: #a371f7;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.65;
+}
+
+.bg-canvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
+
+.app { position:relative; z-index:1; max-width:900px; margin:0 auto; padding:2rem; }
+
+/* ── Header ── */
+.header {
+  text-align: center; padding: 3rem 0 2rem;
+}
+.header h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--cyan), var(--violet));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+.header .subtitle {
+  color: var(--text-dim); font-size: 0.95rem;
+}
+
+/* ── Stats Row ── */
+.stats {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 0.8rem; margin-bottom: 2rem;
+}
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1rem; text-align: center;
+}
+.stat-card .stat-num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.6rem; font-weight: 700;
+}
+.stat-card .stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem; color: var(--text-muted);
+  letter-spacing: 0.08em; margin-top: 0.2rem;
+}
+.stat-card.done { border-top: 3px solid var(--green); }
+.stat-card.done .stat-num { color: var(--green); }
+.stat-card.active { border-top: 3px solid var(--cyan); }
+.stat-card.active .stat-num { color: var(--cyan); }
+.stat-card.pending { border-top: 3px solid var(--border); }
+.stat-card.pending .stat-num { color: var(--text-muted); }
+.stat-card.total { border-top: 3px solid var(--violet); }
+.stat-card.total .stat-num { color: var(--violet); }
+
+/* ── Phase Grid ── */
+.section-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.85rem; color: var(--cyan);
+  margin-bottom: 1rem; letter-spacing: 0.05em;
+}
+.phase-grid {
+  display: grid; gap: 0.8rem;
+}
+.phase-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.5rem;
+  display: flex; align-items: center; gap: 1rem;
+  transition: var(--transition, 0.3s ease);
+  text-decoration: none; color: inherit;
+}
+.phase-card:hover { border-color: var(--cyan); transform: translateX(4px); }
+.phase-card.locked { opacity: 0.5; pointer-events: none; }
+.phase-card .phase-num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.4rem; font-weight: 700;
+  min-width: 60px; text-align: center;
+}
+.phase-card .phase-info { flex: 1; }
+.phase-card .phase-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.85rem; font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+.phase-card .phase-desc {
+  font-size: 0.78rem; color: var(--text-muted);
+}
+.phase-card .phase-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem; padding: 0.3em 0.8em;
+  border-radius: 100px; letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.badge-done { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+.badge-active { background: var(--cyan-bg); color: var(--cyan); border: 1px solid var(--cyan); }
+.badge-pending { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+
+/* ── Quick Links ── */
+.quick-links {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem;
+  margin-top: 2rem;
+}
+.quick-link {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1rem; text-align: center;
+  text-decoration: none; color: var(--text);
+  transition: 0.3s ease;
+}
+.quick-link:hover { border-color: var(--cyan); }
+.quick-link .ql-icon { font-size: 1.5rem; margin-bottom: 0.3rem; }
+.quick-link .ql-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem; color: var(--text-dim);
+}
+
+/* ── Footer ── */
+.footer {
+  text-align: center; padding: 2rem 0 1rem;
+  font-size: 0.7rem; color: var(--text-muted);
+}
+.footer a { color: var(--cyan); text-decoration: none; }
+.footer a:hover { text-decoration: underline; }
+
+@media (max-width: 600px) {
+  .app { padding: 1rem; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .phase-card { flex-direction: column; text-align: center; }
+  .quick-links { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<canvas class="bg-canvas" id="bgCanvas"></canvas>
+
+<div class="app">
+  <header class="header">
+    <h1>MLOps & ML System Design</h1>
+    <p class="subtitle">Think → Build → Scale — a hands-on learning journey from system design to production ML</p>
+  </header>
+
+  <div class="stats">
+    <div class="stat-card done">
+      <div class="stat-num">1</div>
+      <div class="stat-label">DONE</div>
+    </div>
+    <div class="stat-card active">
+      <div class="stat-num">0</div>
+      <div class="stat-label">IN PROGRESS</div>
+    </div>
+    <div class="stat-card pending">
+      <div class="stat-num">7</div>
+      <div class="stat-label">PENDING</div>
+    </div>
+    <div class="stat-card total">
+      <div class="stat-num">8</div>
+      <div class="stat-label">TOTAL</div>
+    </div>
+  </div>
+
+  <h2 class="section-title">📚 PHASES</h2>
+  <div class="phase-grid">
+
+    <a href="phase1_system_design.html" class="phase-card">
+      <div class="phase-num" style="color:var(--green)">01</div>
+      <div class="phase-info">
+        <div class="phase-title">ML System Design Thinking</div>
+        <div class="phase-desc">Problem framing, metrics ladder, failure analysis, ML proposal — think before you build</div>
+      </div>
+      <span class="phase-badge badge-done">✅ DONE</span>
+    </a>
+
+    <div class="phase-card locked">
+      <div class="phase-num" style="color:var(--text-muted)">02</div>
+      <div class="phase-info">
+        <div class="phase-title">Data Strategy & Engineering</div>
+        <div class="phase-desc">Sampling, labeling, data lineage, class imbalance, DVC versioning, data quality</div>
+      </div>
+      <span class="phase-badge badge-pending">📖 PLAN</span>
+    </div>
+
+    <div class="phase-card locked">
+      <div class="phase-num" style="color:var(--text-muted)">03</div>
+      <div class="phase-info">
+        <div class="phase-title">Feature Engineering & Pipeline</div>
+        <div class="phase-desc">Missing values, scaling, encoding, feature crosses, leakage detection, train/serve parity</div>
+      </div>
+      <span class="phase-badge badge-pending">📖 PLAN</span>
+    </div>
+
+    <div class="phase-card locked">
+      <div class="phase-num" style="color:var(--text-muted)">04</div>
+      <div class="phase-info">
+        <div class="phase-title">Baseline First</div>
+        <div class="phase-desc">Rule-based baseline, simple model, A/B test, shadow mode, ship and iterate</div>
+      </div>
+      <span class="phase-badge badge-pending">📖 PLAN</span>
+    </div>
+
+    <a href="prices-predictor-system/" class="phase-card">
+      <div class="phase-num" style="color:var(--cyan)">05</div>
+      <div class="phase-info">
+        <div class="phase-title">House Prices Predictor System</div>
+        <div class="phase-desc">ZenML + MLflow + Design Patterns — the core hands-on MLOps pipeline project</div>
+      </div>
+      <span class="phase-badge badge-active">💻 REF CODE</span>
+    </a>
+
+    <div class="phase-card locked">
+      <div class="phase-num" style="color:var(--text-muted)">06</div>
+      <div class="phase-info">
+        <div class="phase-title">Enterprise Training Data Pipeline</div>
+        <div class="phase-desc">Async document loading, AI generation, quality evaluation, Streamlit dashboard</div>
+      </div>
+      <span class="phase-badge badge-pending">📖 PLAN</span>
+    </div>
+
+    <div class="phase-card locked">
+      <div class="phase-num" style="color:var(--text-muted)">07</div>
+      <div class="phase-info">
+        <div class="phase-title">Monitoring & Production Ops</div>
+        <div class="phase-desc">Drift detection, retraining triggers, shadow/canary deployments, model registry</div>
+      </div>
+      <span class="phase-badge badge-pending">📖 PLAN</span>
+    </div>
+
+    <div class="phase-card locked">
+      <div class="phase-num" style="color:var(--text-muted)">08</div>
+      <div class="phase-info">
+        <div class="phase-title">Capstone Project</div>
+        <div class="phase-desc">Customer churn prediction — apply all phases end-to-end independently</div>
+      </div>
+      <span class="phase-badge badge-pending">📖 PLAN</span>
+    </div>
+
+  </div>
+
+  <div class="quick-links">
+    <a href="MLOPS_SYSTEM_DESIGN_PLAN.md" class="quick-link">
+      <div class="ql-icon">📋</div>
+      <div class="ql-label">Master Plan</div>
+    </a>
+    <a href="https://github.com/ashokmulchandani/MLOPS-End-End-Prediction-Pipeline-Ashok-1" class="quick-link">
+      <div class="ql-icon">🔗</div>
+      <div class="ql-label">GitHub Repo</div>
+    </a>
+    <a href="CLAUDE.md" class="quick-link">
+      <div class="ql-icon">🤖</div>
+      <div class="ql-label">CLAUDE.md</div>
+    </a>
+  </div>
+
+  <div class="footer">
+    Built by <a href="https://github.com/ashokmulchandani">Ashok Mulchandani</a> · MLOps System Design Learning · 2026
+  </div>
+</div>
+
+<script>
+// ── Background Particles ──
+(function() {
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize(); window.addEventListener('resize', resize);
+  for (let i = 0; i < 50; i++) {
+    particles.push({
+      x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 1.5 + 0.5, a: Math.random() * 0.3 + 0.1,
+    });
+  }
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = canvas.width; if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0;
+    });
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y;
+        if (Math.sqrt(dx*dx + dy*dy) < 100) {
+          ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = 'rgba(57,210,255,0.05)'; ctx.lineWidth = 0.4; ctx.stroke();
+        }
+      }
+    }
+    particles.forEach(p => {
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(57,210,255,0.25)'; ctx.fill();
+    });
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
+</script>
+</body>
+</html>
