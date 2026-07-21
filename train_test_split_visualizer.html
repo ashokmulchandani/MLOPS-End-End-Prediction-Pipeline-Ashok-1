@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Train / Test Split — Interactive Visualizer</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06090f; --bg-card: #0d1117; --bg-raised: #161b22;
+  --border: #21262d; --text: #e6edf3; --text-dim: #8b949e; --text-muted: #484f58;
+  --cyan: #39d2ff; --amber: #ffb347; --green: #3fb950; --red: #f85149;
+  --violet: #a371f7; --magenta: #ff6ec7;
+}
+body.light {
+  --bg: #f6f8fa; --bg-card: #ffffff; --bg-raised: #e8ecf0;
+  --border: #d0d7de; --text: #1f2328; --text-dim: #656d76; --text-muted: #8b949e;
+  --cyan: #0969da; --amber: #9a6700; --green: #1a7f37; --red: #cf222e;
+  --violet: #8250df; --magenta: #bf3989;
+}
+body.light .explanation { background: #e8ecf0; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; transition: background 0.3s, color 0.3s; }
+.theme-toggle { position: fixed; top: 1rem; right: 1.5rem; z-index: 999; background: var(--bg-raised); border: 1px solid var(--border); color: var(--text); font-size: 1.1rem; cursor: pointer; padding: 0.35rem 0.6rem; border-radius: 6px; transition: 0.2s; font-family: 'JetBrains Mono', monospace; }
+.theme-toggle:hover { border-color: var(--cyan); color: var(--cyan); }
+.app { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+.header { text-align: center; padding: 2rem 0 0.5rem; }
+.header h1 { font-family: 'Orbitron', sans-serif; font-size: clamp(1.2rem, 3vw, 1.8rem); background: linear-gradient(135deg, var(--cyan), var(--violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.3rem; }
+.header p { color: var(--text-dim); font-size: 0.9rem; }
+
+.scenario-tabs { display: flex; gap: 0.5rem; justify-content: center; margin: 1.2rem 0; flex-wrap: wrap; }
+.scenario-tab { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; padding: 0.5rem 1rem; border-radius: 100px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-dim); cursor: pointer; transition: 0.2s; }
+.scenario-tab:hover { border-color: var(--cyan); color: var(--cyan); }
+.scenario-tab.active { border-color: var(--cyan); background: #39d2ff15; color: var(--cyan); box-shadow: 0 0 10px #39d2ff20; }
+
+.main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 0.5rem; }
+@media(max-width:900px) { .main-layout { grid-template-columns: 1fr; } }
+
+.split-method-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
+.split-method-card:hover { border-color: var(--cyan); }
+.split-method-card.active { border-color: var(--cyan); box-shadow: 0 0 20px #39d2ff15; }
+.split-method-card .method-badge { font-family: 'Orbitron', sans-serif; font-size: 0.7rem; margin-bottom: 0.5rem; }
+.split-method-card h3 { font-family: 'Orbitron', sans-serif; font-size: 0.95rem; margin-bottom: 0.3rem; }
+.split-method-card .method-desc { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 0.8rem; }
+.split-method-card canvas { display: block; border-radius: 8px; background: var(--bg); }
+
+.leakage-alert { margin-top: 0.8rem; padding: 0.5rem 0.8rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; display: none; }
+.leakage-alert.show { display: block; }
+.leakage-alert.safe { background: #3fb95010; border: 1px solid var(--green); color: var(--green); }
+.leakage-alert.danger { background: #f8514910; border: 1px solid var(--red); color: var(--red); animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+.bottom-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; }
+@media(max-width:900px) { .bottom-panel { grid-template-columns: 1fr; } }
+.info-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; }
+.info-card h4 { font-family: 'Orbitron', sans-serif; font-size: 0.75rem; margin-bottom: 0.5rem; color: var(--cyan); }
+.info-card p, .info-card li { font-size: 0.8rem; color: var(--text-dim); line-height: 1.6; }
+.info-card ul { padding-left: 1.2rem; }
+.info-card li { margin-bottom: 0.3rem; }
+
+.legend { display: flex; gap: 1.5rem; justify-content: center; margin-bottom: 0.5rem; font-size: 0.7rem; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 0.4rem; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--text-dim); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.legend-dot.train { background: var(--cyan); }
+.legend-dot.test { background: var(--amber); }
+.legend-dot.leak { background: var(--red); }
+.legend-sq { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark/light theme">☀️</button>
+
+<div class="app">
+  <header class="header">
+    <h1>Train / Test Split — Interactive Visualizer</h1>
+    <p>Same data, three split strategies. Click each card to see the difference — and the leakage risk.</p>
+  </header>
+
+  <div class="scenario-tabs">
+    <button class="scenario-tab active" onclick="switchScenario('houses')">🏠 House Prices</button>
+    <button class="scenario-tab" onclick="switchScenario('stocks')">📈 Stock Prices</button>
+    <button class="scenario-tab" onclick="switchScenario('users')">👤 User Churn</button>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot train"></div> Training Set</div>
+    <div class="legend-item"><div class="legend-dot test"></div> Test Set</div>
+    <div class="legend-item"><div class="legend-dot leak"></div> Leaked Data</div>
+    <div class="legend-item"><div class="legend-sq" style="background:var(--cyan);opacity:0.5"></div> User A</div>
+    <div class="legend-item"><div class="legend-sq" style="background:var(--amber);opacity:0.5"></div> User B</div>
+    <div class="legend-item"><div class="legend-sq" style="background:var(--magenta);opacity:0.5"></div> User C</div>
+  </div>
+
+  <div class="main-layout">
+    <!-- LEFT: Random Split -->
+    <div class="split-method-card active" id="cardRandom" onclick="selectMethod('random')">
+      <div class="method-badge" style="color:var(--red)">METHOD 1 — HIGH RISK FOR TIME/USER DATA</div>
+      <h3>🎲 Random Split</h3>
+      <div class="method-desc">Shuffle ALL rows randomly, then split 80/20. Every row has equal chance of landing in test.</div>
+      <canvas id="canvasRandom" width="520" height="200"></canvas>
+      <div class="leakage-alert" id="alertRandom"></div>
+    </div>
+
+    <!-- RIGHT: Time-Based Split -->
+    <div class="split-method-card" id="cardTime" onclick="selectMethod('time')">
+      <div class="method-badge" style="color:var(--cyan)">METHOD 2 — CORRECT FOR TIME DATA</div>
+      <h3>📅 Time-Based Split</h3>
+      <div class="method-desc">Train on OLDER data, test on NEWER data. The model is tested on the future — like real life.</div>
+      <canvas id="canvasTime" width="520" height="200"></canvas>
+      <div class="leakage-alert" id="alertTime"></div>
+    </div>
+  </div>
+  <div class="main-layout" style="margin-top:1rem">
+    <!-- Entity-Based Split -->
+    <div class="split-method-card" id="cardEntity" onclick="selectMethod('entity')" style="grid-column: 1/-1; max-width: 540px; margin: 0 auto;">
+      <div class="method-badge" style="color:var(--magenta)">METHOD 3 — CORRECT FOR USER DATA</div>
+      <h3>👤 Entity-Based Split</h3>
+      <div class="method-desc">All rows for the SAME user stay together — either ALL in training or ALL in test. No user appears in both.</div>
+      <canvas id="canvasEntity" width="520" height="200"></canvas>
+      <div class="leakage-alert" id="alertEntity"></div>
+    </div>
+  </div>
+
+  <div class="bottom-panel">
+    <div class="info-card">
+      <h4>✅ When Random Split is SAFE</h4>
+      <ul>
+        <li><strong>House Prices:</strong> Each house is independent. House #123 doesn't help predict House #456.</li>
+        <li><strong>Images:</strong> Each photo is independent (unless same object from different angles).</li>
+        <li><strong>Manufacturing:</strong> Each product is independent on the assembly line.</li>
+      </ul>
+      <p style="margin-top:0.5rem;color:var(--green)"><strong>Rule:</strong> If rows don't influence each other → random split is fine.</p>
+    </div>
+    <div class="info-card">
+      <h4>❌ When Random Split is DANGEROUS</h4>
+      <ul>
+        <li><strong>Stock Prices:</strong> Tomorrow's price in training, yesterday's in test = model sees the future.</li>
+        <li><strong>User Data:</strong> Same user's Jan data in training, June data in test = model memorizes the user, not the pattern.</li>
+        <li><strong>Medical:</strong> Same patient's multiple visits split across train/test = cheating.</li>
+      </ul>
+      <p style="margin-top:0.5rem;color:var(--red)"><strong>Rule:</strong> If rows ARE connected (by time or entity) → random split = leakage.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  document.getElementById('themeToggle').textContent = document.body.classList.contains('light') ? '🌙' : '☀️';
+  localStorage.setItem('split-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+  setTimeout(drawAll, 50);
+}
+if (localStorage.getItem('split-theme') === 'light') {
+  document.body.classList.add('light');
+  document.getElementById('themeToggle').textContent = '🌙';
+}
+
+let scenario = 'houses';
+let activeMethod = 'random';
+
+function switchScenario(s) {
+  scenario = s;
+  document.querySelectorAll('.scenario-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  drawAll();
+}
+
+function selectMethod(m) {
+  activeMethod = m;
+  document.querySelectorAll('.split-method-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('card' + m.charAt(0).toUpperCase() + m.slice(1)).classList.add('active');
+  drawAll();
+}
+
+// ── Draw Functions ──
+const W = 520, H = 200;
+
+function drawAll() {
+  drawRandom();
+  drawTime();
+  drawEntity();
+  updateAlerts();
+}
+
+function getSplitPoint() { return Math.floor(W * 0.75); }
+
+function drawRandom() {
+  const c = document.getElementById('canvasRandom');
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  // Background zones
+  const split = getSplitPoint();
+  ctx.fillStyle = 'rgba(57,210,255,0.06)'; ctx.fillRect(0, 0, split, H);
+  ctx.fillStyle = 'rgba(255,179,71,0.06)'; ctx.fillRect(split, 0, W - split, H);
+
+  // Labels
+  ctx.font = '11px "Orbitron"'; ctx.fillStyle = 'rgba(57,210,255,0.5)'; ctx.fillText('TRAINING (80%)', 10, 20);
+  ctx.fillStyle = 'rgba(255,179,71,0.5)'; ctx.fillText('TEST (20%)', split + 10, 20);
+
+  if (scenario === 'houses') {
+    // Houses: scattered randomly everywhere — random split is fine
+    drawHouseDots(ctx, 0, 0, W, H, split, true);
+  } else if (scenario === 'stocks') {
+    // Stocks: time series — random split scatters future into training
+    drawStockDots(ctx, 0, 0, W, H, split, true);
+  } else if (scenario === 'users') {
+    // Users: 3 users, each has multiple dots. Random split breaks user apart.
+    drawUserDots(ctx, 0, 0, W, H, split, true);
+  }
+
+  // Divider
+  ctx.strokeStyle = 'rgba(139,148,158,0.4)'; ctx.lineWidth = 2; ctx.setLineDash([6, 4]);
+  ctx.beginPath(); ctx.moveTo(split, 0); ctx.lineTo(split, H); ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawTime() {
+  const c = document.getElementById('canvasTime');
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  const split = getSplitPoint();
+  ctx.fillStyle = 'rgba(57,210,255,0.06)'; ctx.fillRect(0, 0, split, H);
+  ctx.fillStyle = 'rgba(255,179,71,0.06)'; ctx.fillRect(split, 0, W - split, H);
+
+  ctx.font = '11px "Orbitron"'; ctx.fillStyle = 'rgba(57,210,255,0.5)'; ctx.fillText('TRAINING (older)', 10, 20);
+  ctx.fillStyle = 'rgba(255,179,71,0.5)'; ctx.fillText('TEST (newer)', split + 10, 20);
+  ctx.font = '9px "JetBrains Mono"'; ctx.fillStyle = 'rgba(139,148,158,0.4)';
+  ctx.fillText('← Jun', 130, 17); ctx.fillText('Jul →', 190, 17); ctx.fillText('← Aug', 280, 17);
+  ctx.fillText('Sep →', 340, 17); ctx.fillText('← Oct', 430, 17); ctx.fillText('Nov →', 490, 17);
+
+  if (scenario === 'houses') {
+    // Houses: time split is unnecessary but not harmful
+    drawHouseDots(ctx, 0, 0, W, H, split, false);
+  } else if (scenario === 'stocks') {
+    // Stocks: perfect — older in train, newer in test
+    drawStockDots(ctx, 0, 0, W, H, split, false);
+  } else if (scenario === 'users') {
+    drawUserDots(ctx, 0, 0, W, H, split, false);
+  }
+
+  ctx.strokeStyle = 'rgba(57,210,255,0.6)'; ctx.lineWidth = 2; ctx.setLineDash([6, 4]);
+  ctx.beginPath(); ctx.moveTo(split, 0); ctx.lineTo(split, H); ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawEntity() {
+  const c = document.getElementById('canvasEntity');
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  const split = getSplitPoint();
+  ctx.fillStyle = 'rgba(57,210,255,0.06)'; ctx.fillRect(0, 0, split, H);
+  ctx.fillStyle = 'rgba(255,179,71,0.06)'; ctx.fillRect(split, 0, W - split, H);
+
+  ctx.font = '11px "Orbitron"'; ctx.fillStyle = 'rgba(57,210,255,0.5)'; ctx.fillText('TRAINING (80% of users)', 10, 20);
+  ctx.fillStyle = 'rgba(255,179,71,0.5)'; ctx.fillText('TEST (20% of users)', split + 10, 20);
+
+  if (scenario === 'houses') {
+    drawHouseDots(ctx, 0, 0, W, H, split, false);
+  } else if (scenario === 'stocks') {
+    drawStockDots(ctx, 0, 0, W, H, split, false);
+  } else if (scenario === 'users') {
+    // Entity split: each user's dots stay TOGETHER
+    drawUserDotsEntity(ctx, split);
+  }
+
+  ctx.strokeStyle = 'rgba(165,113,247,0.5)'; ctx.lineWidth = 2; ctx.setLineDash([6, 4]);
+  ctx.beginPath(); ctx.moveTo(split, 0); ctx.lineTo(split, H); ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawHouseDots(ctx, x0, y0, w, h, split, shuffle) {
+  const dots = [];
+  for (let i = 0; i < 35; i++) {
+    dots.push({ x: 20 + Math.random() * (w - 40), y: 30 + Math.random() * (h - 50), train: true });
+  }
+
+  if (shuffle) {
+    // Random split: dots scattered both sides
+    dots.forEach(d => { d.train = d.x < split; });
+  } else {
+    // Time/Entity split on houses: all dots before split are train, after are test
+    // But houses are independent — no visual issue either way
+    dots.forEach(d => { d.train = d.x < split; });
+  }
+
+  dots.forEach(d => {
+    ctx.beginPath();
+    ctx.arc(d.x, d.y, 6, 0, Math.PI * 2);
+    ctx.fillStyle = d.train ? 'rgba(57,210,255,0.8)' : 'rgba(255,179,71,0.8)';
+    ctx.fill();
+  });
+}
+
+function drawStockDots(ctx, x0, y0, w, h, split, shuffle) {
+  // Stock data: trend line going up to the right (time →)
+  const dots = [];
+  for (let i = 0; i < 40; i++) {
+    const x = 15 + (i / 39) * (w - 30);
+    const y = 140 - (i / 39) * 80 + Math.sin(i * 0.5) * 20 + (Math.random() - 0.5) * 15;
+    dots.push({ x, y, train: true, timeIndex: i });
+  }
+
+  if (shuffle) {
+    // RANDOM SPLIT ON TIME SERIES = DISASTER
+    // Future dots leak into training, past dots go to test
+    dots.forEach(d => { d.train = d.x < split; });
+    // Make some future dots red to show leakage
+  } else {
+    // TIME-BASED SPLIT = CORRECT
+    dots.forEach(d => { d.train = d.x < split; });
+  }
+
+  // Draw trend line
+  ctx.strokeStyle = 'rgba(139,148,158,0.25)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(dots[0].x, dots[0].y);
+  for (let i = 1; i < dots.length; i++) ctx.lineTo(dots[i].x, dots[i].y);
+  ctx.stroke();
+
+  // Draw dots
+  dots.forEach(d => {
+    ctx.beginPath();
+    ctx.arc(d.x, d.y, 5, 0, Math.PI * 2);
+
+    if (shuffle && d.timeIndex > 30 && d.train) {
+      // Future data leaked into training = RED
+      ctx.fillStyle = 'rgba(248,81,73,0.9)';
+      ctx.strokeStyle = 'rgba(248,81,73,0.5)'; ctx.lineWidth = 2; ctx.stroke();
+    } else if (shuffle && d.timeIndex < 10 && !d.train) {
+      // Past data in test = also wrong
+      ctx.fillStyle = 'rgba(248,81,73,0.6)';
+    } else {
+      ctx.fillStyle = d.train ? 'rgba(57,210,255,0.8)' : 'rgba(255,179,71,0.8)';
+    }
+    ctx.fill();
+  });
+
+  // Labels for leakage visualization
+  if (shuffle) {
+    ctx.font = 'bold 9px "JetBrains Mono"';
+    // Find a leaked future dot
+    const leakDot = dots.find(d => d.timeIndex > 30 && d.train);
+    if (leakDot) {
+      ctx.fillStyle = 'rgba(248,81,73,0.9)';
+      ctx.fillText('↖ FUTURE', leakDot.x - 50, leakDot.y - 10);
+      ctx.fillText('LEAKED!', leakDot.x - 50, leakDot.y + 2);
+    }
+  }
+}
+
+function drawUserDots(ctx, x0, y0, w, h, split, shuffle) {
+  // 3 users: A (cyan tint), B (amber tint), C (magenta tint)
+  // Each user has ~12 data points over time (left to right)
+  const users = [
+    { color: 'rgba(57,210,255,0.8)', xBase: 0.1, yBase: 0.25, points: [] },
+    { color: 'rgba(255,179,71,0.8)', xBase: 0.1, yBase: 0.5, points: [] },
+    { color: 'rgba(191,57,137,0.8)', xBase: 0.1, yBase: 0.75, points: [] }
+  ];
+
+  users.forEach((u, ui) => {
+    for (let i = 0; i < 12; i++) {
+      const x = 20 + (i / 11) * (w - 40);
+      const y = (ui + 1) * (h / 4) + Math.sin(i * 0.7) * 18 + (Math.random() - 0.5) * 8;
+      u.points.push({ x, y, userIdx: ui, timeIdx: i });
+    }
+  });
+
+  if (shuffle) {
+    // RANDOM SPLIT = each user's points are split across train AND test = LEAKAGE
+    users.forEach(u => {
+      u.points.forEach(p => { p.train = p.x < split; });
+    });
+  } else {
+    // TIME SPLIT on user data: each user still split across train/test
+    // Still problematic because same user appears in both
+    users.forEach(u => {
+      u.points.forEach(p => { p.train = p.x < split; });
+    });
+  }
+
+  // Draw each user's dots
+  users.forEach(u => {
+    // Connecting line for this user
+    ctx.strokeStyle = u.color.replace('0.8', '0.2');
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(u.points[0].x, u.points[0].y);
+    for (let i = 1; i < u.points.length; i++) ctx.lineTo(u.points[i].x, u.points[i].y);
+    ctx.stroke();
+
+    u.points.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+
+      if (shuffle || true) {
+        // In random AND time split, same user leaks across
+        const hasInTrain = u.points.some(pp => pp.train);
+        const hasInTest = u.points.some(pp => !pp.train);
+        if (hasInTrain && hasInTest) {
+          // This user is LEAKED — appeared in both
+          ctx.fillStyle = p.train ? 'rgba(248,81,73,0.9)' : 'rgba(248,81,73,0.6)';
+          ctx.strokeStyle = 'rgba(248,81,73,0.4)'; ctx.lineWidth = 1.5; ctx.stroke();
+        } else {
+          ctx.fillStyle = p.train ? 'rgba(57,210,255,0.8)' : 'rgba(255,179,71,0.8)';
+        }
+      }
+      ctx.fill();
+    });
+  });
+
+  // Draw user labels
+  users.forEach((u, i) => {
+    ctx.font = 'bold 10px "JetBrains Mono"';
+    ctx.fillStyle = u.color;
+    ctx.fillText(['User A', 'User B', 'User C'][i], w - 70, u.points[0].y);
+  });
+}
+
+function drawUserDotsEntity(ctx, split) {
+  // Entity split: Users A and B in training, User C in test
+  const users = [
+    { color: 'rgba(57,210,255,0.8)', yBase: 0.25, train: true },
+    { color: 'rgba(255,179,71,0.8)', yBase: 0.5, train: true },
+    { color: 'rgba(191,57,137,0.8)', yBase: 0.75, train: false }
+  ];
+
+  users.forEach((u, ui) => {
+    const points = [];
+    for (let i = 0; i < 12; i++) {
+      const x = u.train ? 20 + (i / 11) * (split - 30) : split + 15 + (i / 11) * ((W - split) - 40);
+      const y = (ui + 1) * (H / 4) + Math.sin(i * 0.7) * 15 + (Math.random() - 0.5) * 6;
+      points.push({ x, y });
+    }
+
+    // Line
+    ctx.strokeStyle = u.color.replace('0.8', '0.2');
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+    ctx.stroke();
+
+    // Dots
+    points.forEach(p => {
+      ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+      ctx.fillStyle = u.color;
+      ctx.fill();
+    });
+
+    // User label
+    ctx.font = 'bold 10px "JetBrains Mono"';
+    ctx.fillStyle = u.color;
+    const label = ['User A', 'User B', 'User C'][ui];
+    const lx = u.train ? split - 75 : W - 70;
+    ctx.fillText(label, lx, points[0].y);
+  });
+
+  // Green checkmark
+  ctx.font = '20px sans-serif';
+  ctx.fillStyle = 'rgba(63,185,80,0.9)';
+  ctx.fillText('✅', W/2 - 12, H - 15);
+  ctx.font = '10px "JetBrains Mono"';
+  ctx.fillStyle = 'rgba(63,185,80,0.8)';
+  ctx.fillText('NO LEAKAGE', W/2 - 40, H - 30);
+}
+
+function updateAlerts() {
+  const aR = document.getElementById('alertRandom');
+  const aT = document.getElementById('alertTime');
+  const aE = document.getElementById('alertEntity');
+
+  // Reset all
+  [aR, aT, aE].forEach(a => { a.className = 'leakage-alert'; a.textContent = ''; });
+
+  if (scenario === 'houses') {
+    aR.className = 'leakage-alert show safe';
+    aR.textContent = '✅ SAFE: Houses are independent. Random split is perfectly fine here.';
+    aT.className = 'leakage-alert show safe';
+    aT.textContent = '✅ SAFE but overkill: Time split works but isn\'t necessary for independent houses.';
+    aE.className = 'leakage-alert show safe';
+    aE.textContent = '✅ SAFE: Each house is its own entity. Entity split = random split here.';
+  } else if (scenario === 'stocks') {
+    aR.className = 'leakage-alert show danger';
+    aR.textContent = '🔴 LEAKAGE! Future prices in training → model sees tomorrow\'s price. Test metrics are fake. Production accuracy will be MUCH lower.';
+    aT.className = 'leakage-alert show safe';
+    aT.textContent = '✅ CORRECT: Train on old data, test on new data — exactly how the model will be used in production.';
+    aE.className = 'leakage-alert show safe';
+    aE.textContent = '⚠️ NOT APPLICABLE: Stocks don\'t have "entities". Use time-based split.';
+  } else if (scenario === 'users') {
+    aR.className = 'leakage-alert show danger';
+    aR.textContent = '🔴 LEAKAGE! User A appears in BOTH train and test. Model memorizes User A\'s patterns instead of learning churn signals.';
+    aT.className = 'leakage-alert show danger';
+    aT.textContent = '🔴 STILL LEAKAGE! Time-split doesn\'t fix entity leakage. Same users still appear in both sides.';
+    aE.className = 'leakage-alert show safe';
+    aE.textContent = '✅ CORRECT: Users A & B in training. User C entirely in test. Model is tested on a user it has NEVER seen.';
+  }
+}
+
+// Init
+drawAll();
+updateAlerts();
+</script>
+</body>
+</html>
