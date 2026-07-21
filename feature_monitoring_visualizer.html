@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feature Monitoring — Interactive Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06090f; --bg-card: #0d1117; --bg-raised: #161b22;
+  --border: #21262d; --text: #e6edf3; --text-dim: #8b949e; --text-muted: #484f58;
+  --cyan: #39d2ff; --amber: #ffb347; --green: #3fb950; --red: #f85149;
+  --violet: #a371f7;
+}
+body.light {
+  --bg: #f6f8fa; --bg-card: #fff; --bg-raised: #e8ecf0;
+  --border: #d0d7de; --text: #1f2328; --text-dim: #656d76; --text-muted: #8b949e;
+  --cyan: #0969da; --amber: #9a6700; --green: #1a7f37; --red: #cf222e; --violet: #8250df;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; transition: background 0.3s, color 0.3s; }
+.theme-toggle { position: fixed; top: 1rem; right: 1.5rem; z-index: 999; background: var(--bg-raised); border: 1px solid var(--border); color: var(--text); font-size: 1.2rem; cursor: pointer; padding: 0.4rem 0.7rem; border-radius: 8px; font-family: 'JetBrains Mono', monospace; }
+.theme-toggle:hover { border-color: var(--cyan); color: var(--cyan); }
+.app { max-width: 1050px; margin: 0 auto; padding: 1.5rem; }
+.header { text-align: center; padding: 1.5rem 0 0.3rem; }
+.header h1 { font-family: 'Orbitron', sans-serif; font-size: clamp(1.2rem, 3vw, 1.6rem); background: linear-gradient(135deg, var(--cyan), var(--violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.3rem; }
+.header p { color: var(--text-dim); font-size: 0.9rem; }
+
+/* ── Stats Bar ── */
+.stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.7rem; margin: 1rem 0; }
+@media(max-width:600px){ .stats-row { grid-template-columns: repeat(2,1fr); } }
+.stat-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 0.8rem; text-align: center; }
+.stat-box .s-val { font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 700; }
+.stat-box .s-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: var(--text-muted); margin-top: 0.2rem; letter-spacing: 0.05em; }
+
+/* ── Monitor Cards ── */
+.monitor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin: 0.8rem 0; }
+@media(max-width:800px){ .monitor-grid { grid-template-columns: 1fr; } }
+.mon-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; cursor: pointer; transition: 0.2s; }
+.mon-card:hover { border-color: var(--text-dim); }
+.mon-card.active { border-color: var(--cyan); box-shadow: 0 0 20px #39d2ff10; }
+.mon-card.warning { border-color: var(--amber); }
+.mon-card.critical { border-color: var(--red); animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 #f8514900} 50%{box-shadow:0 0 20px #f8514930} }
+.mon-card h3 { font-family: 'Orbitron', sans-serif; font-size: 0.78rem; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.4rem; }
+.mon-card .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dot-ok { background: var(--green); }
+.dot-warn { background: var(--amber); }
+.dot-crit { background: var(--red); }
+.mon-card canvas { display: block; margin: 0 auto; border-radius: 6px; }
+
+/* ── Detail Panel ── */
+.detail-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; margin: 0.8rem 0; }
+.detail-panel h3 { font-family: 'Orbitron', sans-serif; font-size: 0.9rem; margin-bottom: 0.5rem; }
+.detail-panel .d-desc { font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 0.8rem; }
+.detail-panel canvas { display: block; margin: 0 auto; border-radius: 8px; }
+
+/* ── Alert Timeline ── */
+.alert-box { background: var(--bg-raised); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; line-height: 1.8; }
+.alert-box .ts { color: var(--text-muted); }
+.alert-box .warn { color: var(--amber); }
+.alert-box .crit { color: var(--red); }
+.alert-box .ok { color: var(--green); }
+
+.btn-row { display: flex; gap: 0.5rem; justify-content: center; margin-top: 0.8rem; }
+.btn { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; padding: 0.5rem 1.2rem; border-radius: 100px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-dim); cursor: pointer; transition: 0.2s; }
+.btn:hover { border-color: var(--cyan); color: var(--cyan); }
+.btn.primary { border-color: var(--cyan); color: var(--cyan); background: #39d2ff10; }
+.btn.danger { border-color: var(--red); color: var(--red); background: #f8514910; }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀️</button>
+
+<div class="app">
+  <header class="header">
+    <h1>Feature Health Monitoring — Live Dashboard</h1>
+    <p>Week 12 after deployment. The model has been serving predictions for 3 months. Everything looked fine... until now.</p>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-box"><div class="s-val" style="color:var(--cyan)" id="sTotal">8,421</div><div class="s-lbl">PREDICTIONS THIS WEEK</div></div>
+    <div class="stat-box"><div class="s-val" style="color:var(--green)" id="sOk">7,892</div><div class="s-lbl">HEALTHY</div></div>
+    <div class="stat-box"><div class="s-val" style="color:var(--amber)" id="sWarn">412</div><div class="s-lbl">WARNINGS</div></div>
+    <div class="stat-box"><div class="s-val" style="color:var(--red)" id="sCrit">117</div><div class="s-lbl">CRITICAL</div></div>
+  </div>
+
+  <!-- 4 Monitor Cards -->
+  <div class="monitor-grid" id="monitorGrid"></div>
+
+  <!-- Detail Panel -->
+  <div class="detail-panel" id="detailPanel"></div>
+
+  <!-- Alert Timeline -->
+  <div class="alert-box" id="alertBox"></div>
+
+  <div class="btn-row">
+    <button class="btn primary" onclick="advanceWeek()">▶ Advance 1 Week</button>
+    <button class="btn danger" onclick="triggerDrift()">⚠ Simulate Market Shift</button>
+    <button class="btn" onclick="resetAll()">↺ Reset</button>
+  </div>
+</div>
+
+<script>
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  document.getElementById('themeToggle').textContent = document.body.classList.contains('light') ? '🌙' : '☀️';
+  localStorage.setItem('fm-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+  setTimeout(drawAll, 50);
+}
+if (localStorage.getItem('fm-theme') === 'light') { document.body.classList.add('light'); document.getElementById('themeToggle').textContent = '🌙'; }
+
+let week = 12;
+let drifted = false;
+let activeMonitor = 'drift';
+const alerts = [
+  { wk:1, type:'ok', msg:'Model deployed. All features within baseline.' },
+  { wk:3, type:'ok', msg:'Weekly PSI check: all features stable. Max PSI=0.03 on GrLivArea.' },
+  { wk:5, type:'ok', msg:'Null rates normal. PoolQC=99.7%, Alley=93% — unchanged from training.' },
+  { wk:8, type:'warn', msg:'LotArea PSI=0.11 — slight drift. Mean lot size increased 8%. Monitoring closely.' },
+  { wk:10, type:'warn', msg:'GrLivArea PSI=0.14 — larger homes entering market. Prediction mean shifted +$12K.' },
+];
+
+const monitors = [
+  { id:'drift', icon:'📈', title:'Distribution Drift (PSI)', dot:'dot-warn',
+    desc:'Compares live feature distributions to training baseline. PSI > 0.1 = investigate. > 0.2 = retrain.' },
+  { id:'nulls', icon:'🕳️', title:'Null Rate Monitor', dot:'dot-ok',
+    desc:'Tracks null % per feature over time. Alerts on CHANGE from baseline — not on absolute value.' },
+  { id:'range', icon:'📏', title:'Range Violations', dot:'dot-warn',
+    desc:'Flags predictions where input features fall outside the training range. Out-of-distribution = risky.' },
+  { id:'preds', icon:'🎯', title:'Prediction Stability', dot:'dot-warn',
+    desc:'Is the distribution of predictions stable? A sudden shift means the model is seeing different data.' },
+];
+
+function drawAll() {
+  renderMonitorCards();
+  renderDetailPanel();
+  updateStats();
+  updateAlerts();
+}
+
+function renderMonitorCards() {
+  const m = monitors;
+  // Update dots based on drift state
+  if (drifted) { m[0].dot='dot-crit'; m[2].dot='dot-crit'; m[3].dot='dot-crit'; }
+  else { m[0].dot='dot-warn'; m[2].dot='dot-warn'; m[3].dot='dot-warn'; }
+
+  document.getElementById('monitorGrid').innerHTML = m.map(mn => `
+    <div class="mon-card ${mn.id===activeMonitor?'active':''} ${drifted&&mn.id!=='nulls'?'warning':''}" onclick="selectMonitor('${mn.id}')">
+      <h3>${mn.icon} ${mn.title} <span class="status-dot ${drifted&&mn.id!=='nulls'?'dot-crit':mn.dot}"></span></h3>
+      <p style="font-size:0.75rem;color:var(--text-dim);line-height:1.5">${mn.desc}</p>
+    </div>
+  `).join('');
+}
+
+function selectMonitor(id) {
+  activeMonitor = id;
+  drawAll();
+}
+
+function renderDetailPanel() {
+  const el = document.getElementById('detailPanel');
+  if (activeMonitor === 'drift') renderDriftDetail(el);
+  else if (activeMonitor === 'nulls') renderNullsDetail(el);
+  else if (activeMonitor === 'range') renderRangeDetail(el);
+  else renderPredsDetail(el);
+}
+
+function renderDriftDetail(el) {
+  el.innerHTML = `
+    <h3 style="color:${drifted?'var(--red)':'var(--amber)'}">📈 Distribution Drift — PSI Monitor</h3>
+    <div class="d-desc">Population Stability Index compares <strong>live data</strong> distribution to <strong>training baseline</strong> for the top 10 features. ${drifted?'<span style="color:var(--red);font-weight:700">⚠ MARKET SHIFT DETECTED — Week '+week+'</span>':'Drift is gradual but accelerating.'}</div>
+    <canvas id="driftCanvas" width="700" height="320"></canvas>`;
+  setTimeout(drawDriftChart, 30);
+}
+
+function drawDriftChart() {
+  const c = document.getElementById('driftCanvas'); if(!c) return;
+  const W=700, H=320, ctx=c.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+
+  const features = [
+    { name:'GrLivArea', psi: drifted?0.22:0.14, trainMean:1515, liveMean: drifted?1820:1680 },
+    { name:'OverallQual', psi: drifted?0.18:0.06, trainMean:6.1, liveMean: drifted?5.6:6.3 },
+    { name:'LotArea', psi: drifted?0.15:0.11, trainMean:10517, liveMean: drifted?13200:11400 },
+    { name:'YearBuilt', psi: drifted?0.12:0.05, trainMean:1971, liveMean: drifted?2005:1990 },
+    { name:'SalePrice', psi: drifted?0.25:0.09, trainMean:182000, liveMean: drifted?235000:195000 },
+    { name:'GarageCars', psi:0.04, trainMean:1.8, liveMean:1.7 },
+    { name:'TotalBsmtSF', psi:0.07, trainMean:1057, liveMean:1080 },
+  ];
+
+  const barH=35, gap=10, startY=40;
+  features.forEach((f,i) => {
+    const y = startY + i*(barH+gap);
+    const maxW = 500;
+
+    // Background
+    ctx.fillStyle = 'rgba(33,38,45,0.4)'; ctx.fillRect(160, y, maxW, barH);
+
+    // PSI bar
+    const w = Math.min(f.psi/0.3 * maxW, maxW);
+    const grad = ctx.createLinearGradient(160,0,160+w,0);
+    grad.addColorStop(0, f.psi<0.1?'#3fb950':f.psi<0.2?'#ffb347':'#f85149');
+    grad.addColorStop(1, f.psi<0.1?'#39d2ff':f.psi<0.2?'#ffb347':'#f85149');
+    ctx.fillStyle = grad;
+    ctx.fillRect(160, y+5, w, barH-10);
+
+    // Feature name
+    ctx.font='bold 12px "JetBrains Mono"'; ctx.fillStyle='var(--text)'; ctx.fillText(f.name, 5, y+barH/2+4);
+
+    // PSI value
+    ctx.font='bold 11px "JetBrains Mono"';
+    ctx.fillStyle = f.psi>0.2?'#f85149':f.psi>0.1?'#ffb347':'#3fb950';
+    ctx.fillText(f.psi.toFixed(2), 165+w+8, y+barH/2+4);
+
+    // Status
+    ctx.font='10px "JetBrains Mono"';
+    ctx.fillStyle = f.psi>0.2?'rgba(248,81,73,0.9)':f.psi>0.1?'rgba(255,179,71,0.9)':'rgba(63,185,80,0.7)';
+    ctx.fillText(f.psi>0.2?'🔴 DRIFT':f.psi>0.1?'🟡 WATCH':'🟢 STABLE', 200+w+8, y+barH/2+4);
+
+    // Mean shift
+    const shiftPct = Math.round((f.liveMean/f.trainMean-1)*100);
+    ctx.font='9px "JetBrains Mono"'; ctx.fillStyle='var(--text-muted)';
+    ctx.fillText(`μ: ${f.trainMean.toLocaleString()} → ${f.liveMean.toLocaleString()} (${shiftPct>0?'+':''}${shiftPct}%)`, 360+w+8, y+barH/2+4);
+  });
+
+  // Threshold lines
+  [[0.1,'PSI=0.1 — INVESTIGATE','#ffb347'],[0.2,'PSI=0.2 — RETRAIN','#f85149']].forEach(([t,label,color]) => {
+    const tx = 160+(t/0.3)*maxW;
+    ctx.strokeStyle = color; ctx.lineWidth=1.5; ctx.setLineDash([5,5]);
+    ctx.beginPath(); ctx.moveTo(tx,20); ctx.lineTo(tx,startY+features.length*(barH+gap)); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.font='bold 9px "JetBrains Mono"'; ctx.fillStyle=color; ctx.fillText(label, tx+5, 22);
+  });
+
+  ctx.font='bold 13px "Orbitron"'; ctx.fillStyle='var(--text)'; ctx.fillText('PSI by Feature', 10, 22);
+}
+
+function renderNullsDetail(el) {
+  el.innerHTML = `
+    <h3 style="color:var(--green)">🕳️ Null Rate Monitor — Tracking Changes</h3>
+    <div class="d-desc">Alert fires when null rate <strong>CHANGES</strong> from baseline — not on the absolute value. PoolQC at 99.7% null is NORMAL. GrLivArea at 2% null is a CRISIS.</div>
+    <canvas id="nullsCanvas" width="700" height="280"></canvas>`;
+  setTimeout(drawNullsChart, 30);
+}
+
+function drawNullsChart() {
+  const c = document.getElementById('nullsCanvas'); if(!c) return;
+  const W=700, H=280, ctx=c.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+
+  const checks = [
+    { col:'PoolQC', baseline:99.7, current:99.6, status:'ok', alert:'Expected — almost no pools' },
+    { col:'Alley', baseline:93, current:92.8, status:'ok', alert:'Expected — most homes no alley' },
+    { col:'Fence', baseline:80, current:81, status:'ok', alert:'Expected — most homes no fence' },
+    { col:'FireplaceQu', baseline:47, current:48, status:'ok', alert:'Expected — half have no fireplace' },
+    { col:'LotFrontage', baseline:17, current: drifted?25:18, status: drifted?'warn':'ok', alert: drifted?'⚠ UP from 17% to 25% — investigate':'Expected — random missing' },
+    { col:'GarageYrBlt', baseline:5, current: drifted?12:5.2, status: drifted?'crit':'ok', alert: drifted?'🔴 SPIKE to 12% — data pipeline issue?':'Expected — no garage = null' },
+    { col:'GrLivArea', baseline:0, current: drifted?3:0, status: drifted?'crit':'ok', alert: drifted?'🔴 SUDDENLY NULL! This should NEVER be null.':'✅ Should always be present' },
+    { col:'Bedrooms', baseline:0, current:0, status:'ok', alert:'✅ Should always be present' },
+  ];
+
+  checks.forEach((ch,i) => {
+    const y = 30+i*30;
+    // Baseline bar
+    ctx.fillStyle = 'rgba(139,148,158,0.15)'; ctx.fillRect(150, y+3, 200, 22);
+    ctx.fillStyle = 'rgba(139,148,158,0.4)'; ctx.fillRect(150, y+3, ch.baseline*2, 22);
+
+    // Current dot
+    ctx.beginPath(); ctx.arc(150+ch.current*2, y+14, 6, 0, Math.PI*2);
+    ctx.fillStyle = ch.status==='crit'?'#f85149':ch.status==='warn'?'#ffb347':'#3fb950';
+    ctx.fill();
+
+    // Label
+    ctx.font='bold 11px "JetBrains Mono"'; ctx.fillStyle='var(--text)'; ctx.fillText(ch.col, 5, y+18);
+    ctx.font='9px "JetBrains Mono"'; ctx.fillStyle='var(--text-dim)';
+    ctx.fillText(`${ch.current.toFixed(1)}%`, 365, y+18);
+
+    // Status + alert
+    ctx.font='bold 9px "JetBrains Mono"';
+    ctx.fillStyle = ch.status==='crit'?'#f85149':ch.status==='warn'?'#ffb347':'#3fb950';
+    ctx.fillText(ch.status==='crit'?'🔴':ch.status==='warn'?'🟡':'🟢', 400, y+18);
+    ctx.font='9px "DM Sans"'; ctx.fillStyle='var(--text-dim)';
+    ctx.fillText(ch.alert, 425, y+18);
+  });
+
+  ctx.font='bold 12px "Orbitron"'; ctx.fillStyle='var(--text)'; ctx.fillText('Null Rate vs Baseline', 10, 18);
+  ctx.font='9px "JetBrains Mono"'; ctx.fillStyle='var(--text-muted)';
+  ctx.fillText('Gray = baseline range', 150, 15);
+}
+
+function renderRangeDetail(el) {
+  el.innerHTML = `
+    <h3 style="color:${drifted?'var(--red)':'var(--amber)'}">📏 Range Violations — Out-of-Distribution Detection</h3>
+    <div class="d-desc">Flags predictions where <strong>input features fall outside the training range</strong>. A few outliers are fine. A trend of out-of-range predictions means the world changed.</div>
+    <canvas id="rangeCanvas" width="700" height="280"></canvas>`;
+  setTimeout(drawRangeChart, 30);
+}
+
+function drawRangeChart() {
+  const c = document.getElementById('rangeCanvas'); if(!c) return;
+  const W=700, H=280, ctx=c.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+
+  const violations = [
+    { feat:'GrLivArea', trainMax:5642, violationPct: drifted?8:1.5, examples: drifted?'68 houses > 5,642 sqft this week':'12 houses slightly above max' },
+    { feat:'LotArea', trainMax:215245, violationPct: drifted?5:0.5, examples: drifted?'22 lots > 215K sqft':'2 extreme lots' },
+    { feat:'YearBuilt', trainMax:2010, violationPct: drifted?35:10, examples: drifted?'295 houses built after 2010 (new construction!)':'Normal — newer homes expected' },
+    { feat:'SalePrice', trainMax:755000, violationPct: drifted?4:0.3, examples: drifted?'17 predictions > $755K':'1 luxury outlier' },
+  ];
+
+  violations.forEach((v,i) => {
+    const y = 45+i*55;
+    // Bar
+    const w = Math.min(v.violationPct*4, 500);
+    const color = v.violationPct>5?'#f85149':v.violationPct>2?'#ffb347':'#3fb950';
+    ctx.fillStyle = 'rgba(33,38,45,0.3)'; ctx.fillRect(150, y, 500, 35);
+    ctx.fillStyle = color; ctx.fillRect(150, y+5, w, 25);
+
+    ctx.font='bold 11px "JetBrains Mono"'; ctx.fillStyle='var(--text)'; ctx.fillText(v.feat, 5, y+22);
+    ctx.font='bold 11px "JetBrains Mono"'; ctx.fillStyle = color;
+    ctx.fillText(v.violationPct.toFixed(1)+'%', 155+w, y+22);
+    ctx.font='9px "DM Sans"'; ctx.fillStyle='var(--text-dim)';
+    ctx.fillText(v.examples, 155+w+50, y+22);
+  });
+
+  ctx.font='bold 12px "Orbitron"'; ctx.fillStyle='var(--text)'; ctx.fillText('% Predictions Outside Training Range', 10, 22);
+  ctx.fillStyle = 'rgba(248,81,73,0.3)'; ctx.fillRect(10, 235, 12, 12);
+  ctx.font='10px "DM Sans"'; ctx.fillStyle='var(--text-dim)'; ctx.fillText('>5% = critical', 28, 245);
+  ctx.fillStyle = 'rgba(255,179,71,0.3)'; ctx.fillRect(120, 235, 12, 12);
+  ctx.fillText('2-5% = warning', 138, 245);
+  ctx.fillStyle = 'rgba(63,185,80,0.3)'; ctx.fillRect(240, 235, 12, 12);
+  ctx.fillText('<2% = normal', 258, 245);
+}
+
+function renderPredsDetail(el) {
+  el.innerHTML = `
+    <h3 style="color:${drifted?'var(--red)':'var(--amber)'}">🎯 Prediction Stability</h3>
+    <div class="d-desc">Is the model's <strong>output distribution</strong> stable? A model seeing different inputs will produce different predictions — even if the model itself hasn't changed.</div>
+    <canvas id="predsCanvas" width="700" height="280"></canvas>`;
+  setTimeout(drawPredsChart, 30);
+}
+
+function drawPredsChart() {
+  const c = document.getElementById('predsCanvas'); if(!c) return;
+  const W=700, H=280, ctx=c.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+
+  // Two overlapping histograms: baseline vs current week
+  const baselineMean=182000, baselineStd=79000;
+  const currentMean=drifted?235000:195000, currentStd=drifted?92000:81000;
+
+  // Draw baseline distribution (blue, behind)
+  for(let i=0;i<40;i++){
+    const x = 50+i*16, h= Math.exp(-Math.pow((i*25000+25000-baselineMean)/baselineStd,2)/2)*160;
+    ctx.fillStyle='rgba(57,210,255,0.25)'; ctx.fillRect(x, 240-h, 14, h);
+  }
+
+  // Draw current distribution (red/orange, in front)
+  for(let i=0;i<40;i++){
+    const x = 50+i*16, h= Math.exp(-Math.pow((i*25000+25000-currentMean)/currentStd,2)/2)*160;
+    ctx.fillStyle=drifted?'rgba(248,81,73,0.45)':'rgba(255,179,71,0.35)'; ctx.fillRect(x+2, 240-h, 12, h);
+  }
+
+  // Mean lines
+  ctx.strokeStyle='rgba(57,210,255,0.6)'; ctx.lineWidth=2; ctx.setLineDash([4,3]);
+  const bx = 50+(baselineMean/25000)*16;
+  ctx.beginPath(); ctx.moveTo(bx,0); ctx.lineTo(bx,240); ctx.stroke();
+  ctx.setLineDash([]); ctx.font='bold 10px "JetBrains Mono"'; ctx.fillStyle='rgba(57,210,255,0.8)';
+  ctx.fillText(`Training μ=$${baselineMean.toLocaleString()}`, bx-80, 15);
+
+  ctx.strokeStyle = drifted?'rgba(248,81,73,0.7)':'rgba(255,179,71,0.7)'; ctx.lineWidth=2; ctx.setLineDash([4,3]);
+  const cx = 50+(currentMean/25000)*16;
+  ctx.beginPath(); ctx.moveTo(cx,0); ctx.lineTo(cx,240); ctx.stroke();
+  ctx.setLineDash([]); ctx.font='bold 10px "JetBrains Mono"';
+  ctx.fillStyle=drifted?'rgba(248,81,73,0.9)':'rgba(255,179,71,0.8)';
+  ctx.fillText(`Week ${week} μ=$${currentMean.toLocaleString()} ${drifted?'⚠ DRIFT':''}`, cx+8, 60);
+
+  // Legend
+  ctx.font='11px "DM Sans"'; ctx.fillStyle='var(--text-dim)';
+  ctx.fillStyle='rgba(57,210,255,0.5)'; ctx.fillRect(15, 260, 12, 12);
+  ctx.fillStyle='var(--text-dim)'; ctx.fillText('Training baseline', 32, 271);
+  ctx.fillStyle=drifted?'rgba(248,81,73,0.5)':'rgba(255,179,71,0.5)'; ctx.fillRect(170, 260, 12, 12);
+  ctx.fillStyle='var(--text-dim)'; ctx.fillText(drifted?'Current (DRIFTED)':'Current (normal)', 187, 271);
+
+  ctx.font='bold 12px "Orbitron"'; ctx.fillStyle='var(--text)'; ctx.fillText('Prediction Distribution Shift', 10, 22);
+}
+
+function updateStats() {
+  document.getElementById('sTotal').textContent = (8000+week*35).toLocaleString();
+  if (drifted) {
+    document.getElementById('sOk').textContent = (7000-week*20).toLocaleString();
+    document.getElementById('sWarn').textContent = (800+week*15).toLocaleString();
+    document.getElementById('sCrit').textContent = (200+week*30).toLocaleString();
+  } else {
+    document.getElementById('sOk').textContent = (7800+week*8).toLocaleString();
+    document.getElementById('sWarn').textContent = (300+week*5).toLocaleString();
+    document.getElementById('sCrit').textContent = (80+week*2).toLocaleString();
+  }
+}
+
+function updateAlerts() {
+  let html = `<div style="font-family:Orbitron,sans-serif;font-size:0.72rem;color:var(--cyan);margin-bottom:0.4rem">📋 ALERT LOG — Last 12 Weeks</div>`;
+  alerts.forEach(a => {
+    html += `<span class="ts">[Week ${String(a.wk).padStart(2,'0')}]</span> <span class="${a.type}">${a.type==='crit'?'🔴':a.type==='warn'?'🟡':'🟢'} ${a.msg}</span>\n`;
+  });
+  if (drifted) {
+    html += `<span class="ts">[Week ${week}]</span> <span class="crit">🔴 CRITICAL: PSI > 0.2 on SalePrice, GrLivArea. Mean prediction shifted +29%. RETRAIN RECOMMENDED.</span>\n`;
+  }
+  document.getElementById('alertBox').innerHTML = html.replace(/\n/g,'<br>');
+}
+
+function advanceWeek() {
+  week++;
+  if (drifted) {
+    // After drift, things get worse
+    alerts.push({ wk:week, type:'crit', msg:'Multiple features exceeding PSI thresholds. Prediction mean now $'+(235000+week*3000).toLocaleString()+'.' });
+  } else {
+    const types = ['ok','ok','warn'];
+    const msgs = [
+      'Weekly check passed. All monitors green.',
+      'Routine check. PSI stable. No alerts.',
+      'Minor drift on LotArea (PSI=0.12). Not yet at threshold.',
+    ];
+    alerts.push({ wk:week, type:types[week%3], msg:msgs[week%3] });
+  }
+  if (alerts.length > 15) alerts.shift();
+  drawAll();
+}
+
+function triggerDrift() {
+  drifted = true;
+  alerts.push({ wk:week, type:'crit', msg:'🔴 MARKET SHIFT: New housing development opened. Larger, newer, more expensive homes entering pipeline.' });
+  alerts.push({ wk:week, type:'crit', msg:'🔴 GrLivArea PSI=0.22, SalePrice PSI=0.25. Null rate on GrLivArea spiked to 3%. RETRAIN TRIGGERED.' });
+  drawAll();
+}
+
+function resetAll() {
+  week = 12; drifted = false;
+  alerts.length = 0;
+  alerts.push({ wk:1, type:'ok', msg:'Model deployed. All features within baseline.' });
+  alerts.push({ wk:3, type:'ok', msg:'Weekly PSI check: all features stable. Max PSI=0.03 on GrLivArea.' });
+  alerts.push({ wk:5, type:'ok', msg:'Null rates normal. PoolQC=99.7%, Alley=93% — unchanged from training.' });
+  alerts.push({ wk:8, type:'warn', msg:'LotArea PSI=0.11 — slight drift. Mean lot size increased 8%. Monitoring closely.' });
+  alerts.push({ wk:10, type:'warn', msg:'GrLivArea PSI=0.14 — larger homes entering market. Prediction mean shifted +$12K.' });
+  drawAll();
+}
+
+drawAll();
+</script>
+</body>
+</html>
