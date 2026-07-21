@@ -3,6 +3,21 @@
 > Based on: ML System Design & MLOps For Beginners, Build ML Production Grade Projects, First-Ever Production-Grade AI Project
 > Philosophy: Think → Build → Scale (System Design thinking first, then hands-on MLOps, then enterprise-grade architecture)
 
+## 📊 Progress: 2/8 Phases Complete
+
+| # | Phase | Interactive Module | Templates |
+|---|-------|--------------------|-----------|
+| ✅ 1 | ML System Design Thinking | [phase1_system_design.html](phase1_system_design.html) | [10 docs](Phase_1_System_Design/) |
+| ✅ 2 | Data Strategy & Engineering | [phase2_data_strategy.html](phase2_data_strategy.html) | [10 docs](Phase_2_Data_Strategy/) |
+| ⬜ 3 | Feature Engineering & Pipeline | — | — |
+| ⬜ 4 | Baseline First | — | — |
+| ⬜ 5 | House Prices Predictor System | — | — |
+| ⬜ 6 | Enterprise Training Data Pipeline | — | — |
+| ⬜ 7 | Monitoring & Production Ops | — | — |
+| ⬜ 8 | Capstone Project | — | — |
+
+🏠 **Dashboard:** [index.html](index.html)
+
 ---
 
 ## ✅ Phase 1: ML System Design Thinking (Before You Write Code) — COMPLETE
