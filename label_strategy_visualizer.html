@@ -32,14 +32,14 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 @media(max-width:850px) { .strategies-grid { grid-template-columns: repeat(2, 1fr); } }
 @media(max-width:500px) { .strategies-grid { grid-template-columns: 1fr; } }
 
-.strat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 0.8rem; cursor: pointer; transition: 0.2s; position: relative; }
+.strat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; cursor: pointer; transition: 0.2s; position: relative; }
 .strat-card:hover { transform: translateY(-2px); border-color: var(--text-dim); }
 .strat-card.active { border-color: var(--cyan); box-shadow: 0 0 18px #39d2ff18; }
 .strat-card.best { border-color: var(--green); border-width: 2px; }
 .strat-card .card-top { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem; }
-.strat-card .card-icon { font-size: 1.6rem; }
-.strat-card .card-title { font-family: 'Orbitron', sans-serif; font-size: 0.7rem; }
-.strat-card .card-cost { font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; padding: 0.15em 0.5em; border-radius: 100px; }
+.strat-card .card-icon { font-size: 2rem; }
+.strat-card .card-title { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; }
+.strat-card .card-cost { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; padding: 0.2em 0.6em; border-radius: 100px; }
 .cost-free { background: #3fb95015; color: var(--green); border: 1px solid var(--green); }
 .cost-low { background: #39d2ff15; color: var(--cyan); border: 1px solid var(--cyan); }
 .cost-med { background: #ffb34715; color: var(--amber); border: 1px solid var(--amber); }
@@ -53,24 +53,24 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .viz-left canvas { border-radius: 8px; background: var(--bg); }
 .viz-right { flex: 1; display: flex; flex-direction: column; justify-content: center; }
 
-.viz-right h3 { font-family: 'Orbitron', sans-serif; font-size: 0.95rem; margin-bottom: 0.5rem; }
-.viz-right h3 .num { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--cyan); background: var(--cyan-bg, #39d2ff15); padding: 0.15em 0.5em; border-radius: 4px; margin-right: 0.3rem; }
-.viz-right .how-works { font-size: 0.82rem; color: var(--text-dim); line-height: 1.65; margin-bottom: 1rem; }
-.viz-right .metric-row { display: flex; gap: 0.8rem; margin: 0.5rem 0; flex-wrap: wrap; }
-.viz-right .metric-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; padding: 0.3em 0.7em; border-radius: 100px; display: flex; align-items: center; gap: 0.3rem; }
+.viz-right h3 { font-family: 'Orbitron', sans-serif; font-size: 1.2rem; margin-bottom: 0.6rem; }
+.viz-right h3 .num { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--cyan); background: var(--cyan-bg, #39d2ff15); padding: 0.2em 0.6em; border-radius: 4px; margin-right: 0.4rem; }
+.viz-right .how-works { font-size: 0.95rem; color: var(--text-dim); line-height: 1.7; margin-bottom: 1rem; }
+.viz-right .metric-row { display: flex; gap: 1rem; margin: 0.6rem 0; flex-wrap: wrap; }
+.viz-right .metric-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; padding: 0.4em 0.8em; border-radius: 100px; display: flex; align-items: center; gap: 0.4rem; }
 .mb-cost { background: #f8514910; border: 1px solid var(--red); color: var(--red); }
 .mb-quality { background: #3fb95010; border: 1px solid var(--green); color: var(--green); }
 .mb-speed { background: #39d2ff10; border: 1px solid var(--cyan); color: var(--cyan); }
-.viz-right .example-box { background: var(--bg-raised); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1rem; margin-top: 0.8rem; font-size: 0.75rem; color: var(--text-dim); line-height: 1.5; }
+.viz-right .example-box { background: var(--bg-raised); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.2rem; margin-top: 0.8rem; font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; }
 .example-box strong { color: var(--cyan); }
 .example-box .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; padding: 0.15em 0.4em; border-radius: 4px; margin-right: 0.3rem; }
 .tag-yes { background: #3fb95015; color: var(--green); border: 1px solid var(--green); }
 .tag-no { background: #f8514915; color: var(--red); border: 1px solid var(--red); }
 
 /* ── Comparison Table ── */
-.compare-table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; margin-top: 0.8rem; }
-.compare-table th { text-align: left; padding: 0.4rem 0.6rem; color: var(--text-muted); border-bottom: 1px solid var(--border); font-size: 0.58rem; letter-spacing: 0.04em; }
-.compare-table td { padding: 0.35rem 0.6rem; border-bottom: 1px solid rgba(33,38,45,0.3); color: var(--text-dim); }
+.compare-table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; margin-top: 0.8rem; }
+.compare-table th { text-align: left; padding: 0.5rem 0.7rem; color: var(--text-muted); border-bottom: 1px solid var(--border); font-size: 0.68rem; letter-spacing: 0.04em; }
+.compare-table td { padding: 0.5rem 0.7rem; border-bottom: 1px solid rgba(33,38,45,0.3); color: var(--text-dim); font-size: 0.7rem; }
 .compare-table tr.highlight-row { background: rgba(63,185,80,0.06); }
 .compare-table tr.highlight-row td { color: var(--green); font-weight: 600; }
 </style>
@@ -151,7 +151,7 @@ function renderCards() {
         <span class="card-title">${s.title}</span>
         <span class="card-cost ${s.costCls}">${s.cost}</span>
       </div>
-      <div style="font-size:0.68rem;color:var(--text-dim);line-height:1.4">${s.desc.substring(0,85)}...</div>
+      <div style="font-size:0.8rem;color:var(--text-dim);line-height:1.5">${s.desc.substring(0,100)}...</div>
     </div>
   `).join('');
 }
