@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 3: Feature Engineering & Pipeline — Interactive Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06090f; --bg-card: #0d1117; --bg-raised: #161b22;
+  --border: #21262d; --border-active: #30363d;
+  --text: #e6edf3; --text-dim: #8b949e; --text-muted: #484f58;
+  --cyan: #39d2ff; --cyan-bg: #39d2ff15; --cyan-border: #39d2ff40;
+  --amber: #ffb347; --amber-bg: #ffb34715;
+  --green: #3fb950; --green-bg: #3fb95015;
+  --magenta: #ff6ec7; --magenta-bg: #ff6ec715;
+  --red: #f85149; --violet: #a371f7;
+  --radius: 14px; --radius-sm: 8px;
+  --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+body.light {
+  --bg: #f6f8fa; --bg-card: #ffffff; --bg-raised: #e8ecf0;
+  --border: #d0d7de; --border-active: #afb8c1;
+  --text: #1f2328; --text-dim: #656d76; --text-muted: #8b949e;
+  --cyan: #0969da; --cyan-bg: #ddf4ff; --cyan-border: #54aeff;
+  --amber: #9a6700; --amber-bg: #fff8c5;
+  --green: #1a7f37; --green-bg: #dafbe1;
+  --magenta: #bf3989; --magenta-bg: #fbefff;
+  --red: #cf222e; --violet: #8250df;
+}
+body.light .topbar { background: rgba(246,248,250,0.9); }
+body.light .eq-box { background: rgba(0,0,0,0.03); }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; line-height: 1.65; transition: background 0.3s, color 0.3s; }
+.bg-canvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
+.app { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:2rem; }
+.theme-toggle { position: fixed; top: 0.7rem; right: 2rem; z-index: 200; background: var(--bg-raised); border: 1px solid var(--border); color: var(--text); font-size: 1.1rem; cursor: pointer; padding: 0.35rem 0.6rem; border-radius: 6px; transition: var(--transition); font-family: 'JetBrains Mono', monospace; }
+.theme-toggle:hover { border-color: var(--cyan); color: var(--cyan); }
+.topbar { position: sticky; top:0; z-index:100; background: rgba(6,9,15,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0.6rem 2rem; display: flex; align-items: center; gap: 1rem; font-size: 0.8rem; }
+.topbar .logo { font-family: 'Orbitron', sans-serif; font-size: 0.7rem; letter-spacing: 0.15em; color: var(--cyan); white-space: nowrap; }
+.topbar .step-dots { display: flex; gap: 0.4rem; flex:1; justify-content: center; }
+.topbar .step-dot { width: 28px; height: 4px; border-radius: 2px; background: var(--border); transition: var(--transition); cursor: pointer; }
+.topbar .step-dot.done { background: var(--green); }
+.topbar .step-dot.active { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+.topbar .step-dot:hover { background: var(--text-dim); }
+.topbar .step-label { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--text-dim); white-space: nowrap; }
+.header { text-align: center; padding: 3rem 0 1rem; }
+.header .phase-badge { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.2em; color: var(--green); border: 1px solid var(--green-bg); border-radius: 100px; padding: 0.4em 1.4em; margin-bottom: 1rem; }
+.header h1 { font-family: 'Orbitron', sans-serif; font-size: clamp(1.6rem, 4vw, 2.6rem); font-weight: 700; background: linear-gradient(135deg, var(--cyan), var(--violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.5rem; }
+.header .tagline { color: var(--text-dim); font-size: 1rem; }
+.topic-list { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin: 1.5rem 0 1rem; }
+.topic-chip { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.04em; padding: 0.3rem 0.7rem; border-radius: 100px; border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; transition: var(--transition); background: transparent; }
+.topic-chip.visited { border-color: var(--green); color: var(--green); background: var(--green-bg); }
+.topic-chip.current { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-bg); box-shadow: 0 0 10px var(--cyan-border); }
+.topic-chip:hover { border-color: var(--text-dim); color: var(--text-dim); }
+.fun-fact { background: linear-gradient(135deg, var(--amber-bg), var(--magenta-bg)); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.65rem 1.2rem; margin-bottom: 1.5rem; font-size: 0.78rem; color: var(--text-dim); display: flex; align-items: center; gap: 0.6rem; }
+.fun-fact .bulb { font-size: 1.2rem; flex-shrink: 0; }
+.fun-fact strong { color: var(--amber); }
+.slide { animation: slideIn 0.35s ease; }
+@keyframes slideIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; }
+.card h2 { font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; color: var(--text); }
+.card h2 .num { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--cyan); background: var(--cyan-bg); border-radius: 6px; padding: 0.2em 0.6em; }
+.card p { color: var(--text-dim); margin-bottom: 1rem; font-size: 0.95rem; }
+.card h3 { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; color: var(--cyan); margin: 1.2rem 0 0.5rem; }
+.card ul, .card ol { color: var(--text-dim); padding-left: 1.5rem; margin-bottom: 1rem; font-size: 0.9rem; }
+.card ul li, .card ol li { margin-bottom: 0.4rem; }
+.eq-box { background: rgba(0,0,0,0.4); border-left: 3px solid var(--cyan); border-radius: var(--radius-sm); padding: 1.2rem 1.5rem; margin: 1rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; line-height: 1.8; color: var(--text); white-space: pre-wrap; overflow-x: auto; }
+.compare-grid { display: grid; gap: 1rem; margin: 1rem 0; }
+.compare-grid.col2 { grid-template-columns: 1fr 1fr; }
+.compare-grid.col3 { grid-template-columns: 1fr 1fr 1fr; }
+.compare-grid.col4 { grid-template-columns: repeat(4, 1fr); }
+.compare-card { background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.2rem; transition: var(--transition); }
+.compare-card:hover { transform: translateY(-3px); border-color: var(--border-active); }
+.compare-card h4 { font-family: 'Orbitron', sans-serif; font-size: 0.78rem; margin-bottom: 0.5rem; }
+.compare-card p { font-size: 0.82rem !important; color: var(--text-dim) !important; }
+.tag-row { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem; }
+.tag { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; padding: 0.2em 0.6em; border-radius: 100px; }
+.tag.low { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+.tag.med { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber); }
+.tag.high { background: #f8514920; color: var(--red); border: 1px solid var(--red); }
+.pipeline { display: flex; align-items: center; gap: 0.6rem; justify-content: center; flex-wrap: wrap; margin: 1.2rem 0; }
+.pipeline-stage { background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.8rem 1rem; text-align: center; transition: var(--transition); min-width: 100px; }
+.pipeline-stage.highlight { border-color: var(--cyan); background: var(--cyan-bg); }
+.pipeline-stage .stage-icon { font-size: 1.5rem; margin-bottom: 0.3rem; }
+.pipeline-stage .stage-name { font-family: 'Orbitron', sans-serif; font-size: 0.6rem; color: var(--cyan); line-height: 1.3; }
+.pipeline-stage .stage-desc { font-size: 0.68rem; color: var(--text-muted); margin-top: 0.2rem; }
+.pipeline-arrow { font-size: 1.4rem; color: var(--cyan); animation: arrowPulse 1.5s ease-in-out infinite; }
+@keyframes arrowPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+.data-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin: 1rem 0; }
+.data-types.two { grid-template-columns: repeat(2, 1fr); }
+.data-type-card { background: var(--bg-raised); border: 1px solid var(--border); border-top: 3px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; transition: var(--transition); cursor: default; }
+.data-type-card:nth-child(1) { border-top-color: var(--cyan); }
+.data-type-card:nth-child(2) { border-top-color: var(--amber); }
+.data-type-card:nth-child(3) { border-top-color: var(--magenta); }
+.data-type-card:nth-child(4) { border-top-color: var(--green); }
+.data-type-card:nth-child(5) { border-top-color: var(--violet); }
+.data-type-card:hover { transform: translateY(-3px); border-color: var(--border-active); }
+.data-type-card .dt-icon { font-size: 1.5rem; margin-bottom: 0.3rem; }
+.data-type-card h4 { font-family: 'Orbitron', sans-serif; font-size: 0.78rem; margin-bottom: 0.3rem; }
+.data-type-card p { font-size: 0.78rem !important; color: var(--text-muted) !important; margin-bottom: 0 !important; }
+.flashcard-wrap { perspective: 800px; margin: 1rem 0; cursor: pointer; }
+.flashcard { position: relative; width: 100%; min-height: 90px; transform-style: preserve-3d; transition: transform 0.5s; }
+.flashcard.flipped { transform: rotateY(180deg); }
+.flashcard .front, .flashcard .back { position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius-sm); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 1rem; }
+.flashcard .front { background: var(--bg-raised); border: 1px solid var(--border); font-family: 'Orbitron', sans-serif; font-size: 0.85rem; color: var(--cyan); }
+.flashcard .front .hint { font-family: 'DM Sans', sans-serif; font-size: 0.7rem; color: var(--text-muted); margin-top: 0.4rem; }
+.flashcard .back { background: var(--bg-raised); border: 1px solid var(--cyan); transform: rotateY(180deg); color: var(--text-dim); font-size: 0.85rem; text-align: center; }
+.quiz { background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.2rem; margin-top: 1.5rem; }
+.quiz .question { font-family: 'Orbitron', sans-serif; font-size: 0.82rem; color: var(--text); margin-bottom: 0.8rem; }
+.quiz .options { display: flex; flex-direction: column; gap: 0.4rem; }
+.quiz .option { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 0.6rem 1rem; font-size: 0.82rem; color: var(--text-dim); cursor: pointer; transition: var(--transition); }
+.quiz .option:hover { border-color: var(--cyan); color: var(--cyan); }
+.quiz .option.correct { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+.quiz .option.wrong { border-color: var(--red); background: #f8514920; color: var(--red); }
+.quiz .feedback { display: none; margin-top: 0.8rem; padding: 0.6rem 1rem; border-radius: 6px; font-size: 0.82rem; }
+.quiz .feedback.show { display: block; }
+.quiz .feedback.correct { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+.quiz .feedback.wrong { background: #f8514920; color: var(--red); border: 1px solid var(--red); }
+.nav-row { display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem; }
+.nav-btn { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; padding: 0.6rem 1.8rem; border-radius: 100px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); cursor: pointer; transition: var(--transition); }
+.nav-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.nav-btn.primary { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-bg); }
+@media (max-width: 768px) { .app { padding: 1rem; } .compare-grid.col3, .compare-grid.col4 { grid-template-columns: 1fr; } .data-types { grid-template-columns: 1fr; } .pipeline { flex-direction: column; } .pipeline-arrow { transform: rotate(90deg); } .header h1 { font-size: 1.3rem; } .card { padding: 1.2rem; } .theme-toggle { right: 0.5rem; top: 0.5rem; } }
+</style>
+</head>
+<body>
+
+<canvas class="bg-canvas" id="bgCanvas"></canvas>
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀️</button>
+
+<nav class="topbar"><span class="logo">MLOPS — PHASE 3</span><div class="step-dots" id="stepDots"></div><span class="step-label" id="stepLabel">1/10</span></nav>
+
+<div class="app">
+<header class="header"><div class="phase-badge">📖 IN PROGRESS</div><h1>Phase 3: Feature Engineering & Pipeline</h1><p class="tagline">Features matter more than algorithms — transform raw data into model-ready signals</p></header>
+<div class="topic-list" id="topicChips"></div>
+<div class="fun-fact" id="funFact"><span class="bulb">💡</span><span class="fact-text" id="funFactText"></span></div>
+<div id="slideContainer"></div>
+<div class="nav-row"><button class="nav-btn" id="prevBtn" onclick="goTo(currentSlide-1)">← Previous</button><button class="nav-btn primary" id="nextBtn" onclick="goTo(currentSlide+1)">Next →</button></div>
+</div>
+
+<script>
+function toggleTheme() { document.body.classList.toggle('light'); document.getElementById('themeToggle').textContent = document.body.classList.contains('light') ? '🌙' : '☀️'; localStorage.setItem('mlops-p3-theme', document.body.classList.contains('light') ? 'light' : 'dark'); }
+if (localStorage.getItem('mlops-p3-theme') === 'light') { document.body.classList.add('light'); document.getElementById('themeToggle').textContent = '🌙'; }
+(function() { const c=document.getElementById('bgCanvas'),ctx=c.getContext('2d'); let p=[]; function rz(){ c.width=innerWidth; c.height=innerHeight; } rz(); window.addEventListener('resize',rz); for(let i=0;i<60;i++) p.push({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-0.5)*0.4,vy:(Math.random()-0.5)*0.4,r:Math.random()*2+0.5}); function anim(){ ctx.clearRect(0,0,c.width,c.height); const isL=document.body.classList.contains('light'),lc=isL?'rgba(9,105,218,0.06)':'rgba(57,210,255,0.06)',dc=isL?'rgba(9,105,218,0.3)':'rgba(57,210,255,0.3)'; p.forEach(pp=>{pp.x+=pp.vx;pp.y+=pp.vy;if(pp.x<0)pp.x=c.width;if(pp.x>c.width)pp.x=0;if(pp.y<0)pp.y=c.height;if(pp.y>c.height)pp.y=0;}); for(let i=0;i<p.length;i++)for(let j=i+1;j<p.length;j++){const dx=p[i].x-p[j].x,dy=p[i].y-p[j].y;if(Math.sqrt(dx*dx+dy*dy)<100){ctx.beginPath();ctx.moveTo(p[i].x,p[i].y);ctx.lineTo(p[j].x,p[j].y);ctx.strokeStyle=lc;ctx.lineWidth=0.5;ctx.stroke();}} p.forEach(pp=>{ctx.beginPath();ctx.arc(pp.x,pp.y,pp.r,0,Math.PI*2);ctx.fillStyle=dc;ctx.fill();}); requestAnimationFrame(anim); } anim(); })();
+
+const slides = [
+{ id:'3.1', title:'Observe Your Features',
+  fact:'<strong>You cannot engineer what you haven\'t observed.</strong> Before transforming anything, profile every feature: distribution, range, missing rate, and relationship to the target.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">3.1</span> Observe Your Features</h2>
+<p>Before scaling, encoding, or engineering — you must <strong style="color:var(--cyan)">profile every feature</strong>. What's the distribution? What's missing? What correlates with the target? Skip this step and you'll apply transformations blindly.</p>
+
+<h3>🏠 House Prices: Feature Profiling Report</h3>
+<div class="eq-box"><span style="color:var(--text-muted)">// Ames Housing — 82 Features Profiled</span>
+<span style="color:var(--cyan)">NUMERICAL (38 columns):</span>
+<span style="color:var(--green)">  SalePrice:</span>   mean=$182K, std=$79K, skew=1.88 → <span style="color:var(--amber)">RIGHT-SKEWED</span>
+<span style="color:var(--green)">  GrLivArea:</span>   mean=1515, range 334–5642, corr w/ price = <span style="color:var(--cyan)">0.71</span>
+<span style="color:var(--green)">  OverallQual:</span>  mean=6.1, range 1–10,   corr w/ price = <span style="color:var(--cyan)">0.80</span> ← STRONGEST
+<span style="color:var(--green)">  YearBuilt:</span>    mean=1971, range 1872–2010
+<span style="color:var(--green)">  LotArea:</span>     mean=10517, range 1300–215245, std=9981 → <span style="color:var(--amber)">HIGH VARIANCE</span>
+
+<span style="color:var(--cyan)">CATEGORICAL (43 columns):</span>
+<span style="color:var(--green)">  MSZoning:</span>    5 unique values (RL=79%)
+<span style="color:var(--green)">  Neighborhood:</span> 25 unique values → <span style="color:var(--amber)">HIGH CARDINALITY</span>
+<span style="color:var(--green)">  PoolQC:</span>       99.7% null → <span style="color:var(--red)">DROP</span>
+<span style="color:var(--green)">  Alley:</span>        93% null → <span style="color:var(--red)">DROP</span>
+
+<span style="color:var(--cyan)">DECISIONS from profiling:</span>
+  1. Log-transform SalePrice (right-skewed)
+  2. StandardScaler for numerical features
+  3. OneHotEncode categoricals (handle_unknown='ignore')
+  4. Drop PoolQC & Alley (>90% null)</div>
+
+<div class="quiz" id="quiz1"><div class="question">🧪 You profile a feature and find 99.7% nulls. What's the right call?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz1',this)">A. Drop it — it has almost no information. Adding it adds noise, not signal.</div>
+<div class="option" onclick="checkQuiz('quiz1',this)">B. Impute with the mode — every feature might be useful</div>
+<div class="option" onclick="checkQuiz('quiz1',this)">C. Keep it as-is — the model will learn to ignore it</div></div><div class="feedback" id="quiz1-fb"></div></div>
+</div></div>`;}},
+
+{ id:'3.2', title:'Handle Missing Values',
+  fact:'<strong>Missing values tell a story.</strong> Are they missing at random — or is there a pattern? The answer determines your imputation strategy.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">3.2</span> Handle Missing Values</h2>
+<p>Missing data is NOT just "fill it and forget it." You must understand <strong style="color:var(--cyan)">WHY</strong> it's missing before deciding HOW to handle it.</p>
+
+<div class="compare-grid col2">
+<div class="compare-card"><h4 style="color:var(--red)">❌ Drop Rows</h4><p>Delete any row with a missing value.</p><div class="tag-row"><span class="tag high">Loses data</span></div><p style="margin-top:0.4rem">If only 5 rows are missing → fine. If 40% of rows have ANY null → you lose 40% of data.</p></div>
+<div class="compare-card"><h4 style="color:var(--amber)">⚠️ Mean/Median/Mode</h4><p>Fill with average or most-common value.</p><div class="tag-row"><span class="tag med">Simple</span></div><p style="margin-top:0.4rem">Fast but ignores correlations. "Average bedroom count" for a mansion is wrong.</p></div>
+<div class="compare-card"><h4 style="color:var(--cyan)">🔵 Constant Value</h4><p>Fill with "Missing" or -1 or 0.</p><div class="tag-row"><span class="tag low">Preserves missing signal</span></div><p style="margin-top:0.4rem">Best when "missing" IS the signal — e.g. "No credit history" vs "Bad credit".</p></div>
+<div class="compare-card"><h4 style="color:var(--green)">✅ Model-Based</h4><p>Train a mini-model to predict the missing values.</p><div class="tag-row"><span class="tag low">Most accurate</span></div><p style="margin-top:0.4rem">KNNImputer, IterativeImputer. Most accurate but expensive. Worth it when the feature is important.</p></div>
+</div>
+
+<h3>🏠 House Prices: Missing Value Decisions</h3>
+<div class="eq-box"><span style="color:var(--text-muted)">// Column-by-column strategy:</span>
+<span style="color:var(--red)">DROP:</span>  PoolQC (99.7% null), Alley (93%), Fence (80%), MiscFeature (96%)
+        → Almost no information. Dropping removes noise.
+
+<span style="color:var(--cyan)">IMPUTE (numerical):</span>
+        LotFrontage → <span style="color:var(--amber)">Median</span> (17% null, skewed distribution)
+        GarageYrBlt  → <span style="color:var(--amber)">0</span> (5% null, "no garage" = year 0)
+
+<span style="color:var(--cyan)">IMPUTE (categorical):</span>
+        Electrical → <span style="color:var(--amber)">Mode</span> (only 1 row missing — most common wiring type)
+        FireplaceQu → <span style="color:var(--amber)">"None"</span> (47% null, "no fireplace" IS the answer)</div>
+
+<div class="quiz" id="quiz2"><div class="question">🧪 GarageYrBlt is null for 5% of houses. What's the BEST strategy?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz2',this)">A. Fill with 0 — "Year 0" means "No Garage." The missing IS the signal.</div>
+<div class="option" onclick="checkQuiz('quiz2',this)">B. Fill with median garage year — these houses probably have similar garages</div>
+<div class="option" onclick="checkQuiz('quiz2',this)">C. Drop the column — 5% missing is too much uncertainty</div></div><div class="feedback" id="quiz2-fb"></div></div>
+</div></div>`;}},
+
+{ id:'3.3', title:'Scaling',
+  fact:'<strong>Models that rely on distance (kNN, SVM, neural nets) are BLIND</strong> without scaling. A feature with range 0–100,000 dominates one with range 0–1.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">3.3</span> Scaling — Make Features Comparable</h2>
+<p>A model sees <strong style="color:var(--red)">LotArea (range: 1,300–215,000)</strong> and <strong style="color:var(--red)">Bedrooms (range: 0–8)</strong>. Without scaling, LotArea dominates EVERYTHING — not because it's important, but because it's BIG.</p>
+
+<div class="compare-grid col3">
+<div class="compare-card"><h4 style="color:var(--cyan)">📐 StandardScaler</h4><p>(x − mean) ÷ std</p><p style="font-size:0.7rem;margin-top:0.3rem"><strong>After:</strong> mean=0, std=1 for every feature. All features speak the same "language."</p><div class="tag-row"><span class="tag low">Best for: most ML</span></div><p style="margin-top:0.4rem;color:var(--cyan)!important">🏠 House Prices: USE THIS for numericals.</p></div>
+<div class="compare-card"><h4 style="color:var(--amber)">📏 MinMaxScaler</h4><p>(x − min) ÷ (max − min)</p><p style="font-size:0.7rem;margin-top:0.3rem"><strong>After:</strong> all features in [0,1]. Preserves the shape of the distribution.</p><div class="tag-row"><span class="tag low">Best for: images, neural nets</span></div><p style="margin-top:0.4rem;color:var(--amber)!important">⚠️ Sensitive to outliers — one extreme house stretches everything.</p></div>
+<div class="compare-card"><h4 style="color:var(--green)">🛡️ RobustScaler</h4><p>(x − median) ÷ IQR</p><p style="font-size:0.7rem;margin-top:0.3rem"><strong>After:</strong> centered and scaled — but outliers don't distort it.</p><div class="tag-row"><span class="tag low">Best for: data with outliers</span></div><p style="margin-top:0.4rem;color:var(--green)!important">✅ Good alternative if you keep the $755K mansion in the data.</p></div>
+</div>
+
+<h3>Visual: What Scaling Does</h3>
+<div class="eq-box"><span style="color:var(--text-muted)">// Before scaling — LotArea dominates:</span>
+House A: [LotArea=10000, Bedrooms=3, YearBuilt=1995]
+House B: [LotArea=5000,  Bedrooms=6, YearBuilt=2010]
+
+<span style="color:var(--text-muted)">// After StandardScaler — all features contribute equally:</span>
+House A: [LotArea=-0.05, Bedrooms=-0.8, YearBuilt=-0.3]
+House B: [LotArea=-0.55, Bedrooms=+1.6, YearBuilt=+0.9]
+
+<span style="color:var(--cyan)">Now Bedrooms and YearBuilt can actually influence the model!</span></div>
+
+<div class="quiz" id="quiz3"><div class="question">🧪 Your dataset has a $5M outlier in a column that's normally $100K–$500K. Which scaler?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz3',this)">A. RobustScaler — uses median and IQR, so the $5M outlier barely affects it</div>
+<div class="option" onclick="checkQuiz('quiz3',this)">B. MinMaxScaler — the $5M becomes the new max, compressing everything to near-zero</div>
+<div class="option" onclick="checkQuiz('quiz3',this)">C. StandardScaler — mean gets pulled by the outlier, but std is still reasonable</div></div><div class="feedback" id="quiz3-fb"></div></div>
+</div></div>`;}},
+
+{ id:'3.4', title:'Binning',
+  fact:'<strong>Sometimes continuous is TOO detailed.</strong> Binning converts "Age=37.2" into "Middle-Aged" — losing precision but gaining pattern clarity.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">3.4</span> Binning — Continuous → Categorical</h2>
+<p>When the relationship between a feature and the target is <strong style="color:var(--cyan)">non-linear</strong>, binning can help. Instead of "YearBuilt = 2003", the model sees "Era = Post-2000".</p>
+
+<h3>📊 How Binning Works</h3>
+<div class="eq-box"><span style="color:var(--text-muted)">// YearBuilt: continuous → binned into eras</span>
+<span style="color:var(--cyan)">Before (continuous):</span>  [1872, 1920, 1955, 1972, 1988, 2003, 2010]
+<span style="color:var(--cyan)">After (binned):</span>       [Pre-1900, 1900-1950, 1950-1970, 1970-1990, 1990-2005, Post-2005]
+
+<span style="color:var(--text-muted)">// Why this helps:</span>
+House age doesn't affect price LINEARLY. A 100-year-old Victorian might
+sell for MORE than a 50-year-old ranch. Binning lets the model learn
+different price effects per era — instead of forcing one straight line.</div>
+
+<h3>🏠 House Prices: Binning Applications</h3>
+<div class="data-types two">
+<div class="data-type-card"><div class="dt-icon">🏛️</div><h4>YearBuilt → House Era</h4><p>Pre-1900 / 1900-1950 / 1950-1980 / 1980-2000 / Post-2000. Each era has distinct pricing patterns.</p></div>
+<div class="data-type-card"><div class="dt-icon">📐</div><h4>LotArea → Lot Size Tier</h4><p>Small (<5000) / Medium (5000-10000) / Large (10000-20000) / Estate (>20000). Non-linear relationship with price.</p></div>
+</div>
+
+<div class="flashcard-wrap" onclick="this.querySelector('.flashcard').classList.toggle('flipped')"><div class="flashcard"><div class="front"><span>⚠️ What's the risk of too many bins?</span><span class="hint">Click to reveal ↻</span></div><div class="back"><strong>Overfitting.</strong> If you create 50 bins for YearBuilt (one per year), you've just replaced a smooth continuous feature with 50 sparse categories. The model memorizes per-year quirks instead of learning the trend. <strong>Use 5-10 bins max.</strong></div></div></div>
+
+<div class="quiz" id="quiz4"><div class="question">🧪 You bin "Age" into Young (0-30), Mid (30-60), Senior (60+). What did you lose?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz4',this)">A. Granularity — a 31-year-old and a 59-year-old are now "the same" to the model</div>
+<div class="option" onclick="checkQuiz('quiz4',this)">B. Nothing — binning always improves model accuracy</div>
+<div class="option" onclick="checkQuiz('quiz4',this)">C. The ability to use OneHotEncoder on this feature</div></div><div class="feedback" id="quiz4-fb"></div></div>
+</div></div>`;}},
+
+{ id:'3.5', title:'Categorical Encoding',
+  fact:'<strong>Models eat numbers, not text.</strong> "Neighborhood = Downtown" means nothing to Linear Regression. Encoding turns words into math.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">3.5</span> Categorical Encoding</h2>
+<p>The Ames dataset has <strong style="color:var(--cyan)">43 categorical columns</strong>. Each one needs to become numbers before the model can use it. The encoding method depends on cardinality (how many unique values).</p>
+
+<div class="compare-grid col2">
+<div class="compare-card"><h4 style="color:var(--cyan)">🔵 One-Hot Encoding</h4><p>Each unique value → its own binary column.</p><p style="font-size:0.72rem;margin-top:0.3rem">"Red", "Blue", "Green" → 3 columns: [is_Red, is_Blue, is_Green]</p><div class="tag-row"><span class="tag low">Best: low cardinality (< 50)</span></div><p style="margin-top:0.4rem;color:var(--cyan)!important">🏠 Use for: MSZoning (5), HouseStyle (8), GarageType (6)</p></div>
+<div class="compare-card"><h4 style="color:var(--red)">🔴 Label Encoding</h4><p>Each value → a number. Red=1, Blue=2, Green=3.</p><p style="font-size:0.72rem;margin-top:0.3rem">The model thinks Green > Blue > Red. <strong>NEVER use for nominal categories.</strong></p><div class="tag-row"><span class="tag high">Fake ordering</span></div><p style="margin-top:0.4rem;color:var(--red)!important">Only for ORDINAL data: "Poor < Fair < Good < Excellent"</p></div>
+<div class="compare-card"><h4 style="color:var(--amber)">🟡 Top-K + Unknown</h4><p>Keep the K most common values, bucket rest as "Other".</p><p style="font-size:0.72rem;margin-top:0.3rem">Neighborhood has 25 values → keep top 15, rest → "Other_Neighborhood"</p><div class="tag-row"><span class="tag med">Best: medium cardinality</span></div><p style="margin-top:0.4rem;color:var(--amber)!important">🏠 Use for: Neighborhood (25 values)</p></div>
+<div class="compare-card"><h4 style="color:var(--violet)">🟣 Hashing</h4><p>Hash each value into fixed N buckets. Collisions possible.</p><p style="font-size:0.72rem;margin-top:0.3rem">ZIP code with 40,000 values → hash into 100 columns.</p><div class="tag-row"><span class="tag med">Best: very high cardinality</span></div><p style="margin-top:0.4rem;color:var(--violet)!important">Not needed for House Prices. Useful for ZIP codes, product IDs.</p></div>
+</div>
+
+<h3>🏠 House Prices: Encoding Plan</h3>
+<div class="eq-box"><span style="color:var(--text-muted)">// 43 categorical columns → encoding decisions:</span>
+<span style="color:var(--cyan)">OneHotEncode (37 cols):</span> MSZoning, Street, Alley, LotShape, LandContour,
+  Utilities, LotConfig, LandSlope, Neighborhood, Condition1, Condition2,
+  BldgType, HouseStyle, RoofStyle, RoofMatl, Exterior1st, Exterior2nd...
+  → handle_unknown='ignore' (new categories in production get all-zeros)
+
+<span style="color:var(--amber)">OrdinalEncode (6 cols):</span>
+  OverallQual, OverallCond, ExterQual, ExterCond, BsmtQual, BsmtCond,
+  HeatingQC, KitchenQual, FireplaceQu, GarageQual, GarageCond, PoolQC
+  → All have natural order: Poor < Fair < Average < Good < Excellent</div>
+
+<div class="quiz" id="quiz5"><div class="question">🧪 "Neighborhood" has 25 unique values. One-Hot creates 25 columns. Is that a problem?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz5',this)">A. 25 columns from 2,930 rows is fine — that's 117 rows per column on average. No issue.</div>
+<div class="option" onclick="checkQuiz('quiz5',this)">B. Yes — 25 is way too many columns, use Label Encoding instead</div>
+<div class="option" onclick="checkQuiz('quiz5',this)">C. Yes — drop Neighborhood entirely, it's not useful</div></div><div class="feedback" id="quiz5-fb"></div></div>
+</div></div>`;}},
+
+{ id:'3.6', title:'Feature Crosses',
+  fact:'<strong>Some signals only exist in the COMBINATION of features.</strong> Sqft alone and Quality alone miss "large AND high-quality = luxury".',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">3.6</span> Feature Crosses</h2>
+<p>A feature cross multiplies two features to capture their <strong style="color:var(--cyan)">interaction</strong>. Neither feature alone captures the pattern — only the combination does.</p>
+
+<h3>🏠 House Prices: Candidate Crosses</h3>
+<div class="data-types">
+<div class="data-type-card"><div class="dt-icon">✨</div><h4>GrLivArea × OverallQual</h4><p>"Luxury Score" — A large house with low quality ≠ A large house with high quality. The cross separates them.</p><p style="color:var(--cyan);font-size:0.7rem;margin-top:0.3rem">Example: 3000×8=24000 vs 3000×4=12000</p></div>
+<div class="data-type-card"><div class="dt-icon">🏠</div><h4>TotalBath × Bedrooms</h4><p>"Bath-to-Bed Ratio" — 2 baths for 5 bedrooms is cramped. 3 baths for 3 bedrooms is luxurious.</p><p style="color:var(--cyan);font-size:0.7rem;margin-top:0.3rem">Example: 2/5=0.4 vs 3/3=1.0</p></div>
+<div class="data-type-card"><div class="dt-icon">🚗</div><h4>GarageCars × GarageArea</h4><p>"Garage Density" — A 2-car garage with 800 sqft is spacious. 3-car with 600 sqft is tight.</p><p style="color:var(--cyan);font-size:0.7rem;margin-top:0.3rem">Example: 800/2=400 vs 600/3=200 sqft/car</p></div>
+<div class="data-type-card"><div class="dt-icon">📅</div><h4>YearBuilt × OverallQual</h4><p>"Quality-Adjusted Age" — A well-maintained old house vs a poorly-built new one.</p><p style="color:var(--cyan);font-size:0.7rem;margin-top:0.3rem">Example: 1920×8=15360 vs 2010×4=8040</p></div>
+<div class="data-type-card"><div class="dt-icon">🏘️</div><h4>LotArea × Neighborhood</h4><p>"Land Value" — Same lot size means different things in different neighborhoods.</p><p style="color:var(--cyan);font-size:0.7rem;margin-top:0.3rem">This is complex — only add if simple model underperforms.</p></div>
+<div class="data-type-card"><div class="dt-icon">🌳</div><h4>TotalBsmtSF × BsmtQual</h4><p>"Usable Basement" — A large basement with poor finish is less valuable than a medium finished one.</p></div>
+</div>
+
+<h3>⚠️ The Explosion Warning</h3>
+<div class="eq-box"><span style="color:var(--red)">82 features → 82×81/2 = 3,321 possible crosses</span>
+<span style="color:var(--cyan)">Rule of thumb:</span> Start with ZERO crosses. Only add one when you see
+a pattern in the residuals that a single feature can't explain.
+
+<span style="color:var(--green)">For House Prices (Phase 5):</span> Start with NO crosses.
+Linear Regression on raw features first. If R² < 0.85, add GrLivArea×OverallQual.</div>
+
+<div class="quiz" id="quiz6"><div class="question">🧪 You create 500 feature crosses from 50 features. What happens?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz6',this)">A. Curse of dimensionality — 500 features on 2,930 rows = overfitting. The model finds spurious patterns instead of real ones.</div>
+<div class="option" onclick="checkQuiz('quiz6',this)">B. Better accuracy — more features always help</div>
+<div class="option" onclick="checkQuiz('quiz6',this)">C. Nothing — Linear Regression handles any number of features perfectly</div></div><div class="feedback" id="quiz6-fb"></div></div>
+</div></div>`;}},
+
+{ id:'3.7', title:'Leakage Detection',
+  fact:'<strong>The most dangerous ML bug is invisible.</strong> Leakage gives you great test metrics — and a model that completely fails in production.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">3.7</span> Leakage Detection</h2>
+<p><strong style="color:var(--red)">Leakage = information from the test set (or future) leaking into training.</strong> Your metrics look great. Your model is useless. And you won't know until it's in production.</p>
+
+<h3>🔍 The Ablation Test — Catch Leakage Before Deployment</h3>
+<div class="pipeline">
+<div class="pipeline-stage"><div class="stage-icon">📊</div><div class="stage-name">TRAIN FULL<br>MODEL</div><div class="stage-desc">All features<br>R² = 0.87</div></div>
+<span class="pipeline-arrow">→</span>
+<div class="pipeline-stage"><div class="stage-icon">🔪</div><div class="stage-name">DROP 1<br>FEATURE</div><div class="stage-desc">Retrain without<br>it. Check R².</div></div>
+<span class="pipeline-arrow">→</span>
+<div class="pipeline-stage highlight"><div class="stage-icon">🔍</div><div class="stage-name">SUSPICIOUS?</div><div class="stage-desc">R² drops<br>WAY too much?</div></div>
+<span class="pipeline-arrow">→</span>
+<div class="pipeline-stage"><div class="stage-icon">🚨</div><div class="stage-name">LEAKAGE<br>FOUND</div><div class="stage-desc">That feature<br>is cheating</div></div>
+</div>
+
+<h3>🏠 House Prices: Ablation Test Results</h3>
+<div class="eq-box"><span style="color:var(--text-muted)">// Expected: dropping any SINGLE feature drops R² by 0.01–0.05</span>
+<span style="color:var(--green)">[OK]</span> Drop GrLivArea    → R² drops 0.87→0.79  (Δ=-0.08, reasonable)
+<span style="color:var(--green)">[OK]</span> Drop OverallQual  → R² drops 0.87→0.75  (Δ=-0.12, reasonable)
+<span style="color:var(--green)">[OK]</span> Drop GarageCars   → R² drops 0.87→0.84  (Δ=-0.03, reasonable)
+<span style="color:var(--red)">[LEAK!]</span> Drop SalePrice_Normalized → R² drops 0.87→0.22 (Δ=-0.65!)
+        → This feature was derived from the TARGET! Remove it.</div>
+
+<h3>Common Leakage Sources</h3>
+<div class="data-types">
+<div class="data-type-card"><div class="dt-icon">🎯</div><h4>Target-Derived Features</h4><p>Any feature computed FROM the target variable. SalePrice/sqft uses SalePrice — that's leakage.</p></div>
+<div class="data-type-card"><div class="dt-icon">📅</div><h4>Future Information</h4><p>"Days until sold" known at listing time? No — you don't know the sale date yet.</p></div>
+<div class="data-type-card"><div class="dt-icon">👤</div><h4>Row-Level ID Leak</h4><p>Row ID correlates with target? Maybe newer IDs got higher prices. Check it.</p></div>
+</div>
+
+<div class="quiz" id="quiz7"><div class="question">🧪 You add "PricePerSqft = SalePrice / GrLivArea" as a feature. Problem?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz7',this)">A. LEAKAGE — PricePerSqft is computed FROM SalePrice. The model sees the answer in the input.</div>
+<div class="option" onclick="checkQuiz('quiz7',this)">B. It's fine — derived features always improve accuracy</div>
+<div class="option" onclick="checkQuiz('quiz7',this)">C. No leakage, but it's redundant since the model can learn that division</div></div><div class="feedback" id="quiz7-fb"></div></div>
+</div></div>`;}},
+
+{ id:'3.8', title:'Build the Transformation Pipeline',
+  fact:'<strong>Whatever transform you .fit() on training MUST be .transform()ed identically at serving.</strong> This is the #1 production ML rule.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">3.8</span> Build the Transformation Pipeline</h2>
+<p>The golden rule of ML engineering: <strong style="color:var(--cyan)">Same code path for training AND serving.</strong> If you fit a scaler on training data, you must use THAT EXACT scaler (not a new one) when serving.</p>
+
+<h3>🏠 House Prices: The Pipeline in Code</h3>
+<div class="eq-box"><span style="color:var(--text-muted)"># pipelines/training_pipeline.py — ONE pipeline for both:</span>
+<span style="color:var(--magenta)">from</span> sklearn.pipeline <span style="color:var(--magenta)">import</span> Pipeline
+<span style="color:var(--magenta)">from</span> sklearn.compose <span style="color:var(--magenta)">import</span> ColumnTransformer
+
+<span style="color:var(--text-muted)"># Step 1: Define transforms per column type</span>
+preprocessor = ColumnTransformer([
+    (<span style="color:var(--amber)">'num'</span>, Pipeline([
+        (<span style="color:var(--amber)">'imputer'</span>, SimpleImputer(strategy=<span style="color:var(--amber)">'median'</span>)),
+        (<span style="color:var(--amber)">'scaler'</span>, StandardScaler())
+    ]), numerical_cols),
+    (<span style="color:var(--amber)">'cat'</span>, Pipeline([
+        (<span style="color:var(--amber)">'imputer'</span>, SimpleImputer(strategy=<span style="color:var(--amber)">'constant'</span>, fill_value=<span style="color:var(--amber)">'missing'</span>)),
+        (<span style="color:var(--amber)">'encoder'</span>, OneHotEncoder(handle_unknown=<span style="color:var(--amber)">'ignore'</span>))
+    ]), categorical_cols)
+])
+
+<span style="color:var(--text-muted)"># Step 2: Full pipeline = preprocess + model</span>
+pipeline = Pipeline([
+    (<span style="color:var(--amber)">'preprocessor'</span>, preprocessor),
+    (<span style="color:var(--amber)">'model'</span>, LinearRegression())
+])
+
+<span style="color:var(--text-muted)"># Step 3: TRAINING — .fit() learns transforms + model</span>
+pipeline.fit(X_train, y_train)
+
+<span style="color:var(--text-muted)"># Step 4: SERVING — .predict() uses the SAME transforms</span>
+<span style="color:var(--text-muted)">#          No .fit() called. No new scaler. No new encoder.</span>
+prediction = pipeline.predict(X_new_house)  <span style="color:var(--text-muted)"># ← SAFE</span></div>
+
+<h3>❌ What NOT to Do</h3>
+<div class="eq-box"><span style="color:var(--text-muted)"># WRONG: Separate code paths = train/serve skew</span>
+<span style="color:var(--red)"># Training:</span>
+scaler = StandardScaler()
+X_train_scaled = scaler.<span style="color:var(--green)">fit</span>(X_train).transform(X_train)  <span style="color:var(--text-muted)"># mean=10500, std=9980</span>
+model.fit(X_train_scaled, y_train)
+joblib.dump(model, <span style="color:var(--amber)">'model.pkl'</span>)  <span style="color:var(--text-muted)"># ← SCALER NOT SAVED!</span>
+
+<span style="color:var(--red)"># Serving (3 months later):</span>
+scaler = StandardScaler()
+X_live_scaled = scaler.<span style="color:var(--green)">fit</span>(X_live).transform(X_live)  <span style="color:var(--text-muted)"># mean=8800, std=7200 ← DIFFERENT</span>
+model.predict(X_live_scaled)  <span style="color:var(--text-muted)"># ← WRONG PREDICTION, NO ERROR MESSAGE</span></div>
+
+<div class="quiz" id="quiz8"><div class="question">🧪 You saved model.pkl but forgot to save the scaler. What happens in production?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz8',this)">A. Silent wrong predictions — no crash, no error, just systematically biased outputs that you might never notice</div>
+<div class="option" onclick="checkQuiz('quiz8',this)">B. The model crashes with a "scaler not found" error</div>
+<div class="option" onclick="checkQuiz('quiz8',this)">C. Nothing — the model retrains itself on live data automatically</div></div><div class="feedback" id="quiz8-fb"></div></div>
+</div></div>`;}},
+
+{ id:'3.9', title:'Version the Pipeline',
+  fact:'<strong>"Which scaler did this model use?"</strong> If you can\'t answer this question, you have a production incident waiting to happen.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">3.9</span> Version the Pipeline</h2>
+<p>It's not enough to version the MODEL. You must version the <strong style="color:var(--cyan)">entire transformation pipeline</strong> — scaler stats, encoder mappings, imputer values, bin edges. Everything the model depends on.</p>
+
+<h3>📦 What to Version (Checklist)</h3>
+<div class="data-types">
+<div class="data-type-card"><div class="dt-icon">📐</div><h4>Scaler Stats</h4><p>mean, std per numerical column (StandardScaler) or min, max (MinMaxScaler). 82 numbers × 38 numerical features.</p></div>
+<div class="data-type-card"><div class="dt-icon">🔤</div><h4>Encoder Mappings</h4><p>Which category → which column index? "Downtown" → column 5. Must match at serving time.</p></div>
+<div class="data-type-card"><div class="dt-icon">💧</div><h4>Imputer Values</h4><p>Median LotFrontage = 68ft. Median GrLivArea = 1450sqft. These change if data changes.</p></div>
+<div class="data-type-card"><div class="dt-icon">📏</div><h4>Bin Edges</h4><p>YearBuilt bins: [1872, 1900, 1950, 1980, 2000, 2010]. If you rebin, it's a new pipeline version.</p></div>
+<div class="data-type-card"><div class="dt-icon">🗑️</div><h4>Dropped Columns</h4><p>Which columns were dropped? PoolQC, Alley, Fence, MiscFeature. If you un-drop one, version bump.</p></div>
+<div class="data-type-card"><div class="dt-icon">🔗</div><h4>Feature Crosses</h4><p>Which crosses were used? GrLivArea×OverallQual? Version documents the formula and the rationale.</p></div>
+</div>
+
+<h3>🏠 House Prices: MLflow Artifact Strategy</h3>
+<div class="eq-box"><span style="color:var(--text-muted)"># Log the ENTIRE pipeline — not just the model</span>
+<span style="color:var(--magenta)">import</span> mlflow
+
+<span style="color:var(--magenta)">with</span> mlflow.start_run():
+    <span style="color:var(--text-muted)"># Log the full sklearn Pipeline (scaler + imputer + encoder + model)</span>
+    mlflow.sklearn.log_model(pipeline, <span style="color:var(--amber)">"model"</span>)
+
+    <span style="color:var(--text-muted)"># Log metadata about the pipeline</span>
+    mlflow.log_param(<span style="color:var(--amber)">"scaler"</span>, <span style="color:var(--amber)">"StandardScaler"</span>)
+    mlflow.log_param(<span style="color:var(--amber)">"imputer_num"</span>, <span style="color:var(--amber)">"median"</span>)
+    mlflow.log_param(<span style="color:var(--amber)">"imputer_cat"</span>, <span style="color:var(--amber)">"constant_fill_missing"</span>)
+    mlflow.log_param(<span style="color:var(--amber)">"encoder"</span>, <span style="color:var(--amber)">"OneHotEncoder(handle_unknown=ignore)"</span>)
+    mlflow.log_param(<span style="color:var(--amber)">"dropped_cols"</span>, <span style="color:var(--amber)">"PoolQC,Alley,Fence,MiscFeature"</span>)
+    mlflow.log_param(<span style="color:var(--amber)">"pipeline_version"</span>, <span style="color:var(--amber)">"v1.0"</span>)
+
+<span style="color:var(--green)">// Now mlflow.pyfunc.load_model() loads EVERYTHING — scaler, encoder, model.
+// No risk of mismatch. No silent errors.</span></div>
+
+<div class="quiz" id="quiz9"><div class="question">🧪 You change from median to mean imputation. What should you do?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz9',this)">A. Bump pipeline version to v1.1, retrain, log as a NEW MLflow run, compare metrics with v1.0 before deploying</div>
+<div class="option" onclick="checkQuiz('quiz9',this)">B. Just update the code — it's a minor change, no need to version</div>
+<div class="option" onclick="checkQuiz('quiz9',this)">C. Delete the old pipeline — it's obsolete now</div></div><div class="feedback" id="quiz9-fb"></div></div>
+</div></div>`;}},
+
+{ id:'3.10', title:'Monitor Feature Health',
+  fact:'<strong>Features drift. Distributions shift. Nulls appear.</strong> Your pipeline is alive — monitor it like you monitor your server.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">3.10</span> Monitor Feature Health in Production</h2>
+<p>You deployed the model. The pipeline works. Then — silently — the data <strong style="color:var(--red)">changes</strong>. Feature monitoring catches drift BEFORE bad predictions reach users.</p>
+
+<h3>📊 Feature Health Dashboard</h3>
+<div class="data-types two">
+<div class="data-type-card"><div class="dt-icon">📈</div><h4>Distribution Drift (PSI)</h4><p>Population Stability Index compares live data distribution to training baseline. PSI > 0.1 = investigate. > 0.2 = retrain.</p><p style="color:var(--cyan);font-size:0.7rem;margin-top:0.3rem">Monitor: GrLivArea, OverallQual, LotArea, YearBuilt</p></div>
+<div class="data-type-card"><div class="dt-icon">🕳️</div><h4>Null Rate Monitor</h4><p>Track null % per feature over time. Alert on CHANGE — not on absolute value. PoolQC 99.7% null is normal. GrLivArea suddenly 10% null is NOT.</p></div>
+<div class="data-type-card"><div class="dt-icon">📏</div><h4>Range Violations</h4><p>Count predictions where input features are outside training range. If 10% of predictions have GrLivArea > training max, flag it.</p></div>
+<div class="data-type-card"><div class="dt-icon">🎯</div><h4>Prediction Stability</h4><p>Is the distribution of predictions stable? If mean predicted price suddenly jumps 20%, something changed — data, model, or market.</p></div>
+</div>
+
+<h3>🏠 House Prices: Monitoring Plan</h3>
+<div class="eq-box"><span style="color:var(--text-muted)">// Weekly automated checks:</span>
+<span style="color:var(--cyan)">[Weekly]</span>  PSI on top 10 features vs training baseline
+<span style="color:var(--cyan)">[Weekly]</span>  Null rate check on all 82 features
+<span style="color:var(--cyan)">[Weekly]</span>  Prediction distribution comparison (mean, std, p95)
+<span style="color:var(--cyan)">[Weekly]</span>  Range check: % of predictions with features outside training range
+
+<span style="color:var(--amber)">[Alert]</span>  If PSI > 0.1 on GrLivArea OR OverallQual → investigate
+<span style="color:var(--red)">[Critical]</span> If PSI > 0.2 on any feature → trigger retraining
+<span style="color:var(--red)">[Critical]</span> If null rate spikes > 5% on any "should-never-be-null" feature
+
+<span style="color:var(--text-muted)">// Tools: Evidently AI, Great Expectations, or custom pandas + matplotlib</span></div>
+
+<h3>✅ Phase 3 Complete — What You've Learned</h3>
+<div class="data-types">
+<div class="data-type-card"><div class="dt-icon">🔍</div><h4>Profile First</h4><p>Observe every feature before transforming — distribution, missing, correlation</p></div>
+<div class="data-type-card"><div class="dt-icon">🔧</div><h4>Transform Right</h4><p>Scale, encode, bin, cross — pick the right method per feature type</p></div>
+<div class="data-type-card"><div class="dt-icon">🚨</div><h4>Detect Leaks</h4><p>Ablation test catches target leakage before it ruins production</p></div>
+<div class="data-type-card"><div class="dt-icon">🔗</div><h4>One Pipeline</h4><p>Same code path for train AND serve. Never .fit() in production.</p></div>
+<div class="data-type-card"><div class="dt-icon">📦</div><h4>Version Everything</h4><p>Scaler + encoder + imputer + model — saved as one artifact</p></div>
+<div class="data-type-card"><div class="dt-icon">📊</div><h4>Monitor Forever</h4><p>Drift, nulls, ranges, predictions — weekly checks catch silent failures</p></div>
+</div>
+
+<div class="quiz" id="quiz10"><div class="question">🧪 PSI on GrLivArea jumps from 0.05 to 0.18. What's the right response?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz10',this)">A. Investigate — has the housing market shifted? Are bigger/smaller houses entering the pipeline? Don't retrain blindly, but don't ignore it.</div>
+<div class="option" onclick="checkQuiz('quiz10',this)">B. Ignore it — PSI is just a number and models are robust</div>
+<div class="option" onclick="checkQuiz('quiz10',this)">C. Immediately retrain — any drift means the model is broken</div></div><div class="feedback" id="quiz10-fb"></div></div>
+</div></div>`;}}
+];
+
+window.checkQuiz=function(qid,el){
+  const q=document.getElementById(qid); if(q.dataset.answered==='true')return;
+  q.querySelectorAll('.option').forEach(o=>{if(o.dataset.correct==='true')o.classList.add('correct');});
+  if(el.dataset.correct!=='true')el.classList.add('wrong');
+  const fb=document.getElementById(qid+'-fb'),ok=el.dataset.correct==='true';
+  fb.className='feedback show '+(ok?'correct':'wrong');
+  fb.textContent=ok?'✅ Correct! Well done.':'❌ Not quite. The correct answer is highlighted in green.';
+  q.dataset.answered='true';
+};
+let currentSlide=0; const visitedSlides=new Set([0]);
+function renderSlide(i){currentSlide=i; visitedSlides.add(i); document.getElementById('slideContainer').innerHTML=slides[i].render(); updateDots(); updateChips(); document.getElementById('funFactText').innerHTML='<strong>'+slides[i].id+':</strong> '+slides[i].fact; document.getElementById('stepLabel').textContent=(i+1)+'/'+slides.length; document.getElementById('prevBtn').disabled=i===0; const nb=document.getElementById('nextBtn'); if(i===slides.length-1){nb.textContent='✓ Complete';nb.style.background='var(--green-bg)';nb.style.borderColor='var(--green)';nb.style.color='var(--green)';} else {nb.textContent='Next →';nb.style.background='var(--cyan-bg)';nb.style.borderColor='var(--cyan)';nb.style.color='var(--cyan)';} document.getElementById('slideContainer').scrollIntoView({behavior:'smooth',block:'start'});}
+function goTo(i){if(i>=0&&i<slides.length)renderSlide(i);}
+function updateDots(){document.getElementById('stepDots').innerHTML=slides.map((s,i)=>'<div class="step-dot '+(i===currentSlide?'active':visitedSlides.has(i)?'done':'')+'" onclick="goTo('+i+')" title="'+s.id+': '+s.title+'"></div>').join('');}
+function updateChips(){document.getElementById('topicChips').innerHTML=slides.map((s,i)=>'<span class="topic-chip '+(i===currentSlide?'current':visitedSlides.has(i)?'visited':'')+'" onclick="goTo('+i+')">'+s.id+' '+s.title+'</span>').join('');}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'&&currentSlide<slides.length-1)goTo(currentSlide+1); if(e.key==='ArrowLeft'&&currentSlide>0)goTo(currentSlide-1);});
+renderSlide(0);
+</script>
+</body>
+</html>
