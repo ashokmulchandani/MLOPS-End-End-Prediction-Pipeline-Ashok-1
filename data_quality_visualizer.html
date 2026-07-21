@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Quality Gates — Interactive Visualizer</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06090f; --bg-card: #0d1117; --bg-raised: #161b22;
+  --border: #21262d; --text: #e6edf3; --text-dim: #8b949e; --text-muted: #484f58;
+  --cyan: #39d2ff; --amber: #ffb347; --green: #3fb950; --red: #f85149;
+  --violet: #a371f7; --magenta: #ff6ec7;
+}
+body.light {
+  --bg: #f6f8fa; --bg-card: #ffffff; --bg-raised: #e8ecf0;
+  --border: #d0d7de; --text: #1f2328; --text-dim: #656d76; --text-muted: #8b949e;
+  --cyan: #0969da; --amber: #9a6700; --green: #1a7f37; --red: #cf222e;
+  --violet: #8250df; --magenta: #bf3989;
+}
+body.light .gate-box { background: #f0f2f5; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; transition: background 0.3s, color 0.3s; }
+.theme-toggle { position: fixed; top: 1rem; right: 1.5rem; z-index: 999; background: var(--bg-raised); border: 1px solid var(--border); color: var(--text); font-size: 1.1rem; cursor: pointer; padding: 0.35rem 0.6rem; border-radius: 6px; transition: 0.2s; font-family: 'JetBrains Mono', monospace; }
+.theme-toggle:hover { border-color: var(--cyan); color: var(--cyan); }
+.app { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+.header { text-align: center; padding: 2rem 0 0.5rem; }
+.header h1 { font-family: 'Orbitron', sans-serif; font-size: clamp(1.2rem, 3vw, 1.8rem); background: linear-gradient(135deg, var(--cyan), var(--violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.3rem; }
+.header p { color: var(--text-dim); font-size: 0.9rem; }
+
+/* ── Pipeline Gates ── */
+.gates-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; margin: 1.5rem 0; }
+@media(max-width:900px) { .gates-row { grid-template-columns: repeat(2, 1fr); } }
+@media(max-width:500px) { .gates-row { grid-template-columns: 1fr; } }
+
+.gate-card { background: var(--bg-card); border: 2px solid var(--border); border-radius: 12px; padding: 1.2rem; cursor: pointer; transition: 0.2s; text-align: center; position: relative; overflow: hidden; }
+.gate-card:hover { transform: translateY(-2px); }
+.gate-card.active { border-color: var(--cyan); box-shadow: 0 0 20px #39d2ff15; }
+.gate-card .gate-num { font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 700; }
+.gate-card .gate-icon { font-size: 2rem; display: block; margin: 0.3rem 0; }
+.gate-card .gate-title { font-family: 'Orbitron', sans-serif; font-size: 0.72rem; margin-bottom: 0.2rem; }
+.gate-card .gate-desc { font-size: 0.65rem; color: var(--text-muted); }
+.gate-card .gate-status { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; margin-top: 0.5rem; padding: 0.3rem 0.6rem; border-radius: 100px; display: inline-block; }
+.status-pass { background: #3fb95015; color: var(--green); border: 1px solid var(--green); }
+.status-warn { background: #ffb34715; color: var(--amber); border: 1px solid var(--amber); }
+.status-fail { background: #f8514915; color: var(--red); border: 1px solid var(--red); animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+.gate-progress { height: 3px; background: var(--border); border-radius: 2px; margin-top: 0.6rem; overflow: hidden; }
+.gate-progress .fill { height: 100%; border-radius: 2px; transition: width 0.5s; }
+.fill.green { background: var(--green); }
+.fill.amber { background: var(--amber); }
+.fill.red { background: var(--red); }
+
+/* ── Detail Panel ── */
+.detail-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin: 1rem 0; min-height: 280px; }
+.detail-panel h3 { font-family: 'Orbitron', sans-serif; font-size: 0.9rem; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
+.detail-panel h3 .gate-label { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; padding: 0.2em 0.6em; border-radius: 100px; }
+
+/* ── Data Table ── */
+.data-table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; margin: 0.8rem 0; }
+.data-table th { text-align: left; padding: 0.4rem 0.6rem; color: var(--text-muted); font-weight: 500; border-bottom: 1px solid var(--border); font-size: 0.6rem; letter-spacing: 0.05em; }
+.data-table td { padding: 0.4rem 0.6rem; border-bottom: 1px solid rgba(33,38,45,0.3); color: var(--text-dim); }
+.data-table tr.row-ok { background: transparent; }
+.data-table tr.row-warn { background: rgba(255,179,71,0.06); }
+.data-table tr.row-fail { background: rgba(248,81,73,0.08); }
+.cell-ok { color: var(--green); }
+.cell-warn { color: var(--amber); }
+.cell-fail { color: var(--red); font-weight: 600; }
+.cell-highlight { background: rgba(248,81,73,0.12); border-radius: 3px; padding: 0.1em 0.3em; }
+
+/* ── Explanation ── */
+.explanation { background: var(--bg-raised); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-top: 1rem; font-size: 0.82rem; color: var(--text-dim); line-height: 1.6; }
+.explanation strong { color: var(--cyan); }
+.explanation .fix { color: var(--green); }
+
+/* ── Reset Button ── */
+.btn-row { display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem; }
+.action-btn { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; padding: 0.5rem 1.2rem; border-radius: 100px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-dim); cursor: pointer; transition: 0.2s; }
+.action-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+.action-btn.run-all { border-color: var(--green); color: var(--green); background: #3fb95010; }
+.action-btn.run-all:hover { background: #3fb95020; }
+
+/* ── Stats Bar ── */
+.stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
+.stat-chip { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem; text-align: center; }
+.stat-chip .val { font-family: 'Orbitron', sans-serif; font-size: 1.1rem; }
+.stat-chip .lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; color: var(--text-muted); margin-top: 0.1rem; }
+@media(max-width:600px) { .stats-bar { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark/light theme">☀️</button>
+
+<div class="app">
+  <header class="header">
+    <h1>Data Quality Gates — Interactive Visualizer</h1>
+    <p>Every row must pass 4 quality gates before entering training. Click each gate to inspect the data.</p>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat-chip"><div class="val" style="color:var(--cyan)" id="statTotal">12</div><div class="lbl">ROWS QUEUED</div></div>
+    <div class="stat-chip"><div class="val" style="color:var(--green)" id="statPass">0</div><div class="lbl">PASSED ALL</div></div>
+    <div class="stat-chip"><div class="val" style="color:var(--amber)" id="statWarn">0</div><div class="lbl">WARNINGS</div></div>
+    <div class="stat-chip"><div class="val" style="color:var(--red)" id="statFail">0</div><div class="lbl">REJECTED</div></div>
+  </div>
+
+  <!-- 4 Quality Gates -->
+  <div class="gates-row">
+    <div class="gate-card active" id="gate1" onclick="selectGate(1)">
+      <div class="gate-num" style="color:var(--cyan)">1</div>
+      <span class="gate-icon">📐</span>
+      <div class="gate-title">Schema Validation</div>
+      <div class="gate-desc">Right columns? Right types?</div>
+      <div class="gate-status status-pass" id="status1">READY</div>
+      <div class="gate-progress"><div class="fill green" id="fill1" style="width:0%"></div></div>
+    </div>
+    <div class="gate-card" id="gate2" onclick="selectGate(2)">
+      <div class="gate-num" style="color:var(--amber)">2</div>
+      <span class="gate-icon">📏</span>
+      <div class="gate-title">Range Checks</div>
+      <div class="gate-desc">Values in valid bounds?</div>
+      <div class="gate-status" id="status2">PENDING</div>
+      <div class="gate-progress"><div class="fill amber" id="fill2" style="width:0%"></div></div>
+    </div>
+    <div class="gate-card" id="gate3" onclick="selectGate(3)">
+      <div class="gate-num" style="color:var(--violet)">3</div>
+      <span class="gate-icon">🕳️</span>
+      <div class="gate-title">Null Rate Monitor</div>
+      <div class="gate-desc">Nulls within expected range?</div>
+      <div class="gate-status" id="status3">PENDING</div>
+      <div class="gate-progress"><div class="fill amber" id="fill3" style="width:0%"></div></div>
+    </div>
+    <div class="gate-card" id="gate4" onclick="selectGate(4)">
+      <div class="gate-num" style="color:var(--magenta)">4</div>
+      <span class="gate-icon">📊</span>
+      <div class="gate-title">Drift Detection</div>
+      <div class="gate-desc">Distribution shifted?</div>
+      <div class="gate-status" id="status4">PENDING</div>
+      <div class="gate-progress"><div class="fill amber" id="fill4" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- Detail Panel -->
+  <div class="detail-panel" id="detailPanel"></div>
+
+  <!-- Explanation -->
+  <div class="explanation" id="explanation">
+    <strong>📐 Gate 1 — Schema Validation:</strong> Every row must have exactly 82 columns with correct names and types. This catches upstream pipeline changes (renamed columns, missing fields) BEFORE they corrupt training. <span class="fix">Click a gate to inspect the data →</span>
+  </div>
+
+  <div class="btn-row">
+    <button class="action-btn run-all" onclick="runAllGates()">▶ Run All Gates</button>
+    <button class="action-btn" onclick="resetGates()">↺ Reset</button>
+  </div>
+</div>
+
+<script>
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  document.getElementById('themeToggle').textContent = document.body.classList.contains('light') ? '🌙' : '☀️';
+  localStorage.setItem('dq-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+if (localStorage.getItem('dq-theme') === 'light') {
+  document.body.classList.add('light');
+  document.getElementById('themeToggle').textContent = '🌙';
+}
+
+// ── House Prices Mock Data: 12 rows with various issues ──
+const rows = [
+  { id:1,  salePrice:215000, grLivArea:1650, overallQual:7,  yearBuilt:2005, lotArea:10500,  bedrooms:3, poolQc:'NA',  alley:'NA',   fence:'NA',    issue:null },
+  { id:2,  salePrice:340000, grLivArea:2400, overallQual:8,  yearBuilt:2010, lotArea:14200,  bedrooms:4, poolQc:'NA',  alley:'NA',   fence:'Good',  issue:null },
+  { id:3,  salePrice:-50000, grLivArea:1800, overallQual:6,  yearBuilt:1998, lotArea:9800,   bedrooms:3, poolQc:'Gd',  alley:'NA',   fence:'NA',    issue:'range' },
+  { id:4,  salePrice:185000, grLivArea:null, overallQual:5,  yearBuilt:1972, lotArea:8200,   bedrooms:2, poolQc:'NA',  alley:'NA',   fence:'NA',    issue:'null' },
+  { id:5,  salePrice:620000, grLivArea:3800, overallQual:9,  yearBuilt:2027, lotArea:25000,  bedrooms:5, poolQc:'Ex',  alley:'Grvl', fence:'Good',  issue:'range' },
+  { id:6,  salePrice:275000, grLivArea:1950, overallQual:7,  yearBuilt:2003, lotArea:11500,  bedrooms:3, poolQc:'NA',  alley:'NA',   fence:'NA',    issue:null },
+  { id:7,  salePrice:410000, grLivArea:2900, overallQual:8,  yearBuilt:2014, lotArea:18000,  bedrooms:4, poolQc:'TA',  alley:'NA',   fence:'Min',   issue:null },
+  { id:8,  salePrice:95000,  grLivArea:900,  overallQual:4,  yearBuilt:1920, lotArea:5000,   bedrooms:1, poolQc:'NA',  alley:'NA',   fence:'NA',    issue:null },
+  { id:9,  salePrice:395000, grLivArea:2600, overallQual:99, yearBuilt:2008, lotArea:13500,  bedrooms:4, poolQc:'Gd',  alley:'NA',   fence:'NA',    issue:'range' },
+  { id:10, salePrice:310000, grLivArea:2100, overallQual:7,  yearBuilt:2001, lotArea:12000,  bedrooms:null,poolQc:'NA', alley:'Pave',fence:'NA',    issue:'null' },
+  { id:11, salePrice:550000, grLivArea:3500, overallQual:9,  yearBuilt:2018, lotArea:22000,  bedrooms:5, poolQc:'Ex',  alley:'NA',   fence:'Good',  issue:null },
+  { id:12, salePrice:260000, grLivArea:1750, overallQual:6,  yearBuilt:1995, lotArea:10800,  bedrooms:3, poolQc:'NA',  alley:'NA',   fence:'NA',    issue:null },
+];
+
+// Expected schema
+const expectedCols = ['salePrice','grLivArea','overallQual','yearBuilt','lotArea','bedrooms','poolQc','alley','fence'];
+const ranges = {
+  salePrice:   { min: 12000, max: 755000 },
+  grLivArea:   { min: 300,   max: 6000 },
+  overallQual: { min: 1,     max: 10 },
+  yearBuilt:   { min: 1872,  max: 2026 },
+  lotArea:     { min: 1300,  max: 220000 },
+  bedrooms:    { min: 0,     max: 8 },
+};
+const expectedNullRates = {
+  poolQc: 0.997, alley: 0.93, fence: 0.80
+};
+const nullTolerance = 0.05; // 5% drift in null rate
+
+let activeGate = 1;
+let gateResults = { 1: null, 2: null, 3: null, 4: null };
+
+function selectGate(g) {
+  activeGate = g;
+  document.querySelectorAll('.gate-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('gate'+g).classList.add('active');
+  renderDetail();
+  updateExplanation();
+}
+
+function renderDetail() {
+  const panel = document.getElementById('detailPanel');
+  const g = activeGate;
+  const labels = ['','Schema Validation','Range Checks','Null Rate Monitor','Drift Detection'];
+  const icons = ['','📐','📏','🕳️','📊'];
+  const colors = ['','var(--cyan)','var(--amber)','var(--violet)','var(--magenta)'];
+
+  let html = `<h3>${icons[g]} <span class="gate-label" style="color:${colors[g]};border:1px solid ${colors[g]};background:${colors[g]}15">Gate ${g}</span> ${labels[g]}</h3>`;
+
+  if (g === 1) {
+    // Schema Validation
+    const missingCol = 'msSubClass'; // simulate a column that might be missing
+    html += `<p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.8rem">Checking: Does every row have the correct <strong>${expectedCols.length} columns</strong> with correct names and data types?</p>`;
+    html += `<table class="data-table"><tr><th>Row</th>${expectedCols.map(c => '<th>'+c+'</th>').join('')}<th style="color:var(--cyan)">Schema</th></tr>`;
+    rows.forEach((r,i) => {
+      const isOk = i !== 4; // Row 5 (index 4) has an extra column simulated
+      const cls = isOk ? 'row-ok' : 'row-warn';
+      html += `<tr class="${cls}"><td style="color:var(--text-muted)">#${r.id}</td>`;
+      expectedCols.forEach(c => {
+        const val = r[c];
+        if (val === null && i === 3) html += `<td class="cell-fail">NULL</td>`;
+        else html += `<td>${val ?? '—'}</td>`;
+      });
+      html += `<td>${isOk ? '<span class="cell-ok">✓ 82 cols</span>' : '<span class="cell-warn">⚠ 83 cols (extra)</span>'}</td></tr>`;
+    });
+    html += `</table>`;
+    html += `<p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.3rem">↑ Row #5 has an extra column (new field added upstream). Row #4 has unexpected NULL in grLivArea.</p>`;
+
+  } else if (g === 2) {
+    // Range Checks
+    html += `<p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.8rem">Checking: Are all values within <strong>physically possible</strong> bounds?</p>`;
+    html += `<table class="data-table"><tr><th>Row</th><th>SalePrice</th><th>GrLivArea</th><th>OverallQual</th><th>YearBuilt</th><th>Bedrooms</th><th style="color:var(--cyan)">Status</th></tr>`;
+    rows.forEach(r => {
+      const failures = [];
+      if (r.salePrice < ranges.salePrice.min || r.salePrice > ranges.salePrice.max) failures.push('SalePrice');
+      if (r.grLivArea !== null && (r.grLivArea < ranges.grLivArea.min || r.grLivArea > ranges.grLivArea.max)) failures.push('GrLivArea');
+      if (r.overallQual < ranges.overallQual.min || r.overallQual > ranges.overallQual.max) failures.push('OverallQual');
+      if (r.yearBuilt < ranges.yearBuilt.min || r.yearBuilt > ranges.yearBuilt.max) failures.push('YearBuilt');
+      if (r.bedrooms !== null && (r.bedrooms < ranges.bedrooms.min || r.bedrooms > ranges.bedrooms.max)) failures.push('Bedrooms');
+
+      const cls = failures.length > 0 ? 'row-fail' : 'row-ok';
+      html += `<tr class="${cls}">`;
+      html += `<td style="color:var(--text-muted)">#${r.id}</td>`;
+      html += `<td>${highlightVal(r.salePrice, 12000, 755000)}</td>`;
+      html += `<td>${highlightVal(r.grLivArea, 300, 6000)}</td>`;
+      html += `<td>${highlightVal(r.overallQual, 1, 10)}</td>`;
+      html += `<td>${highlightVal(r.yearBuilt, 1872, 2026)}</td>`;
+      html += `<td>${highlightVal(r.bedrooms, 0, 8)}</td>`;
+      if (failures.length > 0) {
+        html += `<td class="cell-fail">🔴 ${failures.join(', ')}</td>`;
+      } else {
+        html += `<td class="cell-ok">✅ Pass</td>`;
+      }
+      html += `</tr>`;
+    });
+    html += `</table>`;
+
+  } else if (g === 3) {
+    // Null Rate Monitor
+    const nullCounts = { poolQc: 0, alley: 0, fence: 0, grLivArea: 0, bedrooms: 0 };
+    rows.forEach(r => {
+      ['poolQc','alley','fence','grLivArea','bedrooms'].forEach(col => {
+        if (r[col] === 'NA' || r[col] === null) nullCounts[col]++;
+      });
+    });
+    const total = rows.length;
+    html += `<p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.8rem">Checking: Is the null rate for each feature <strong>close to the expected baseline</strong>?</p>`;
+    html += `<table class="data-table"><tr><th>Feature</th><th>Nulls</th><th>Current Rate</th><th>Expected Rate</th><th>Drift</th><th style="color:var(--cyan)">Status</th></tr>`;
+
+    const checks = [
+      { col:'poolQc', expected: 0.997 },
+      { col:'alley', expected: 0.93 },
+      { col:'fence', expected: 0.80 },
+      { col:'grLivArea', expected: 0.0 },
+      { col:'bedrooms', expected: 0.0 },
+    ];
+    checks.forEach(ch => {
+      const current = nullCounts[ch.col] / total;
+      const drift = Math.abs(current - ch.expected);
+      const isOk = drift < nullTolerance;
+      const cls = isOk ? 'row-ok' : (drift < 0.1 ? 'row-warn' : 'row-fail');
+      html += `<tr class="${cls}">`;
+      html += `<td style="font-family:'DM Sans',sans-serif">${ch.col}</td>`;
+      html += `<td>${nullCounts[ch.col]}/${total}</td>`;
+      html += `<td>${(current*100).toFixed(1)}%</td>`;
+      html += `<td>${(ch.expected*100).toFixed(1)}%</td>`;
+      html += `<td class="${drift >= nullTolerance ? 'cell-fail' : 'cell-ok'}">${drift >= nullTolerance ? '↑ +'+(drift*100).toFixed(1)+'%' : '~0%'}</td>`;
+      html += `<td>${isOk ? '<span class="cell-ok">✅ OK</span>' : '<span class="cell-fail">🔴 ALERT</span>'}</td>`;
+      html += `</tr>`;
+    });
+    html += `</table>`;
+    html += `<p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.3rem">↑ <span class="cell-fail">grLivArea</span> and <span class="cell-fail">bedrooms</span> suddenly have nulls — these should NEVER be null. Something changed upstream.</p>`;
+
+  } else if (g === 4) {
+    // Drift Detection
+    html += `<p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.8rem">Checking: Has the <strong>distribution</strong> of key features shifted from training baseline?</p>`;
+    html += `<table class="data-table"><tr><th>Feature</th><th>Training Mean</th><th>Live Mean</th><th>PSI Score</th><th style="color:var(--cyan)">Status</th></tr>`;
+    const driftChecks = [
+      { col:'grLivArea', trainMean: 1750, liveMean: 2150, psi: 0.18 },
+      { col:'overallQual', trainMean: 6.2, liveMean: 6.8, psi: 0.05 },
+      { col:'lotArea', trainMean: 10800, liveMean: 14200, psi: 0.12 },
+      { col:'yearBuilt', trainMean: 1985, liveMean: 2002, psi: 0.09 },
+      { col:'salePrice', trainMean: 215000, liveMean: 315000, psi: 0.22 },
+    ];
+    driftChecks.forEach(d => {
+      const cls = d.psi > 0.1 ? (d.psi > 0.15 ? 'row-fail' : 'row-warn') : 'row-ok';
+      const status = d.psi <= 0.1 ? '✅ STABLE' : (d.psi <= 0.15 ? '⚠️ WATCH' : '🔴 DRIFT');
+      const statusCls = d.psi <= 0.1 ? 'cell-ok' : (d.psi <= 0.15 ? 'cell-warn' : 'cell-fail');
+      html += `<tr class="${cls}">`;
+      html += `<td style="font-family:'DM Sans',sans-serif">${d.col}</td>`;
+      html += `<td>${d.trainMean.toLocaleString()}</td>`;
+      html += `<td class="${d.psi > 0.1 ? 'cell-fail' : ''}">${d.liveMean.toLocaleString()} <span style="font-size:0.6rem">(${d.liveMean > d.trainMean ? '↑' : '↓'}${Math.abs(Math.round((d.liveMean/d.trainMean - 1)*100))}%)</span></td>`;
+      html += `<td class="${statusCls}">${d.psi.toFixed(2)}</td>`;
+      html += `<td class="${statusCls}">${status}</td>`;
+      html += `</tr>`;
+    });
+    html += `</table>`;
+    html += `<p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.3rem">↑ <span class="cell-fail">salePrice +31% mean shift</span> — the market may have changed. <span class="cell-fail">grLivArea +23%</span> — bigger houses entering the market. Retraining recommended.</p>`;
+  }
+
+  document.getElementById('detailPanel').innerHTML = html;
+}
+
+function highlightVal(val, min, max) {
+  if (val === null) return '<span class="cell-fail">NULL</span>';
+  if (val < min || val > max) return `<span class="cell-highlight cell-fail">${val}</span>`;
+  return val;
+}
+
+function updateExplanation() {
+  const el = document.getElementById('explanation');
+  const texts = {
+    1: '<strong>📐 Gate 1 — Schema Validation:</strong> Catches renamed columns, missing fields, and type changes BEFORE they poison training. <span class="fix">If a data engineer renames "SalePrice" to "sale_price" upstream, this gate catches it immediately — instead of silently training on wrong data.</span>',
+    2: '<strong>📏 Gate 2 — Range Checks:</strong> Flags physically impossible values. <span style="color:var(--red)">SalePrice: -$50,000?</span> No house sells for negative money. <span style="color:var(--red)">Year Built: 2027?</span> Time travelers welcome. <span class="fix">Range checks catch data entry errors, unit conversion mistakes ($ vs ₹), and sensor glitches.</span>',
+    3: '<strong>🕳️ Gate 3 — Null Rate Monitor:</strong> Alerts when null patterns CHANGE. PoolQC being 99.7% null is NORMAL (most homes have no pool). But <span style="color:var(--red)">GrLivArea suddenly appearing as NULL?</span> That\'s a broken data pipeline. <span class="fix">Track null rate over time — alert on CHANGE, not on absolute value.</span>',
+    4: '<strong>📊 Gate 4 — Drift Detection:</strong> Compares live data distribution to training baseline using PSI (Population Stability Index). <span style="color:var(--red)">PSI > 0.1 = investigate. PSI > 0.2 = retrain now.</span> <span class="fix">The market shifted — houses got bigger and more expensive. The old model is making systematic errors.</span>',
+  };
+  el.innerHTML = texts[activeGate] || texts[1];
+}
+
+function runAllGates() {
+  // Animate gates one by one
+  const delays = [0, 600, 1200, 1800];
+  const results = { pass: 8, warn: 2, fail: 2 }; // 12 rows: 8 pass, 2 warn (schema+null), 2 fail (range+drift)
+
+  gateResults = { 1: 'pass', 2: 'warn', 3: 'warn', 4: 'warn' };
+
+  delays.forEach((d, i) => {
+    setTimeout(() => {
+      const g = i + 1;
+      document.getElementById('fill'+g).style.width = (g === 1 ? '95%' : g === 2 ? '75%' : g === 3 ? '80%' : '60%');
+      const statusEl = document.getElementById('status'+g);
+      if (g === 1) {
+        statusEl.textContent = '1 FAIL (extra col)';
+        statusEl.className = 'gate-status status-warn';
+        document.getElementById('fill'+g).className = 'fill amber';
+      } else if (g === 2) {
+        statusEl.textContent = '2 FAILS (range)';
+        statusEl.className = 'gate-status status-fail';
+        document.getElementById('fill'+g).className = 'fill red';
+      } else if (g === 3) {
+        statusEl.textContent = '2 ALERTS (nulls)';
+        statusEl.className = 'gate-status status-fail';
+        document.getElementById('fill'+g).className = 'fill red';
+      } else {
+        statusEl.textContent = '3 DRIFTING';
+        statusEl.className = 'gate-status status-warn';
+        document.getElementById('fill'+g).className = 'fill amber';
+      }
+    }, d);
+  });
+
+  // Update stats
+  setTimeout(() => {
+    document.getElementById('statPass').textContent = '8';
+    document.getElementById('statWarn').textContent = '2';
+    document.getElementById('statFail').textContent = '2';
+  }, 2000);
+
+  selectGate(1);
+}
+
+function resetGates() {
+  gateResults = { 1: null, 2: null, 3: null, 4: null };
+  [1,2,3,4].forEach(g => {
+    document.getElementById('fill'+g).style.width = '0%';
+    document.getElementById('fill'+g).className = 'fill green';
+    const s = document.getElementById('status'+g);
+    s.textContent = g === 1 ? 'READY' : 'PENDING';
+    s.className = 'gate-status ' + (g === 1 ? 'status-pass' : '');
+  });
+  document.getElementById('statPass').textContent = '0';
+  document.getElementById('statWarn').textContent = '0';
+  document.getElementById('statFail').textContent = '0';
+  selectGate(1);
+}
+
+// Init
+renderDetail();
+updateExplanation();
+</script>
+</body>
+</html>
