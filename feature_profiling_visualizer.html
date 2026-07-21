@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feature Profiling — Interactive Visualizer</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06090f; --bg-card: #0d1117; --bg-raised: #161b22;
+  --border: #21262d; --text: #e6edf3; --text-dim: #8b949e; --text-muted: #484f58;
+  --cyan: #39d2ff; --amber: #ffb347; --green: #3fb950; --red: #f85149;
+  --violet: #a371f7; --magenta: #ff6ec7;
+}
+body.light {
+  --bg: #f6f8fa; --bg-card: #fff; --bg-raised: #e8ecf0;
+  --border: #d0d7de; --text: #1f2328; --text-dim: #656d76; --text-muted: #8b949e;
+  --cyan: #0969da; --amber: #9a6700; --green: #1a7f37; --red: #cf222e;
+  --violet: #8250df; --magenta: #bf3989;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; transition: background 0.3s, color 0.3s; }
+.theme-toggle { position: fixed; top: 1rem; right: 1.5rem; z-index: 999; background: var(--bg-raised); border: 1px solid var(--border); color: var(--text); font-size: 1.1rem; cursor: pointer; padding: 0.35rem 0.6rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace; }
+.theme-toggle:hover { border-color: var(--cyan); color: var(--cyan); }
+.app { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+.header { text-align: center; padding: 1.5rem 0 0.5rem; }
+.header h1 { font-family: 'Orbitron', sans-serif; font-size: clamp(1.1rem, 3vw, 1.6rem); background: linear-gradient(135deg, var(--cyan), var(--violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.3rem; }
+.header p { color: var(--text-dim); font-size: 0.85rem; }
+
+/* Tabs */
+.tabs { display: flex; gap: 0.4rem; justify-content: center; margin: 1rem 0; flex-wrap: wrap; }
+.tab { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; padding: 0.5rem 1rem; border-radius: 100px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-dim); cursor: pointer; transition: 0.2s; }
+.tab:hover { border-color: var(--cyan); color: var(--text); }
+.tab.active { border-color: var(--cyan); background: #39d2ff12; color: var(--cyan); }
+
+/* Main content */
+.content-area { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; min-height: 420px; }
+.content-area h3 { font-family: 'Orbitron', sans-serif; font-size: 0.9rem; margin-bottom: 0.8rem; color: var(--cyan); }
+.content-area .desc { font-size: 0.82rem; color: var(--text-dim); margin-bottom: 1rem; line-height: 1.6; }
+
+canvas { display: block; margin: 0 auto; border-radius: 8px; }
+
+.insight-box { background: var(--bg-raised); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1rem; margin-top: 0.8rem; font-size: 0.8rem; color: var(--text-dim); line-height: 1.6; }
+.insight-box strong { color: var(--cyan); }
+.insight-box .warn { color: var(--amber); }
+.insight-box .danger { color: var(--red); }
+.insight-box .good { color: var(--green); }
+
+.feature-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.5rem; margin: 0.8rem 0; }
+@media(max-width:750px){ .feature-grid { grid-template-columns: repeat(2,1fr); } }
+.feat-chip { background: var(--bg-raised); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem; cursor: pointer; text-align: center; transition: 0.15s; font-size: 0.7rem; }
+.feat-chip:hover { border-color: var(--cyan); }
+.feat-chip.selected { border-color: var(--cyan); background: #39d2ff10; }
+.feat-chip .fname { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--text-dim); }
+.feat-chip .fval { font-family: 'Orbitron', sans-serif; font-size: 0.8rem; margin: 0.2rem 0; }
+.feat-chip .ftag { font-family: 'JetBrains Mono', monospace; font-size: 0.52rem; padding: 0.1em 0.4em; border-radius: 4px; }
+.ftag-high { background: #3fb95015; color: var(--green); }
+.ftag-med { background: #ffb34715; color: var(--amber); }
+.ftag-drop { background: #f8514915; color: var(--red); }
+.ftag-skew { background: #ff6ec715; color: var(--magenta); }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀️</button>
+
+<div class="app">
+  <header class="header">
+    <h1>Feature Profiling — Interactive Explorer</h1>
+    <p>Click any view below to explore the Ames Housing dataset (82 features, 2,930 houses)</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('dist')">📊 Distributions</button>
+    <button class="tab" onclick="switchTab('corr')">🔗 Correlations</button>
+    <button class="tab" onclick="switchTab('missing')">🕳️ Missing Values</button>
+    <button class="tab" onclick="switchTab('decisions')">✅ Profiling Decisions</button>
+  </div>
+
+  <div class="content-area" id="content"></div>
+</div>
+
+<script>
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  document.getElementById('themeToggle').textContent = document.body.classList.contains('light') ? '🌙' : '☀️';
+  localStorage.setItem('fp-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+  setTimeout(switchTab, 50, currentTab);
+}
+if (localStorage.getItem('fp-theme') === 'light') {
+  document.body.classList.add('light'); document.getElementById('themeToggle').textContent = '🌙';
+}
+
+let currentTab = 'dist';
+let selectedFeature = 'SalePrice';
+
+const features = [
+  { name:'SalePrice', type:'target', mean:'$182K', std:'$79K', skew:1.88, corr:1.0, nullPct:0, tag:'skew', tagLabel:'RIGHT SKEW', decision:'Log transform' },
+  { name:'GrLivArea', type:'num', mean:'1515', std:'525', skew:1.1, corr:0.71, nullPct:0, tag:'high', tagLabel:'STRONG', decision:'StandardScaler' },
+  { name:'OverallQual', type:'num', mean:'6.1', std:'1.4', skew:0.2, corr:0.80, nullPct:0, tag:'high', tagLabel:'STRONGEST', decision:'StandardScaler' },
+  { name:'YearBuilt', type:'num', mean:'1971', std:'30', skew:-0.6, corr:0.56, nullPct:0, tag:'med', tagLabel:'MEDIUM', decision:'Consider binning' },
+  { name:'LotArea', type:'num', mean:'10517', std:'9981', skew:12.2, corr:0.26, nullPct:0, tag:'skew', tagLabel:'EXTREME SKEW', decision:'RobustScaler or log' },
+  { name:'GarageCars', type:'num', mean:'1.8', std:'0.7', skew:0.1, corr:0.64, nullPct:5, tag:'high', tagLabel:'STRONG', decision:'Fill 0, then scale' },
+  { name:'TotalBsmtSF', type:'num', mean:'1057', std:'438', skew:0.9, corr:0.63, nullPct:3, tag:'high', tagLabel:'STRONG', decision:'Fill median, scale' },
+  { name:'Bedrooms', type:'num', mean:'2.9', std:'0.8', skew:0.3, corr:0.17, nullPct:0, tag:'med', tagLabel:'WEAK', decision:'Keep, standardize' },
+  { name:'FullBath', type:'num', mean:'1.6', std:'0.5', skew:0.4, corr:0.56, nullPct:0, tag:'med', tagLabel:'MEDIUM', decision:'Keep, standardize' },
+  { name:'Fireplaces', type:'num', mean:'0.6', std:'0.6', skew:0.7, corr:0.48, nullPct:0, tag:'med', tagLabel:'MEDIUM', decision:'Keep, standardize' },
+  { name:'PoolQC', type:'cat', mean:'—', std:'—', skew:0, corr:0.09, nullPct:99.7, tag:'drop', tagLabel:'DROP', decision:'99.7% null → drop' },
+  { name:'Alley', type:'cat', mean:'—', std:'—', skew:0, corr:0.05, nullPct:93, tag:'drop', tagLabel:'DROP', decision:'93% null → drop' },
+  { name:'Neighborhood', type:'cat', mean:'25 vals', std:'—', skew:0, corr:0.45, nullPct:0, tag:'med', tagLabel:'25 UNIQUE', decision:'OneHotEncode' },
+  { name:'MSZoning', type:'cat', mean:'5 vals', std:'—', skew:0, corr:0.15, nullPct:0, tag:'med', tagLabel:'5 UNIQUE', decision:'OneHotEncode' },
+  { name:'GarageType', type:'cat', mean:'6 vals', std:'—', skew:0, corr:0.30, nullPct:5, tag:'med', tagLabel:'6 UNIQUE', decision:'Fill "None", OneHot' },
+  { name:'Fence', type:'cat', mean:'—', std:'—', skew:0, corr:0.03, nullPct:80, tag:'drop', tagLabel:'DROP', decision:'80% null → drop' },
+];
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  const c = document.getElementById('content');
+
+  if (tab === 'dist') renderDistributions(c);
+  else if (tab === 'corr') renderCorrelations(c);
+  else if (tab === 'missing') renderMissing(c);
+  else if (tab === 'decisions') renderDecisions(c);
+}
+
+function renderDistributions(c) {
+  c.innerHTML = `
+    <h3>📊 Feature Distributions</h3>
+    <div class="desc">Click any feature card to see its histogram. <strong style="color:var(--red)">Red = skewed, needs transformation.</strong> <strong style="color:var(--green)">Green = healthy.</strong></div>
+    <div class="feature-grid" id="featGrid"></div>
+    <canvas id="histCanvas" width="700" height="280"></canvas>
+    <div class="insight-box" id="histInsight"></div>`;
+
+  document.getElementById('featGrid').innerHTML = features.filter(f=>f.type!=='cat'||f.nullPct<50).slice(0,12).map(f => `
+    <div class="feat-chip ${f.name===selectedFeature?'selected':''}" onclick="selectFeature('${f.name}')">
+      <div class="fname">${f.name}</div>
+      <div class="fval" style="color:${f.skew>1?'var(--red)':f.skew>0.5?'var(--amber)':'var(--green)'}">${f.mean}</div>
+      <span class="ftag ftag-${f.tag}">${f.tagLabel}</span>
+    </div>`).join('');
+
+  setTimeout(() => drawHistogram(selectedFeature), 30);
+}
+
+function selectFeature(name) {
+  selectedFeature = name;
+  document.querySelectorAll('.feat-chip').forEach(ch => ch.classList.remove('selected'));
+  const chips = document.querySelectorAll('.feat-chip');
+  chips.forEach(ch => { if (ch.querySelector('.fname').textContent === name) ch.classList.add('selected'); });
+  drawHistogram(name);
+}
+
+function drawHistogram(fname) {
+  const c = document.getElementById('histCanvas'); if(!c) return;
+  const W=700, H=280, ctx=c.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  const isLight = document.body.classList.contains('light');
+
+  const f = features.find(x=>x.name===fname) || features[0];
+
+  // Generate mock distribution data based on feature stats
+  const bins = 30;
+  let data = [];
+  const n = 2930;
+  if (f.skew > 1.5) {
+    // Right skewed
+    for(let i=0;i<n;i++) data.push(Math.exp(Math.random()*1.5+Math.log(50000)));
+  } else if (f.skew > 0.8) {
+    for(let i=0;i<n;i++) data.push(Math.abs(50000+Math.random()*150000*(Math.random()>0.3?1:3)));
+  } else if (f.skew < -0.3) {
+    for(let i=0;i<n;i++) data.push(2020-Math.abs(Math.random()*150));
+  } else {
+    const m = f.name==='OverallQual'?6.1:f.name==='GarageCars'?1.8:f.name==='Bedrooms'?2.9:1500;
+    const s = f.name==='OverallQual'?1.4:f.name==='GarageCars'?0.7:f.name==='Bedrooms'?0.8:500;
+    for(let i=0;i<n;i++) data.push(m + (Math.random()-0.5)*2*s*3);
+  }
+
+  const min=Math.min(...data), max=Math.max(...data);
+  const binW = W/bins;
+
+  // Count into bins
+  const counts = new Array(bins).fill(0);
+  data.forEach(v => {
+    const idx = Math.min(bins-1, Math.floor((v-min)/(max-min)*bins));
+    counts[idx]++;
+  });
+  const maxCount = Math.max(...counts);
+
+  // Draw bars
+  counts.forEach((cnt,i) => {
+    const barH = (cnt/maxCount)*200;
+    const x = i*binW, y = 250-barH;
+    const isTail = f.skew>1 && i>bins*0.7;
+    ctx.fillStyle = isTail ? 'rgba(248,81,73,0.6)' : 'rgba(57,210,255,0.5)';
+    ctx.fillRect(x+1, y, binW-2, barH);
+  });
+
+  // Mean line
+  const meanIdx = bins/2 + (f.skew>1?bins*0.15:0);
+  ctx.strokeStyle = 'rgba(255,179,71,0.8)'; ctx.lineWidth=2; ctx.setLineDash([6,3]);
+  ctx.beginPath(); ctx.moveTo(meanIdx*binW, 20); ctx.lineTo(meanIdx*binW,250); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.font='bold 10px "JetBrains Mono"'; ctx.fillStyle='rgba(255,179,71,0.9)';
+  ctx.fillText('← mean', meanIdx*binW+5, 40);
+
+  // Skew arrow for right-skewed
+  if (f.skew > 1) {
+    ctx.fillStyle='rgba(248,81,73,0.8)'; ctx.font='bold 11px "JetBrains Mono"';
+    ctx.fillText('LONG TAIL →', W-160, 70);
+    ctx.fillText('(needs log-transform)', W-200, 88);
+  }
+
+  // Labels
+  ctx.font='10px "JetBrains Mono"'; ctx.fillStyle=isLight?'rgba(31,35,40,0.6)':'rgba(139,148,158,0.6)';
+  ctx.fillText('Min: '+Math.round(min).toLocaleString(),10,270);
+  ctx.fillText('Max: '+Math.round(max).toLocaleString(),W-150,270);
+  ctx.font='bold 11px "Orbitron"'; ctx.fillStyle=isLight?'rgba(31,35,40,0.8)':'rgba(230,237,243,0.7)';
+  ctx.fillText(fname, 10, 20);
+
+  // Insight
+  const insights = {
+    'SalePrice': '<strong>SalePrice is RIGHT-SKEWED (skew=1.88).</strong> <span class="warn">Most homes cluster at $100K-$250K, but a long tail stretches to $755K.</span> <span class="good">Decision: Log-transform to compress the tail.</span> Without log-transform, Linear Regression overfits to expensive outliers.',
+    'GrLivArea': '<strong>GrLivArea: moderate right skew (1.1).</strong> <span class="good">Correlation with SalePrice = 0.71 — very strong.</span> Most homes 800-2500 sqft. A few >4000 sqft may be commercial properties. Decision: StandardScaler after removing the 4,000+ sqft outliers.',
+    'OverallQual': '<strong>OverallQual: nearly normal (skew=0.2).</strong> <span class="good">Correlation with SalePrice = 0.80 — THE STRONGEST predictor.</span> Range 1-10, mean 6.1. This is your best feature. Decision: Keep as-is, StandardScaler.',
+    'LotArea': '<strong>LotArea: EXTREME right skew (12.2).</strong> <span class="danger">Range 1,300–215,245. The mean (10,517) is pulled by a few huge lots.</span> <span class="good">Decision: Log-transform OR RobustScaler. StandardScaler will be distorted by the 215K lot.</span>',
+  };
+  document.getElementById('histInsight').innerHTML = insights[fname] || `<strong>${fname}:</strong> Mean=${f.mean}, Std=${f.std}, Skew=${f.skew}. Correlation with SalePrice = <strong>${f.corr}</strong>. Null rate = <strong>${f.nullPct}%</strong>. Decision: <span class="good">${f.decision}</span>`;
+}
+
+function renderCorrelations(c) {
+  c.innerHTML = `
+    <h3>🔗 Correlation with SalePrice</h3>
+    <div class="desc">Longer bar = stronger relationship with house price. <strong style="color:var(--green)">Green = strongest predictors.</strong> Click any bar to see the scatter plot.</div>
+    <canvas id="corrCanvas" width="700" height="320"></canvas>
+    <div class="insight-box" id="corrInsight"></div>`;
+
+  setTimeout(drawCorrelations, 30);
+}
+
+function drawCorrelations() {
+  const c = document.getElementById('corrCanvas'); if(!c) return;
+  const W=700, H=320, ctx=c.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+
+  const feats = features.filter(f=>f.type==='num'||f.corr>0.1).slice(0,10);
+  feats.sort((a,b)=>b.corr-a.corr);
+
+  const barH=24, gap=8, startY=40;
+  feats.forEach((f,i) => {
+    const w = f.corr * 500;
+    const y = startY + i*(barH+gap);
+
+    // Bar
+    const grad = ctx.createLinearGradient(0,0,w,0);
+    grad.addColorStop(0, f.corr>0.6?'#3fb950':f.corr>0.3?'#ffb347':'#8b949e');
+    grad.addColorStop(1, f.corr>0.6?'#39d2ff':f.corr>0.3?'#ffb347':'#484f58');
+    ctx.fillStyle = grad;
+    ctx.fillRect(150, y, w, barH);
+
+    // Label
+    ctx.font='bold 11px "JetBrains Mono"'; ctx.fillStyle = 'var(--text)';
+    ctx.fillText(f.name, 10, y+barH-6);
+
+    // Value
+    ctx.font='11px "JetBrains Mono"'; ctx.fillStyle=f.corr>0.6?'rgba(63,185,80,0.9)':f.corr>0.3?'rgba(255,179,71,0.9)':'rgba(139,148,158,0.7)';
+    ctx.fillText((f.corr).toFixed(2), 160+w+8, y+barH-6);
+
+    // Decision tag
+    ctx.font='9px "JetBrains Mono"';
+    ctx.fillStyle = f.corr>0.6?'rgba(63,185,80,0.7)':'rgba(139,148,158,0.5)';
+    ctx.fillText(f.corr>0.6?'★ KEY FEATURE':f.corr>0.3?'• useful':'· weak', 160+w+60, y+barH-6);
+  });
+
+  ctx.font='bold 12px "Orbitron"'; ctx.fillStyle='var(--text)'; ctx.fillText('Correlation with SalePrice', 10, 25);
+  ctx.font='9px "JetBrains Mono"'; ctx.fillStyle='var(--text-muted)'; ctx.fillText('(Pearson r)', 300, 25);
+
+  document.getElementById('corrInsight').innerHTML = `
+    <strong>🔑 Top 3 predictors:</strong> <span class="good">OverallQual (0.80), GrLivArea (0.71), GarageCars (0.64)</span><br>
+    <strong>⚠️ Watch out:</strong> <span class="warn">These three are correlated WITH EACH OTHER too.</span> Large homes tend to have high quality and big garages. This is <strong>multicollinearity</strong> — it inflates coefficient variance but doesn't bias predictions. For pure prediction (not inference), it's usually fine.<br>
+    <strong>💡 Surprise:</strong> <span>Bedrooms correlates at only 0.17. More bedrooms ≠ higher price. It's the SIZE and QUALITY, not the bedroom count.</span>`;
+}
+
+function renderMissing(c) {
+  c.innerHTML = `
+    <h3>🕳️ Missing Value Analysis</h3>
+    <div class="desc">Each bar shows the % of missing values per column. <strong style="color:var(--red)">Red = drop candidate.</strong> <strong style="color:var(--amber)">Yellow = impute.</strong></div>
+    <canvas id="missCanvas" width="700" height="340"></canvas>
+    <div class="insight-box" id="missInsight"></div>`;
+
+  setTimeout(drawMissing, 30);
+}
+
+function drawMissing() {
+  const c = document.getElementById('missCanvas'); if(!c) return;
+  const W=700, H=340, ctx=c.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+
+  const missFeats = [
+    { name:'PoolQC', pct:99.7 }, { name:'MiscFeature', pct:96 }, { name:'Alley', pct:93 },
+    { name:'Fence', pct:80 }, { name:'FireplaceQu', pct:47 }, { name:'LotFrontage', pct:17 },
+    { name:'GarageYrBlt', pct:5.5 }, { name:'GarageType', pct:5.4 }, { name:'GarageFinish', pct:5.4 },
+    { name:'GarageQual', pct:5.4 }, { name:'GarageCond', pct:5.4 }, { name:'BsmtFinType2', pct:2.6 },
+    { name:'BsmtExposure', pct:2.5 }, { name:'BsmtFinType1', pct:2.5 }, { name:'BsmtQual', pct:2.5 },
+    { name:'BsmtCond', pct:2.5 }, { name:'MasVnrArea', pct:0.8 }, { name:'MasVnrType', pct:0.8 },
+    { name:'Electrical', pct:0.03 },
+  ];
+  missFeats.sort((a,b)=>b.pct-a.pct);
+
+  const barW=14, gap=4, startX=180;
+  missFeats.forEach((f,i) => {
+    const h = (f.pct/100)*220;
+    const x = startX + i*(barW+gap);
+    const y = 260-h;
+
+    ctx.fillStyle = f.pct>80?'rgba(248,81,73,0.75)':f.pct>10?'rgba(255,179,71,0.7)':'rgba(57,210,255,0.5)';
+    ctx.fillRect(x, y, barW, h);
+
+    // Label (angled)
+    ctx.save();
+    ctx.translate(x+barW/2, 275);
+    ctx.rotate(-0.7);
+    ctx.font='9px "JetBrains Mono"'; ctx.fillStyle='var(--text-dim)';
+    ctx.fillText(f.name, 0, 0);
+    ctx.restore();
+
+    // % on top
+    if (f.pct > 5) {
+      ctx.font='bold 8px "JetBrains Mono"';
+      ctx.fillStyle = f.pct>80?'rgba(248,81,73,0.9)':'rgba(255,179,71,0.8)';
+      ctx.fillText(f.pct+'%', x-2, y-4);
+    }
+  });
+
+  // Threshold lines
+  ctx.strokeStyle='rgba(248,81,73,0.4)'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(170, 40); ctx.lineTo(W-20, 40); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.font='9px "JetBrains Mono"'; ctx.fillStyle='rgba(248,81,73,0.6)';
+  ctx.fillText('← DROP ZONE (>80% null)', 260, 35);
+
+  ctx.strokeStyle='rgba(255,179,71,0.4)'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(170, 115); ctx.lineTo(W-20, 115); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.font='9px "JetBrains Mono"'; ctx.fillStyle='rgba(255,179,71,0.6)';
+  ctx.fillText('← IMPUTE ZONE (10-80%)', 280, 110);
+
+  ctx.strokeStyle='rgba(57,210,255,0.3)'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(170, 220); ctx.lineTo(W-20, 220); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.font='9px "JetBrains Mono"'; ctx.fillStyle='rgba(57,210,255,0.5)';
+  ctx.fillText('← FINE (0-10% null)', 270, 215);
+
+  ctx.font='bold 12px "Orbitron"'; ctx.fillStyle='var(--text)'; ctx.fillText('% Missing per Feature', 10, 25);
+
+  document.getElementById('missInsight').innerHTML = `
+    <strong>🕳️ Missing Value Strategy:</strong><br>
+    <span class="danger">DROP (4 features):</span> PoolQC (99.7%), MiscFeature (96%), Alley (93%), Fence (80%) — almost no information.<br>
+    <span class="warn">IMPUTE with smart value (3 features):</span> FireplaceQu (47% → "None"), LotFrontage (17% → median), Garage* (5% → "No Garage" / 0).<br>
+    <span class="good">FINE (12 features):</span> < 10% null — fill with median/mode and move on.<br>
+    <strong>💡 Key insight:</strong> <span>The GARAGE cluster (6 features all at 5.4% null) is the SAME 81 houses without garages. These missing values are STRUCTURED — not random.</span>`;
+}
+
+function renderDecisions(c) {
+  c.innerHTML = `
+    <h3>✅ Profiling Decisions — What We Learned</h3>
+    <div class="desc">After profiling all 82 features, here's the concrete action plan for Phase 5.</div>
+    <table style="width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:0.7rem;margin-top:0.8rem">
+    <tr style="border-bottom:1px solid var(--border)"><th style="text-align:left;padding:0.4rem;color:var(--text-muted)">#</th><th style="text-align:left;padding:0.4rem;color:var(--text-muted)">Decision</th><th style="text-align:left;padding:0.4rem;color:var(--text-muted)">Affected Features</th><th style="text-align:left;padding:0.4rem;color:var(--text-muted)">Why</th></tr>
+    <tr><td style="padding:0.5rem;color:var(--red)">1</td><td style="padding:0.5rem"><strong>DROP</strong></td><td style="padding:0.5rem;color:var(--text-dim)">PoolQC, Alley, Fence, MiscFeature</td><td style="padding:0.5rem;color:var(--text-dim)">>80% null — almost no signal</td></tr>
+    <tr><td style="padding:0.5rem;color:var(--amber)">2</td><td style="padding:0.5rem"><strong>LOG-TRANSFORM</strong></td><td style="padding:0.5rem;color:var(--text-dim)">SalePrice</td><td style="padding:0.5rem;color:var(--text-dim)">Skew=1.88, compress tail for LinearRegression</td></tr>
+    <tr><td style="padding:0.5rem;color:var(--amber)">3</td><td style="padding:0.5rem"><strong>LOG-TRANSFORM</strong></td><td style="padding:0.5rem;color:var(--text-dim)">LotArea (maybe)</td><td style="padding:0.5rem;color:var(--text-dim)">Skew=12.2, extreme outliers</td></tr>
+    <tr><td style="padding:0.5rem;color:var(--cyan)">4</td><td style="padding:0.5rem"><strong>STANDARDSCALER</strong></td><td style="padding:0.5rem;color:var(--text-dim)">34 numerical features</td><td style="padding:0.5rem;color:var(--text-dim)">Linear Regression needs standardized inputs</td></tr>
+    <tr><td style="padding:0.5rem;color:var(--cyan)">5</td><td style="padding:0.5rem"><strong>ONEHOTENCODE</strong></td><td style="padding:0.5rem;color:var(--text-dim)">37 categorical features</td><td style="padding:0.5rem;color:var(--text-dim)">All < 50 unique values, safe for OneHot</td></tr>
+    <tr><td style="padding:0.5rem;color:var(--violet)">6</td><td style="padding:0.5rem"><strong>ORDINALENCODE</strong></td><td style="padding:0.5rem;color:var(--text-dim)">6 quality-rating features</td><td style="padding:0.5rem;color:var(--text-dim)">Natural order: Poor→Excellent</td></tr>
+    <tr><td style="padding:0.5rem;color:var(--green)">7</td><td style="padding:0.5rem"><strong>Z-SCORE OUTLIERS</strong></td><td style="padding:0.5rem;color:var(--text-dim)">SalePrice, GrLivArea, LotArea</td><td style="padding:0.5rem;color:var(--text-dim)">Remove rows with Z-score > 3</td></tr>
+    <tr><td style="padding:0.5rem;color:var(--magenta)">8</td><td style="padding:0.5rem"><strong>SKIP BINNING</strong></td><td style="padding:0.5rem;color:var(--text-dim)">YearBuilt, LotArea (for now)</td><td style="padding:0.5rem;color:var(--text-dim)">Start simple. Add only if needed.</td></tr>
+    <tr><td style="padding:0.5rem;color:var(--magenta)">9</td><td style="padding:0.5rem"><strong>NO CROSSES</strong></td><td style="padding:0.5rem;color:var(--text-dim)">— (for now)</td><td style="padding:0.5rem;color:var(--text-dim)">Add GrLivArea×OverallQual only if R² < 0.85</td></tr>
+    </table>
+    <div class="insight-box" style="margin-top:1rem">
+      <strong>📋 After these transformations:</strong> 82 raw columns → ~250 columns after OneHotEncoding → <span class="good">model-ready feature matrix.</span><br>
+      <strong>🔑 The profiling stage saved us from:</strong> <span class="danger">(1)</span> training on log-skewed target → biased model, <span class="danger">(2)</span> including 99.7% null columns → noise, <span class="danger">(3)</span> missing the LotArea outlier → distorted regression coefficients.
+    </div>`;
+}
+
+// Init
+renderDistributions(document.getElementById('content'));
+</script>
+</body>
+</html>
