@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Label Strategy — Interactive Visualizer</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06090f; --bg-card: #0d1117; --bg-raised: #161b22;
+  --border: #21262d; --text: #e6edf3; --text-dim: #8b949e; --text-muted: #484f58;
+  --cyan: #39d2ff; --amber: #ffb347; --green: #3fb950; --red: #f85149;
+  --violet: #a371f7; --magenta: #ff6ec7;
+}
+body.light {
+  --bg: #f6f8fa; --bg-card: #fff; --bg-raised: #e8ecf0;
+  --border: #d0d7de; --text: #1f2328; --text-dim: #656d76; --text-muted: #8b949e;
+  --cyan: #0969da; --amber: #9a6700; --green: #1a7f37; --red: #cf222e;
+  --violet: #8250df; --magenta: #bf3989;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; transition: background 0.3s, color 0.3s; }
+.theme-toggle { position: fixed; top: 1rem; right: 1.5rem; z-index: 999; background: var(--bg-raised); border: 1px solid var(--border); color: var(--text); font-size: 1.1rem; cursor: pointer; padding: 0.35rem 0.6rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace; }
+.theme-toggle:hover { border-color: var(--cyan); color: var(--cyan); }
+.app { max-width: 1050px; margin: 0 auto; padding: 1.5rem; }
+.header { text-align: center; padding: 1.5rem 0 0.5rem; }
+.header h1 { font-family: 'Orbitron', sans-serif; font-size: clamp(1.1rem, 3vw, 1.6rem); background: linear-gradient(135deg, var(--cyan), var(--violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.3rem; }
+.header p { color: var(--text-dim); font-size: 0.85rem; }
+
+/* ── Strategy Cards Grid ── */
+.strategies-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; margin: 1rem 0; }
+@media(max-width:850px) { .strategies-grid { grid-template-columns: repeat(2, 1fr); } }
+@media(max-width:500px) { .strategies-grid { grid-template-columns: 1fr; } }
+
+.strat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 0.8rem; cursor: pointer; transition: 0.2s; position: relative; }
+.strat-card:hover { transform: translateY(-2px); border-color: var(--text-dim); }
+.strat-card.active { border-color: var(--cyan); box-shadow: 0 0 18px #39d2ff18; }
+.strat-card.best { border-color: var(--green); border-width: 2px; }
+.strat-card .card-top { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem; }
+.strat-card .card-icon { font-size: 1.6rem; }
+.strat-card .card-title { font-family: 'Orbitron', sans-serif; font-size: 0.7rem; }
+.strat-card .card-cost { font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; padding: 0.15em 0.5em; border-radius: 100px; }
+.cost-free { background: #3fb95015; color: var(--green); border: 1px solid var(--green); }
+.cost-low { background: #39d2ff15; color: var(--cyan); border: 1px solid var(--cyan); }
+.cost-med { background: #ffb34715; color: var(--amber); border: 1px solid var(--amber); }
+.cost-high { background: #f8514915; color: var(--red); border: 1px solid var(--red); }
+.best-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.5rem; color: var(--green); background: #3fb95015; border: 1px solid var(--green); padding: 0.15em 0.5em; border-radius: 100px; position: absolute; top: -8px; right: -8px; }
+
+/* ── Main Visualization ── */
+.main-viz { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; margin: 0.8rem 0; min-height: 320px; display: flex; gap: 1.5rem; align-items: stretch; }
+@media(max-width:750px) { .main-viz { flex-direction: column; } }
+.viz-left { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.viz-left canvas { border-radius: 8px; background: var(--bg); }
+.viz-right { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+.viz-right h3 { font-family: 'Orbitron', sans-serif; font-size: 0.95rem; margin-bottom: 0.5rem; }
+.viz-right h3 .num { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--cyan); background: var(--cyan-bg, #39d2ff15); padding: 0.15em 0.5em; border-radius: 4px; margin-right: 0.3rem; }
+.viz-right .how-works { font-size: 0.82rem; color: var(--text-dim); line-height: 1.65; margin-bottom: 1rem; }
+.viz-right .metric-row { display: flex; gap: 0.8rem; margin: 0.5rem 0; flex-wrap: wrap; }
+.viz-right .metric-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; padding: 0.3em 0.7em; border-radius: 100px; display: flex; align-items: center; gap: 0.3rem; }
+.mb-cost { background: #f8514910; border: 1px solid var(--red); color: var(--red); }
+.mb-quality { background: #3fb95010; border: 1px solid var(--green); color: var(--green); }
+.mb-speed { background: #39d2ff10; border: 1px solid var(--cyan); color: var(--cyan); }
+.viz-right .example-box { background: var(--bg-raised); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1rem; margin-top: 0.8rem; font-size: 0.75rem; color: var(--text-dim); line-height: 1.5; }
+.example-box strong { color: var(--cyan); }
+.example-box .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; padding: 0.15em 0.4em; border-radius: 4px; margin-right: 0.3rem; }
+.tag-yes { background: #3fb95015; color: var(--green); border: 1px solid var(--green); }
+.tag-no { background: #f8514915; color: var(--red); border: 1px solid var(--red); }
+
+/* ── Comparison Table ── */
+.compare-table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; margin-top: 0.8rem; }
+.compare-table th { text-align: left; padding: 0.4rem 0.6rem; color: var(--text-muted); border-bottom: 1px solid var(--border); font-size: 0.58rem; letter-spacing: 0.04em; }
+.compare-table td { padding: 0.35rem 0.6rem; border-bottom: 1px solid rgba(33,38,45,0.3); color: var(--text-dim); }
+.compare-table tr.highlight-row { background: rgba(63,185,80,0.06); }
+.compare-table tr.highlight-row td { color: var(--green); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀️</button>
+
+<div class="app">
+  <header class="header">
+    <h1>Label Strategy — How Will You Get Your Labels?</h1>
+    <p>Click each strategy to see how it works. 🟢 Green card = best for House Prices.</p>
+  </header>
+
+  <!-- 6 Strategy Cards -->
+  <div class="strategies-grid" id="stratGrid"></div>
+
+  <!-- Main Visualization -->
+  <div class="main-viz" id="mainViz"></div>
+
+  <!-- Comparison Table -->
+  <table class="compare-table" id="compareTable"></table>
+</div>
+
+<script>
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  document.getElementById('themeToggle').textContent = document.body.classList.contains('light') ? '🌙' : '☀️';
+  localStorage.setItem('label-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+if (localStorage.getItem('label-theme') === 'light') {
+  document.body.classList.add('light'); document.getElementById('themeToggle').textContent = '🌙';
+}
+
+const strategies = [
+  { id:'hand', icon:'✍️', title:'Hand Labels', cost:'$$$$', costCls:'cost-high', quality:5, speed:1,
+    desc:'Humans manually label each example. Gold standard quality — but slow and expensive.',
+    example:'<strong>Medical imaging:</strong> 3 radiologists per scan, $50/image. <strong>Legal docs:</strong> Lawyers review every clause. Best when errors are catastrophic.',
+    housePrices:'<span class="tag tag-no">NOT NEEDED</span> Sale prices are public record — no human labeling required.' },
+  { id:'natural', icon:'🖱️', title:'Natural Labels', cost:'FREE', costCls:'cost-free', quality:3, speed:5,
+    desc:'User actions ARE the label. No humans needed — the system auto-generates labels from behavior.',
+    example:'<strong>Click = positive.</strong> User clicked the ad? Label=1. <strong>Purchase = positive.</strong> User bought? Label=1. <strong>Scroll past quickly = negative.</strong>',
+    housePrices:'<span class="tag tag-no">NOT APPLICABLE</span> No user interaction in this dataset. Useful for recommendation systems.' },
+  { id:'weak', icon:'🏷️', title:'Weak Supervision', cost:'$', costCls:'cost-low', quality:2, speed:4,
+    desc:'Write rules/heuristics to auto-label, then train on noisy labels. Scales fast. Quality depends on rules.',
+    example:'<strong>Sentiment:</strong> If text contains "great" or "love" → positive. If "terrible" or "hate" → negative. <strong>100K labels in minutes</strong> — but ~15-20% wrong.',
+    housePrices:'<span class="tag tag-no">NOT NEEDED</span> We have clean labels. Weak supervision helps when you have ZERO labels.' },
+  { id:'active', icon:'🔍', title:'Active Learning', cost:'$$', costCls:'cost-med', quality:4, speed:3,
+    desc:'Model picks the MOST confusing examples for humans to label. Fewer labels needed — but iterative.',
+    example:'<strong>Train on 100 labels →</strong> Model finds 10 "borderline" cases → Human labels those 10 → Retrain. <strong>Repeats until accuracy stops improving.</strong>',
+    housePrices:'<span class="tag tag-no">NOT NEEDED</span> All 2,930 rows already labeled. Active learning helps when labeling is expensive.' },
+  { id:'llm', icon:'🤖', title:'LLM-as-Labeler', cost:'$$', costCls:'cost-med', quality:3, speed:4,
+    desc:'GPT-4 or Claude labels your data via API. Fast, decent quality — but validate with humans on 10-20%.',
+    example:'<strong>Support tickets:</strong> "Is this a billing issue or a tech issue?" → Claude classifies 10K tickets in 30 min for ~$15. <strong>Spot-check 200 manually.</strong>',
+    housePrices:'<span class="tag tag-no">OVERKILL</span> LLMs can\'t beat public records for sale prices. Useful for text classification.' },
+  { id:'existing', icon:'📋', title:'Existing Records', cost:'FREE', costCls:'cost-free', quality:5, speed:5,
+    desc:'Historical data where the outcome is ALREADY recorded. No labeling needed — just clean and use.',
+    example:'<strong>Loan defaults:</strong> Bank already knows who defaulted. <strong>House prices:</strong> County recorded every sale. <strong>Customer churn:</strong> Subscription cancellations are logged.',
+    housePrices:'<span class="tag tag-yes">✅ THIS IS US!</span> The Ames dataset has SalePrice for every row. Labels are free, accurate, and complete.' },
+];
+
+let activeStrat = 'existing';
+
+function renderAll() {
+  renderCards();
+  renderMainViz();
+  renderCompareTable();
+}
+
+function renderCards() {
+  const grid = document.getElementById('stratGrid');
+  grid.innerHTML = strategies.map(s => `
+    <div class="strat-card ${s.id === activeStrat ? 'active' : ''} ${s.id === 'existing' ? 'best' : ''}"
+         onclick="selectStrat('${s.id}')">
+      ${s.id === 'existing' ? '<span class="best-badge">★ FOR HOUSE PRICES</span>' : ''}
+      <div class="card-top">
+        <span class="card-icon">${s.icon}</span>
+        <span class="card-title">${s.title}</span>
+        <span class="card-cost ${s.costCls}">${s.cost}</span>
+      </div>
+      <div style="font-size:0.68rem;color:var(--text-dim);line-height:1.4">${s.desc.substring(0,85)}...</div>
+    </div>
+  `).join('');
+}
+
+function selectStrat(id) {
+  activeStrat = id;
+  renderAll();
+}
+
+function renderMainViz() {
+  const s = strategies.find(x => x.id === activeStrat);
+  const el = document.getElementById('mainViz');
+
+  el.innerHTML = `
+    <div class="viz-left">
+      <canvas id="vizCanvas" width="${activeStrat==='existing'?420:380}" height="260"></canvas>
+    </div>
+    <div class="viz-right">
+      <h3><span class="num">${s.icon}</span> ${s.title}</h3>
+      <div class="how-works">${s.desc}</div>
+      <div class="metric-row">
+        <span class="metric-badge mb-cost">💰 Cost: ${s.cost}</span>
+        <span class="metric-badge mb-quality">⭐ Quality: ${'★'.repeat(s.quality)}${'☆'.repeat(5-s.quality)}</span>
+        <span class="metric-badge mb-speed">⚡ Speed: ${'⬛'.repeat(s.speed)}${'⬜'.repeat(5-s.speed)}</span>
+      </div>
+      <div class="example-box">${s.example}</div>
+      <div class="example-box" style="margin-top:0.4rem;${s.id==='existing'?'border-color:var(--green);background:#3fb95008':''}">
+        <strong>🏠 House Prices:</strong> ${s.housePrices}
+      </div>
+    </div>`;
+
+  setTimeout(() => drawCanvas(activeStrat), 30);
+}
+
+function drawCanvas(stratId) {
+  const c = document.getElementById('vizCanvas'); if(!c) return;
+  const W = c.width, H = c.height, ctx = c.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+
+  if (stratId === 'hand') {
+    // Human labeling factory: documents go in, labeled data comes out
+    for(let i=0;i<20;i++) {
+      const x = 30+(i%4)*45, y = 35+Math.floor(i/4)*52;
+      ctx.fillStyle = 'rgba(139,148,158,0.3)'; ctx.fillRect(x,y,30,40);
+      ctx.font = '7px "JetBrains Mono"'; ctx.fillStyle = 'rgba(139,148,158,0.6)'; ctx.fillText('?',x+10,y+25);
+    }
+    // People
+    for(let i=0;i<3;i++) {
+      ctx.font = '24px sans-serif'; ctx.fillText('👤',125,60+i*60);
+    }
+    // Output
+    for(let i=0;i<5;i++) {
+      const x = 200+(i%2)*35, y = 30+i*48;
+      ctx.fillStyle = 'rgba(63,185,80,0.3)'; ctx.fillRect(x,y,22,32);
+      ctx.font = '7px "JetBrains Mono"'; ctx.fillStyle = 'rgba(63,185,80,0.7)'; ctx.fillText('✓',x+6,y+20);
+    }
+    ctx.font = '8px "JetBrains Mono"'; ctx.fillStyle = 'rgba(139,148,158,0.5)';
+    ctx.fillText('Unlabeled',35,15); ctx.fillText('Humans',130,40); ctx.fillText('Labeled',215,15);
+    ctx.font = '9px "JetBrains Mono"'; ctx.fillStyle = 'rgba(248,81,73,0.7)'; ctx.fillText('20 docs × $50 = $1,000', 60, 215);
+    ctx.fillText('Time: 2 weeks', 60, 235);
+
+  } else if (stratId === 'natural') {
+    // User flow: impressions → clicks → labels
+    for(let i=0;i<8;i++) {
+      const x=30+i*42, y=80;
+      ctx.fillStyle='rgba(139,148,158,0.2)'; ctx.fillRect(x,y,32,20);
+      ctx.font='7px "JetBrains Mono"'; ctx.fillStyle='rgba(139,148,158,0.5)'; ctx.fillText('Ad',x+6,y+14);
+    }
+    // Some clicked (green), some not (red)
+    const outcomes=[1,0,0,1,0,0,0,1];
+    outcomes.forEach((v,i)=>{
+      const x=30+i*42, y=140;
+      ctx.fillStyle=v?'rgba(63,185,80,0.7)':'rgba(248,81,73,0.5)';
+      ctx.fillRect(x,y,32,22);
+      ctx.font='7px "JetBrains Mono"'; ctx.fillStyle='#fff'; ctx.fillText(v?'✓ Click':'✗ Skip',x+2,y+15);
+    });
+    ctx.font='9px "JetBrains Mono"'; ctx.fillStyle='rgba(63,185,80,0.7)'; ctx.fillText('3 clicks = 3 positives (free)',60,200);
+    ctx.fillStyle='rgba(248,81,73,0.7)'; ctx.fillText('5 skips = 5 negatives (free)',60,220);
+    ctx.fillStyle='rgba(139,148,158,0.5)'; ctx.fillText('Labels: FREE. Speed: INSTANT.',60,245);
+
+  } else if (stratId === 'weak') {
+    // Rules engine
+    const rules = ['Rule 1: "great"→pos','Rule 2: "terrible"→neg','Rule 3: "love"→pos','Rule 4: "hate"→neg'];
+    rules.forEach((r,i)=>{
+      ctx.font='8px "JetBrains Mono"'; ctx.fillStyle='rgba(255,179,71,0.7)';
+      ctx.fillText(r,40,35+i*22);
+    });
+    ctx.fillStyle='rgba(139,148,158,0.3)'; ctx.fillRect(240,20,120,100);
+    for(let i=0;i<18;i++){
+      ctx.fillStyle=Math.random()>0.15?'rgba(63,185,80,0.5)':'rgba(248,81,73,0.5)';
+      ctx.fillRect(246+(i%5)*22,28+Math.floor(i/5)*22,16,16);
+    }
+    ctx.font='9px "JetBrains Mono"'; ctx.fillStyle='rgba(139,148,158,0.5)'; ctx.fillText('100K rows labeled in',40,170);
+    ctx.fillText('< 5 minutes. ~15% errors.',40,190);
+    ctx.fillStyle='rgba(248,81,73,0.6)'; ctx.fillText('⚠ Wrong labels = noisy training',40,215);
+
+  } else if (stratId === 'active') {
+    // Iterative loop
+    const cx=190, cy=130;
+    for(let a=0;a<3;a++){
+      const ang=(a/3)*Math.PI*2-Math.PI/2, r=70;
+      const bx=cx+Math.cos(ang)*r, by=cy+Math.sin(ang)*r;
+      ctx.fillStyle=['rgba(57,210,255,0.25)','rgba(255,179,71,0.2)','rgba(63,185,80,0.25)'][a];
+      ctx.beginPath(); ctx.arc(bx,by,28,0,Math.PI*2); ctx.fill();
+      ctx.font='8px "JetBrains Mono"'; ctx.fillStyle='rgba(139,148,158,0.7)';
+      ctx.fillText(['Train Model','Pick Confusing','Label & Retrain'][a],bx-40,by-28);
+    }
+    ctx.font='9px "JetBrains Mono"'; ctx.fillStyle='rgba(139,148,158,0.5)';
+    ctx.fillText('Loop until accuracy stops improving',30,220);
+    ctx.fillText('Labels: 500 total (not 10,000). Cost: Low.',30,240);
+
+  } else if (stratId === 'llm') {
+    // LLM pipeline
+    ctx.fillStyle='rgba(139,148,158,0.2)'; ctx.fillRect(20,50,100,40);
+    ctx.font='8px "JetBrains Mono"'; ctx.fillStyle='rgba(139,148,158,0.6)'; ctx.fillText('Unlabeled',30,72);
+    ctx.fillText('Tickets',52,85);
+    ctx.fillText('🔄',145,75);
+    ctx.fillStyle='rgba(163,113,247,0.3)'; ctx.fillRect(175,50,90,40);
+    ctx.fillText('GPT-4 Classify',182,72); ctx.fillStyle='rgba(163,113,247,0.6)';
+    ctx.fillText('→',270,75);
+    ctx.fillStyle='rgba(63,185,80,0.2)'; ctx.fillRect(295,50,90,40);
+    ctx.fillText('Labeled',305,72); ctx.fillStyle='rgba(63,185,80,0.6)';
+    // Human spot-check
+    ctx.font='8px "JetBrains Mono"'; ctx.fillStyle='rgba(255,179,71,0.7)';
+    ctx.fillText('👤 Spot-check 10% manually',120,130);
+    ctx.fillText('Verify LLM quality',140,150);
+    ctx.font='9px "JetBrains Mono"'; ctx.fillStyle='rgba(139,148,158,0.5)';
+    ctx.fillText('10K tickets labeled in 30 min for ~$15',40,195);
+    ctx.fillText('⚠ Must validate — LLMs hallucinate labels too',40,220);
+
+  } else if (stratId === 'existing') {
+    // House prices: clean data → use directly
+    ctx.fillStyle='rgba(57,210,255,0.1)'; ctx.fillRect(15,20,150,220);
+    ctx.font='10px "Orbitron"'; ctx.fillStyle='rgba(57,210,255,0.5)'; ctx.fillText('AMES DATASET',28,45);
+    const headers=['PID','GrLivArea','OverallQual','SalePrice'];
+    headers.forEach((h,i)=>{ ctx.font='7px "JetBrains Mono"'; ctx.fillStyle='rgba(139,148,158,0.5)'; ctx.fillText(h,28,60+i*22); });
+    // Data rows
+    for(let r=0;r<6;r++){
+      const vals=['528'+r,(1400+r*350).toString(),(5+r).toString(),'$'+(185000+r*65000).toString()];
+      vals.forEach((v,i)=>{ ctx.font='7px "JetBrains Mono"'; ctx.fillStyle=i===3?'rgba(63,185,80,0.85)':'rgba(139,148,158,0.5)'; ctx.fillText(v,28,60+(r+1)*22+i*22); });
+    }
+    // Arrow
+    ctx.font='24px sans-serif'; ctx.fillText('→',185,130);
+    // Clean labeled data
+    ctx.fillStyle='rgba(63,185,80,0.1)'; ctx.fillRect(220,20,180,220);
+    ctx.font='10px "Orbitron"'; ctx.fillStyle='rgba(63,185,80,0.6)'; ctx.fillText('TRAINING DATA',230,45);
+    ctx.font='7px "JetBrains Mono"';
+    ctx.fillStyle='rgba(63,185,80,0.7)'; ctx.fillText('✓ 2,930 rows',235,70);
+    ctx.fillText('✓ 82 features',235,88);
+    ctx.fillText('✓ SalePrice = label',235,106);
+    ctx.fillText('✓ Public records',235,124);
+    ctx.fillText('✓ Zero labeling cost',235,142);
+    ctx.fillText('✓ Legally verified',235,160);
+    ctx.fillText('✓ Ready to train',235,178);
+
+    ctx.font='bold 11px "JetBrains Mono"'; ctx.fillStyle='rgba(63,185,80,0.9)';
+    ctx.fillText('🏠 THE IDEAL SCENARIO',90,255);
+  }
+}
+
+function renderCompareTable() {
+  const el = document.getElementById('compareTable');
+  el.innerHTML = `
+    <tr><th>Strategy</th><th>Cost</th><th>Quality</th><th>Speed</th><th>Best For</th><th>House Prices?</th></tr>
+    ${strategies.map(s => `
+      <tr class="${s.id==='existing'?'highlight-row':''}" style="${s.id===activeStrat?'background:rgba(57,210,255,0.04)':''}">
+        <td>${s.icon} ${s.title}</td>
+        <td>${s.cost}</td>
+        <td>${'★'.repeat(s.quality)}${'☆'.repeat(5-s.quality)}</td>
+        <td>${'█'.repeat(s.speed)}${'░'.repeat(5-s.speed)}</td>
+        <td style="font-size:0.6rem;font-family:'DM Sans'">${['Medical/Legal','Recommendations','Text classification','Expensive labels','Text/NLP','Tabular data'][strategies.indexOf(s)]}</td>
+        <td>${s.id==='existing'?'✅ YES':'❌'}</td>
+      </tr>
+    `).join('')}
+  `;
+}
+
+renderAll();
+</script>
+</body>
+</html>
