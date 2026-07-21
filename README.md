@@ -17,6 +17,15 @@ An end-to-end MLOps and ML System Design learning project built from scratch fol
 
 **📊 Dashboard:** [index.html](index.html)
 
+## 🎨 Interactive Visual Explainers
+
+| Topic | Visualizer | What It Shows |
+|-------|-----------|---------------|
+| Class Imbalance (2.6) | [🔗 HTML](class_imbalance_visualizer.html) | Apply 5 techniques to the same dataset — see them transform live |
+| Train/Test Split (2.7) | [🔗 HTML](train_test_split_visualizer.html) | Which split method for houses vs stocks vs users? |
+| Data Quality Gates (2.8) | [🔗 HTML](data_quality_visualizer.html) | 12 rows pass through 4 quality gates — see what fails |
+| Label Strategy (2.3) | [🔗 HTML](label_strategy_visualizer.html) | 6 ways to get labels — cost, quality, speed compared |
+
 ## Key Project: Prices Predictor System (Phase 5)
 
 A house price prediction system that demonstrates:

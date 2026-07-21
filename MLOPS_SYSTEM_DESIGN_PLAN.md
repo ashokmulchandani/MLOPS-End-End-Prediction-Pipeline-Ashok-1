@@ -18,6 +18,15 @@
 
 🏠 **Dashboard:** [index.html](index.html)
 
+### 🎨 Visual Explainers
+
+| Topic | Link |
+|-------|------|
+| Class Imbalance (2.6) — 5 techniques compared live | [class_imbalance_visualizer.html](class_imbalance_visualizer.html) |
+| Train/Test Split (2.7) — which method per data type | [train_test_split_visualizer.html](train_test_split_visualizer.html) |
+| Data Quality Gates (2.8) — 4-layer inspection pipeline | [data_quality_visualizer.html](data_quality_visualizer.html) |
+| Label Strategy (2.3) — 6 ways to get labels | [label_strategy_visualizer.html](label_strategy_visualizer.html) |
+
 ---
 
 ## ✅ Phase 1: ML System Design Thinking (Before You Write Code) — COMPLETE
