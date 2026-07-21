@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Missing Values — Interactive Visualizer</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06090f; --bg-card: #0d1117; --bg-raised: #161b22;
+  --border: #21262d; --text: #e6edf3; --text-dim: #8b949e; --text-muted: #484f58;
+  --cyan: #39d2ff; --amber: #ffb347; --green: #3fb950; --red: #f85149;
+  --violet: #a371f7; --magenta: #ff6ec7;
+}
+body.light {
+  --bg: #f6f8fa; --bg-card: #fff; --bg-raised: #e8ecf0;
+  --border: #d0d7de; --text: #1f2328; --text-dim: #656d76; --text-muted: #8b949e;
+  --cyan: #0969da; --amber: #9a6700; --green: #1a7f37; --red: #cf222e;
+  --violet: #8250df; --magenta: #bf3989;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; transition: background 0.3s, color 0.3s; }
+.theme-toggle { position: fixed; top: 1rem; right: 1.5rem; z-index: 999; background: var(--bg-raised); border: 1px solid var(--border); color: var(--text); font-size: 1.1rem; cursor: pointer; padding: 0.35rem 0.6rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace; }
+.theme-toggle:hover { border-color: var(--cyan); color: var(--cyan); }
+.app { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+.header { text-align: center; padding: 1.5rem 0 0.3rem; }
+.header h1 { font-family: 'Orbitron', sans-serif; font-size: clamp(1.1rem, 3vw, 1.5rem); background: linear-gradient(135deg, var(--cyan), var(--violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.3rem; }
+.header p { color: var(--text-dim); font-size: 0.85rem; }
+
+/* Scenario selector */
+.scenario-tabs { display: flex; gap: 0.5rem; justify-content: center; margin: 1rem 0; flex-wrap: wrap; }
+.scenario-tab { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; padding: 0.5rem 1rem; border-radius: 100px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-dim); cursor: pointer; transition: 0.2s; }
+.scenario-tab:hover { border-color: var(--cyan); color: var(--text); }
+.scenario-tab.active { border-color: var(--cyan); background: #39d2ff12; color: var(--cyan); }
+
+/* Strategy buttons */
+.strat-row { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin: 0.8rem 0; }
+.strat-btn { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; padding: 0.45rem 0.9rem; border-radius: 100px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-dim); cursor: pointer; transition: 0.2s; }
+.strat-btn:hover { border-color: var(--cyan); color: var(--text); }
+.strat-btn.active { border-color: var(--cyan); background: #39d2ff12; color: var(--cyan); }
+.strat-btn.danger { border-color: var(--red); color: var(--red); }
+.strat-btn.danger.active { background: #f8514912; }
+.strat-btn.good { border-color: var(--green); color: var(--green); }
+.strat-btn.good.active { background: #3fb95012; }
+
+.main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 0.8rem 0; }
+@media(max-width:800px){ .main-layout { grid-template-columns: 1fr; } }
+
+.viz-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; }
+.viz-card h3 { font-family: 'Orbitron', sans-serif; font-size: 0.78rem; margin-bottom: 0.5rem; }
+.viz-card h3 .badge { font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; padding: 0.15em 0.5em; border-radius: 100px; margin-left: 0.4rem; }
+.badge-red { background: #f8514915; color: var(--red); border: 1px solid var(--red); }
+.badge-green { background: #3fb95015; color: var(--green); border: 1px solid var(--green); }
+.badge-amber { background: #ffb34715; color: var(--amber); border: 1px solid var(--amber); }
+.badge-cyan { background: #39d2ff15; color: var(--cyan); border: 1px solid var(--cyan); }
+
+.insight-box { background: var(--bg-raised); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1rem; margin: 0.8rem 0; font-size: 0.8rem; color: var(--text-dim); line-height: 1.6; }
+.insight-box strong { color: var(--cyan); }
+.insight-box .good { color: var(--green); }
+.insight-box .warn { color: var(--amber); }
+.insight-box .danger { color: var(--red); }
+
+.compare-table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; margin-top: 0.5rem; }
+.compare-table th { text-align: left; padding: 0.35rem 0.5rem; color: var(--text-muted); border-bottom: 1px solid var(--border); font-size: 0.58rem; }
+.compare-table td { padding: 0.35rem 0.5rem; border-bottom: 1px solid rgba(33,38,45,0.3); color: var(--text-dim); }
+.compare-table tr.highlight { background: rgba(63,185,80,0.06); }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀️</button>
+
+<div class="app">
+  <header class="header">
+    <h1>Missing Values — WHY Before HOW</h1>
+    <p>Missing data tells a story. Your strategy depends on WHAT story the missing data is telling.</p>
+  </header>
+
+  <!-- Scenario selector -->
+  <div class="scenario-tabs">
+    <button class="scenario-tab active" onclick="pickScenario('lot')">🏠 LotFrontage (17% null)</button>
+    <button class="scenario-tab" onclick="pickScenario('garage')">🚗 GarageYrBlt (5% null)</button>
+    <button class="scenario-tab" onclick="pickScenario('fireplace')">🔥 FireplaceQu (47% null)</button>
+    <button class="scenario-tab" onclick="pickScenario('pool')">🏊 PoolQC (99.7% null)</button>
+    <button class="scenario-tab" onclick="pickScenario('electrical')">⚡ Electrical (0.03% null)</button>
+  </div>
+
+  <!-- Strategy buttons -->
+  <div class="strat-row" id="stratRow"></div>
+
+  <!-- Main viz -->
+  <div class="main-layout">
+    <div class="viz-card"><h3>📊 The Data <span class="badge" id="badgeBefore">BEFORE</span></h3><canvas id="canvasBefore" width="420" height="260"></canvas></div>
+    <div class="viz-card"><h3>✅ After Strategy <span class="badge" id="badgeAfter">AFTER</span></h3><canvas id="canvasAfter" width="420" height="260"></canvas></div>
+  </div>
+
+  <div class="insight-box" id="insight"></div>
+
+  <div class="insight-box" id="verdict" style="border-color:var(--green);background:#3fb95008"></div>
+</div>
+
+<script>
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  document.getElementById('themeToggle').textContent = document.body.classList.contains('light') ? '🌙' : '☀️';
+  localStorage.setItem('mv-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+  setTimeout(drawAll, 50);
+}
+if (localStorage.getItem('mv-theme') === 'light') { document.body.classList.add('light'); document.getElementById('themeToggle').textContent = '🌙'; }
+
+const scenarios = {
+  lot: {
+    title: 'LotFrontage — 17% missing',
+    question: 'WHY is it missing?',
+    answer: 'Probably RANDOM — some assessors measured frontage, some didn\'t. No systematic pattern.',
+    strategies: ['dropRows','mean','median','constant'],
+    activeStrat: 'median',
+    bestStrat: 'median',
+    desc: '17% of houses are missing LotFrontage (the linear feet of street the property touches).',
+  },
+  garage: {
+    title: 'GarageYrBlt — 5% missing',
+    question: 'WHY is it missing?',
+    answer: '<strong>NOT random.</strong> 81 houses have NO garage. GarageYrBlt is null BECAUSE there is no garage. The missing IS the signal.',
+    strategies: ['dropRows','mean','median','constant'],
+    activeStrat: 'constant',
+    bestStrat: 'constant',
+    desc: '5% of houses have null GarageYrBlt. All 81 of these houses have no garage at all.',
+  },
+  fireplace: {
+    title: 'FireplaceQu — 47% missing',
+    question: 'WHY is it missing?',
+    answer: '<strong>NOT random.</strong> 47% of houses have NO fireplace. "Null" = "No Fireplace". This is structured missing data.',
+    strategies: ['dropRows','mode','constant','dropCol'],
+    activeStrat: 'constant',
+    bestStrat: 'constant',
+    desc: 'Nearly half the houses lack a fireplace. The fireplaces that exist are rated Poor to Excellent.',
+  },
+  pool: {
+    title: 'PoolQC — 99.7% missing',
+    question: 'WHY is it missing?',
+    answer: '<strong>Almost no houses have pools.</strong> Only 8 out of 2,930 houses have a pool. 99.7% null means this feature has almost ZERO information.',
+    strategies: ['dropRows','mode','constant','dropCol'],
+    activeStrat: 'dropCol',
+    bestStrat: 'dropCol',
+    desc: 'Only 8 houses have pools in Ames, Iowa. This column is 99.7% one value ("No Pool").',
+  },
+  electrical: {
+    title: 'Electrical — 0.03% missing (1 house)',
+    question: 'WHY is it missing?',
+    answer: 'Probably a <strong>data entry error</strong>. 1 house out of 2,930 is missing its electrical type. This is a genuine mistake — not a pattern.',
+    strategies: ['dropRows','mode','constant'],
+    activeStrat: 'mode',
+    bestStrat: 'mode',
+    desc: 'Exactly 1 house is missing the Electrical type. The most common type is "Circuit Breaker".',
+  },
+};
+
+let currentScenario = 'lot';
+
+function pickScenario(s) {
+  currentScenario = s;
+  document.querySelectorAll('.scenario-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  const sc = scenarios[s];
+  sc.activeStrat = sc.bestStrat;
+  renderAll();
+}
+
+function pickStrat(strat) {
+  scenarios[currentScenario].activeStrat = strat;
+  renderAll();
+}
+
+function renderAll() {
+  renderStratButtons();
+  drawAll();
+  updateInsight();
+  updateVerdict();
+}
+
+function renderStratButtons() {
+  const sc = scenarios[currentScenario];
+  const row = document.getElementById('stratRow');
+  const allStrats = ['dropRows','dropCol','mean','median','mode','constant'];
+  const labels = { dropRows:'🗑️ Drop Rows', dropCol:'❌ Drop Column', mean:'📊 Fill Mean', median:'📐 Fill Median', mode:'🔤 Fill Mode', constant:'🖊️ Fill "None"/0' };
+  const types = { dropRows:'danger', dropCol:'danger', mean:'', median:'', mode:'', constant:'good' };
+
+  row.innerHTML = sc.strategies.map(s => {
+    const cls = `strat-btn ${types[s]||''} ${s===sc.activeStrat?'active':''}`;
+    return `<button class="${cls}" onclick="pickStrat('${s}')">${labels[s]}</button>`;
+  }).join('');
+}
+
+function drawAll() {
+  const sc = scenarios[currentScenario];
+  drawBefore(currentScenario);
+  drawAfter(currentScenario, sc.activeStrat);
+}
+
+function drawBefore(s) {
+  const c = document.getElementById('canvasBefore'); if(!c) return;
+  const W=420, H=260, ctx=c.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  const isLight = document.body.classList.contains('light');
+
+  // Grid
+  ctx.strokeStyle = isLight?'rgba(208,215,222,0.3)':'rgba(33,38,45,0.3)'; ctx.lineWidth = 0.5;
+  for(let x=0;x<W;x+=40){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for(let y=0;y<H;y+=40){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  let vals, missing;
+  if (s === 'lot') {
+    vals = []; missing = new Set();
+    for(let i=0;i<40;i++) { vals.push(40+Math.random()*100); if(Math.random()<0.17) missing.add(i); }
+  } else if (s === 'garage') {
+    vals = []; missing = new Set();
+    for(let i=0;i<40;i++) {
+      if (i<2) { vals.push(0); missing.add(i); } // no garage
+      else vals.push(1970+Math.random()*40);
+    }
+  } else if (s === 'fireplace') {
+    vals = []; missing = new Set();
+    for(let i=0;i<40;i++) {
+      if (Math.random()<0.47) { vals.push(0); missing.add(i); }
+      else vals.push(1+Math.floor(Math.random()*5));
+    }
+  } else if (s === 'pool') {
+    vals = []; missing = new Set();
+    for(let i=0;i<40;i++) { vals.push(0); missing.add(i); } // almost all null
+    vals[10]=3; missing.delete(10); vals[25]=4; missing.delete(25); // 2 pools
+  } else if (s === 'electrical') {
+    vals = []; missing = new Set();
+    for(let i=0;i<40;i++) vals.push(1+Math.floor(Math.random()*5));
+    missing.add(15); // 1 random missing
+  }
+
+  // Draw as grid dots
+  vals.forEach((v,i) => {
+    const col = i%10, row = Math.floor(i/10);
+    const x = 30+col*38, y = 35+row*50;
+
+    if (missing.has(i)) {
+      ctx.fillStyle = 'rgba(248,81,73,0.8)';
+      ctx.beginPath(); ctx.arc(x,y,8,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#000'; ctx.font='bold 10px "JetBrains Mono"'; ctx.fillText('?',x-4,y+4);
+    } else {
+      const alpha = 0.4+(v/Math.max(...vals))*0.4;
+      ctx.fillStyle = `rgba(57,210,255,${alpha})`;
+      ctx.beginPath(); ctx.arc(x,y,7,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = isLight?'rgba(31,35,40,0.8)':'rgba(230,237,243,0.8)';
+      ctx.font='8px "JetBrains Mono"';
+      const label = s==='fireplace'||s==='pool'||s==='electrical' ? ['','Po','Fa','TA','Gd','Ex'][Math.round(v)] : Math.round(v).toString();
+      ctx.fillText(label, x-3, y+3);
+    }
+  });
+
+  // Red count
+  ctx.font='bold 12px "JetBrains Mono"'; ctx.fillStyle = 'rgba(248,81,73,0.9)';
+  const missCount = missing.size;
+  ctx.fillText(`${missCount}/40 missing (${Math.round(missCount/40*100)}%)`, 20, H-15);
+  ctx.font='10px "DM Sans"'; ctx.fillStyle = isLight?'rgba(31,35,40,0.5)':'rgba(139,148,158,0.5)';
+  ctx.fillText('🔴 = null', 280, H-15);
+
+  document.getElementById('badgeBefore').textContent = 'BEFORE';
+  document.getElementById('badgeBefore').className = 'badge badge-red';
+}
+
+function drawAfter(s, strat) {
+  const c = document.getElementById('canvasAfter'); if(!c) return;
+  const W=420, H=260, ctx=c.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  const isLight = document.body.classList.contains('light');
+
+  ctx.strokeStyle = isLight?'rgba(208,215,222,0.3)':'rgba(33,38,45,0.3)'; ctx.lineWidth = 0.5;
+  for(let x=0;x<W;x+=40){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for(let y=0;y<H;y+=40){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  let vals, missing;
+  if (s === 'lot') {
+    vals = []; missing = new Set();
+    for(let i=0;i<40;i++) { vals.push(40+Math.random()*100); if(Math.random()<0.17) missing.add(i); }
+  } else if (s === 'garage') {
+    vals = []; missing = new Set();
+    for(let i=0;i<40;i++) { if(i<2){vals.push(0);missing.add(i);} else vals.push(1970+Math.random()*40); }
+  } else if (s === 'fireplace') {
+    vals = []; missing = new Set();
+    for(let i=0;i<40;i++) { if(Math.random()<0.47){vals.push(0);missing.add(i);} else vals.push(1+Math.floor(Math.random()*5)); }
+  } else if (s === 'pool') {
+    vals = []; missing = new Set();
+    for(let i=0;i<40;i++) { vals.push(0); missing.add(i); }
+    vals[10]=3; missing.delete(10); vals[25]=4; missing.delete(25);
+  } else if (s === 'electrical') {
+    vals = []; missing = new Set();
+    for(let i=0;i<40;i++) vals.push(1+Math.floor(Math.random()*5));
+    missing.add(15);
+  }
+
+  // Apply strategy
+  let afterVals = [...vals];
+  let droppedRows = new Set();
+  let droppedCol = false;
+  const allVals = vals.filter((v,i)=>!missing.has(i));
+  const fillVal = strat==='mean' ? Math.round(allVals.reduce((a,b)=>a+b,0)/allVals.length) :
+                   strat==='median' ? allVals.sort((a,b)=>a-b)[Math.floor(allVals.length/2)] :
+                   strat==='mode' ? (()=>{ const c={}; allVals.forEach(v=>c[v]=(c[v]||0)+1); return +Object.entries(c).sort((a,b)=>b[1]-a[1])[0][0]; })() :
+                   strat==='constant' ? (s==='garage'?0:s==='fireplace'||s==='pool'?'None':0) : 0;
+
+  if (strat === 'dropRows') {
+    missing.forEach(i => droppedRows.add(i));
+  } else if (strat === 'dropCol') {
+    droppedCol = true;
+  } else {
+    missing.forEach(i => { afterVals[i] = fillVal; });
+  }
+
+  if (droppedCol) {
+    ctx.font='bold 14px "JetBrains Mono"'; ctx.fillStyle = 'rgba(248,81,73,0.5)';
+    ctx.fillText('COLUMN DELETED', 100, 140);
+    ctx.fillText('from the dataset', 110, 165);
+  } else {
+    afterVals.forEach((v,i) => {
+      if (droppedRows.has(i)) return; // skip
+      const col = i%10, row = Math.floor(i/10);
+      const x = 30+col*38, y = 35+row*50;
+      const wasMissing = missing.has(i);
+
+      if (wasMissing) {
+        ctx.fillStyle = 'rgba(255,179,71,0.8)';
+        ctx.beginPath(); ctx.arc(x,y,9,0,Math.PI*2); ctx.fill();
+        ctx.strokeStyle='rgba(255,179,71,0.6)'; ctx.lineWidth=2; ctx.setLineDash([3,2]); ctx.stroke();
+        ctx.setLineDash([]);
+      } else {
+        const alpha = 0.4+(v/Math.max(...afterVals.filter((_,j)=>!droppedRows.has(j))))*0.4;
+        ctx.fillStyle = `rgba(57,210,255,${alpha})`;
+        ctx.beginPath(); ctx.arc(x,y,7,0,Math.PI*2); ctx.fill();
+      }
+
+      ctx.fillStyle = isLight?'rgba(31,35,40,0.85)':'rgba(230,237,243,0.85)';
+      ctx.font='bold 8px "JetBrains Mono"';
+      const label = (s==='fireplace'||s==='pool'||s==='electrical') && !wasMissing ? ['','Po','Fa','TA','Gd','Ex'][Math.round(v)] :
+                     wasMissing ? (strat==='constant'&&(s==='fireplace'||s==='pool')?'None':fillVal.toString()) :
+                     Math.round(v).toString();
+      ctx.fillText(label, x-3, y+3);
+    });
+
+    // Legend
+    ctx.font='10px "DM Sans"'; ctx.fillStyle = isLight?'rgba(31,35,40,0.5)':'rgba(139,148,158,0.5)';
+    ctx.fillText('🟡 dashed = was missing, now filled', 20, H-15);
+
+    if (strat==='dropRows') {
+      ctx.fillText(`Kept: ${40-droppedRows.size}/40 rows`, 300, H-15);
+    }
+  }
+
+  document.getElementById('badgeAfter').textContent = 'AFTER: '+strat;
+  document.getElementById('badgeAfter').className = 'badge '+(strat==='dropRows'||strat==='dropCol'?'badge-red':strat==='constant'?'badge-green':'badge-cyan');
+}
+
+function updateInsight() {
+  const sc = scenarios[currentScenario];
+  const strat = sc.activeStrat;
+  const el = document.getElementById('insight');
+
+  const stratExplanations = {
+    lot: {
+      dropRows: '<strong>Drop Rows:</strong> <span class="danger">Threw away 17% of your data.</span> From 2,930 houses → ~2,430 remain. Every dropped row also loses its SalePrice label — that\'s valuable training data gone forever.',
+      mean: '<strong>Fill Mean:</strong> Every missing house got <span class="warn">68ft</span> of frontage (the average). A house with a 200ft lot on a main road now looks the same as one with a tiny front yard. <span class="warn">Mean ignores context.</span>',
+      median: '<strong>Fill Median:</strong> Every missing house got <span class="good">65ft</span> of frontage. <span class="good">Better than mean</span> because median resists outliers — the one 300ft frontage mansion doesn\'t pull the median up. <span class="good">This is our recommended strategy.</span>',
+      constant: '<strong>Fill 0:</strong> Every missing house got 0ft frontage. <span class="warn">Dangerous</span> — 0 means "no street frontage at all" (like a flag lot). The model now thinks these are flag lots, which sell for LESS.',
+    },
+    garage: {
+      dropRows: '<strong>Drop Rows:</strong> <span class="warn">Lost 81 houses.</span> But these 81 houses are the ONLY ones without garages — you just removed an entire category of homes from your training data. The model now assumes every house has a garage.',
+      mean: '<strong>Fill Mean (1978):</strong> <span class="danger">Disaster.</span> Houses with no garage now have "GarageYrBlt = 1978". The model sees "this house was built in 2005 but its garage was built in 1978" — nonsensical.',
+      median: '<strong>Fill Median (1980):</strong> Same problem as mean. Creates fake garage years for houses that have no garage. The model learns incorrect patterns.',
+      constant: '<strong>Fill 0 = "No Garage":</strong> <span class="good">PERFECT.</span> 0 is not a real year — the model learns "GarageYrBlt=0 means no garage." The MISSING VALUE WAS THE SIGNAL. <span class="good">This is our recommended strategy.</span>',
+    },
+    fireplace: {
+      dropRows: '<strong>Drop Rows:</strong> <span class="danger">Lose 47% of houses!</span> That\'s 1,377 houses gone from 2,930. Your model now only knows about houses WITH fireplaces. Completely biased.',
+      mode: '<strong>Fill Mode:</strong> Fills "Average" quality for every missing fireplace. <span class="danger">Wrong</span> — it invents fireplaces for 1,377 houses that don\'t have one.',
+      constant: '<strong>Fill "None":</strong> <span class="good">PERFECT.</span> "No Fireplace" becomes a valid category. The model learns that having NO fireplace is different from having a Poor one. The missing is the truth.',
+      dropCol: '<strong>Drop Column:</strong> <span class="warn">Loses information.</span> 53% of houses DO have fireplaces, and quality varies. Dropping the column throws away that signal. Better to encode "None" as a category.',
+    },
+    pool: {
+      dropRows: '<strong>Drop Rows:</strong> <span class="danger">Only 8 houses remain!</span> You\'ve thrown away 99.7% of your data. The model is now unusable.',
+      mode: '<strong>Fill Mode ("No Pool"):</strong> <span class="warn">99.7% of values are identical.</span> The feature has almost zero variance — it contributes nothing to the model. You\'re adding noise.',
+      constant: '<strong>Fill "None":</strong> Same problem as mode — 99.7% of values are now "None". The 8 pools are invisible.',
+      dropCol: '<strong>Drop Column:</strong> <span class="good">CORRECT.</span> 99.7% identical values = zero information. Dropping removes noise. The 8 houses with pools aren\'t enough to learn from. <span class="good">This is our recommended strategy.</span>',
+    },
+    electrical: {
+      dropRows: '<strong>Drop 1 Row:</strong> <span class="good">Fine!</span> It\'s just 1 house. Dropping it costs almost nothing. But imputing is even cheaper.',
+      mode: '<strong>Fill Mode ("Circuit Breaker"):</strong> <span class="good">BEST.</span> 1 house gets the most common electrical type. Cost: zero. The model can\'t be wrong about 1 house in a statistically meaningful way. <span class="good">This is our recommended strategy.</span>',
+      constant: '<strong>Fill "Unknown":</strong> <span class="warn">Overkill.</span> Creating a new category for 1 house adds a column for almost no benefit. For 1 row, mode is simpler.',
+    },
+  };
+
+  el.innerHTML = (stratExplanations[sc] && stratExplanations[sc][strat]) || '';
+}
+
+function updateVerdict() {
+  const sc = scenarios[currentScenario];
+  const el = document.getElementById('verdict');
+  const verdicts = {
+    lot: `<strong>🏠 Verdict for LotFrontage:</strong> <span class="good">Fill with MEDIAN.</span> Missing at random, 17% is too much to drop but not structured. Median resists the long-tail skew better than mean. <strong>Rule: Skewed feature with random missing → median.</strong>`,
+    garage: `<strong>🚗 Verdict for GarageYrBlt:</strong> <span class="good">Fill with 0 ("No Garage").</span> The missing is STRUCTURED — it means "no garage exists." Filling with any real year creates fake information. <strong>Rule: When missing = meaningful category → constant value outside normal range.</strong>`,
+    fireplace: `<strong>🔥 Verdict for FireplaceQu:</strong> <span class="good">Fill with "None".</span> 47% null means "no fireplace." Make "None" an explicit category. The model will learn the difference between "no fireplace" and "Poor fireplace." <strong>Rule: High missing rate with meaning → "None" category.</strong>`,
+    pool: `<strong>🏊 Verdict for PoolQC:</strong> <span class="danger">DROP the column.</span> 99.7% null = this feature has almost no variance. The 8 houses with pools are too few to learn from. <strong>Rule: >95% null → drop. The noise outweighs the signal.</strong>`,
+    electrical: `<strong>⚡ Verdict for Electrical:</strong> <span class="good">Fill with MODE.</span> 1 house out of 2,930. The cost of imputation is zero. The harm of being wrong is zero. <strong>Rule: <1% missing → fill with mode/median and move on.</strong>`,
+  };
+  el.innerHTML = verdicts[sc] || '';
+}
+
+// Init
+renderAll();
+</script>
+</body>
+</html>
