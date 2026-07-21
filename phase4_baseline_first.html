@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 4: Baseline First — Interactive Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06090f; --bg-card: #0d1117; --bg-raised: #161b22;
+  --border: #21262d; --border-active: #30363d;
+  --text: #e6edf3; --text-dim: #8b949e; --text-muted: #484f58;
+  --cyan: #39d2ff; --cyan-bg: #39d2ff15; --cyan-border: #39d2ff40;
+  --amber: #ffb347; --amber-bg: #ffb34715;
+  --green: #3fb950; --green-bg: #3fb95015;
+  --magenta: #ff6ec7; --magenta-bg: #ff6ec715;
+  --red: #f85149; --violet: #a371f7;
+  --radius: 14px; --radius-sm: 8px;
+  --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+body.light {
+  --bg: #f6f8fa; --bg-card: #ffffff; --bg-raised: #e8ecf0;
+  --border: #d0d7de; --border-active: #afb8c1;
+  --text: #1f2328; --text-dim: #656d76; --text-muted: #8b949e;
+  --cyan: #0969da; --cyan-bg: #ddf4ff; --cyan-border: #54aeff;
+  --amber: #9a6700; --amber-bg: #fff8c5;
+  --green: #1a7f37; --green-bg: #dafbe1;
+  --magenta: #bf3989; --magenta-bg: #fbefff;
+  --red: #cf222e; --violet: #8250df;
+}
+body.light .topbar { background: rgba(246,248,250,0.9); }
+body.light .eq-box { background: rgba(0,0,0,0.03); }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; line-height: 1.65; transition: background 0.3s, color 0.3s; }
+.bg-canvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
+.app { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:2rem; }
+.theme-toggle { position: fixed; top: 0.7rem; right: 2rem; z-index: 200; background: var(--bg-raised); border: 1px solid var(--border); color: var(--text); font-size: 1.1rem; cursor: pointer; padding: 0.35rem 0.6rem; border-radius: 6px; transition: var(--transition); font-family: 'JetBrains Mono', monospace; }
+.theme-toggle:hover { border-color: var(--cyan); color: var(--cyan); }
+.topbar { position: sticky; top:0; z-index:100; background: rgba(6,9,15,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0.6rem 2rem; display: flex; align-items: center; gap: 1rem; font-size: 0.8rem; }
+.topbar .logo { font-family: 'Orbitron', sans-serif; font-size: 0.7rem; letter-spacing: 0.15em; color: var(--cyan); white-space: nowrap; }
+.topbar .step-dots { display: flex; gap: 0.4rem; flex:1; justify-content: center; }
+.topbar .step-dot { width: 28px; height: 4px; border-radius: 2px; background: var(--border); transition: var(--transition); cursor: pointer; }
+.topbar .step-dot.done { background: var(--green); }
+.topbar .step-dot.active { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+.topbar .step-dot:hover { background: var(--text-dim); }
+.topbar .step-label { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--text-dim); white-space: nowrap; }
+.header { text-align: center; padding: 3rem 0 1rem; }
+.header .phase-badge { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.2em; color: var(--green); border: 1px solid var(--green-bg); border-radius: 100px; padding: 0.4em 1.4em; margin-bottom: 1rem; }
+.header h1 { font-family: 'Orbitron', sans-serif; font-size: clamp(1.6rem, 4vw, 2.6rem); font-weight: 700; background: linear-gradient(135deg, var(--cyan), var(--violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.5rem; }
+.header .tagline { color: var(--text-dim); font-size: 1rem; }
+.topic-list { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin: 1.5rem 0 1rem; }
+.topic-chip { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.04em; padding: 0.3rem 0.7rem; border-radius: 100px; border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; transition: var(--transition); background: transparent; }
+.topic-chip.visited { border-color: var(--green); color: var(--green); background: var(--green-bg); }
+.topic-chip.current { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-bg); box-shadow: 0 0 10px var(--cyan-border); }
+.topic-chip:hover { border-color: var(--text-dim); color: var(--text-dim); }
+.fun-fact { background: linear-gradient(135deg, var(--amber-bg), var(--magenta-bg)); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.65rem 1.2rem; margin-bottom: 1.5rem; font-size: 0.78rem; color: var(--text-dim); display: flex; align-items: center; gap: 0.6rem; }
+.fun-fact .bulb { font-size: 1.2rem; flex-shrink: 0; }
+.fun-fact strong { color: var(--amber); }
+.slide { animation: slideIn 0.35s ease; }
+@keyframes slideIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; }
+.card h2 { font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; color: var(--text); }
+.card h2 .num { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--cyan); background: var(--cyan-bg); border-radius: 6px; padding: 0.2em 0.6em; }
+.card p { color: var(--text-dim); margin-bottom: 1rem; font-size: 0.95rem; }
+.card h3 { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; color: var(--cyan); margin: 1.2rem 0 0.5rem; }
+.card ul, .card ol { color: var(--text-dim); padding-left: 1.5rem; margin-bottom: 1rem; font-size: 0.9rem; }
+.card ul li, .card ol li { margin-bottom: 0.4rem; }
+.eq-box { background: rgba(0,0,0,0.4); border-left: 3px solid var(--cyan); border-radius: var(--radius-sm); padding: 1.2rem 1.5rem; margin: 1rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; line-height: 1.8; color: var(--text); white-space: pre-wrap; overflow-x: auto; }
+.compare-grid { display: grid; gap: 1rem; margin: 1rem 0; }
+.compare-grid.col2 { grid-template-columns: 1fr 1fr; }
+.compare-grid.col3 { grid-template-columns: 1fr 1fr 1fr; }
+.compare-card { background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.2rem; transition: var(--transition); }
+.compare-card:hover { transform: translateY(-3px); border-color: var(--border-active); }
+.compare-card h4 { font-family: 'Orbitron', sans-serif; font-size: 0.78rem; margin-bottom: 0.5rem; }
+.compare-card p { font-size: 0.82rem !important; color: var(--text-dim) !important; }
+.tag { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; padding: 0.2em 0.6em; border-radius: 100px; }
+.data-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin: 1rem 0; }
+.data-types.two { grid-template-columns: repeat(2, 1fr); }
+.data-type-card { background: var(--bg-raised); border: 1px solid var(--border); border-top: 3px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; transition: var(--transition); cursor: default; }
+.data-type-card:nth-child(1) { border-top-color: var(--cyan); }
+.data-type-card:nth-child(2) { border-top-color: var(--amber); }
+.data-type-card:nth-child(3) { border-top-color: var(--magenta); }
+.data-type-card:nth-child(4) { border-top-color: var(--green); }
+.data-type-card:nth-child(5) { border-top-color: var(--violet); }
+.data-type-card:hover { transform: translateY(-3px); border-color: var(--border-active); }
+.data-type-card .dt-icon { font-size: 1.5rem; margin-bottom: 0.3rem; }
+.data-type-card h4 { font-family: 'Orbitron', sans-serif; font-size: 0.78rem; margin-bottom: 0.3rem; }
+.data-type-card p { font-size: 0.78rem !important; color: var(--text-muted) !important; margin-bottom: 0 !important; }
+.quiz { background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.2rem; margin-top: 1.5rem; }
+.quiz .question { font-family: 'Orbitron', sans-serif; font-size: 0.82rem; color: var(--text); margin-bottom: 0.8rem; }
+.quiz .options { display: flex; flex-direction: column; gap: 0.4rem; }
+.quiz .option { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 0.6rem 1rem; font-size: 0.82rem; color: var(--text-dim); cursor: pointer; transition: var(--transition); }
+.quiz .option:hover { border-color: var(--cyan); color: var(--cyan); }
+.quiz .option.correct { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+.quiz .option.wrong { border-color: var(--red); background: #f8514920; color: var(--red); }
+.quiz .feedback { display: none; margin-top: 0.8rem; padding: 0.6rem 1rem; border-radius: 6px; font-size: 0.82rem; }
+.quiz .feedback.show { display: block; }
+.quiz .feedback.correct { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+.quiz .feedback.wrong { background: #f8514920; color: var(--red); border: 1px solid var(--red); }
+.nav-row { display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem; }
+.nav-btn { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; padding: 0.6rem 1.8rem; border-radius: 100px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); cursor: pointer; transition: var(--transition); }
+.nav-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.nav-btn.primary { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-bg); }
+@media (max-width: 768px) { .app { padding: 1rem; } .compare-grid.col3 { grid-template-columns: 1fr; } .data-types { grid-template-columns: 1fr; } .header h1 { font-size: 1.3rem; } .card { padding: 1.2rem; } .theme-toggle { right: 0.5rem; top: 0.5rem; } }
+</style>
+</head>
+<body>
+
+<canvas class="bg-canvas" id="bgCanvas"></canvas>
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀️</button>
+
+<nav class="topbar"><span class="logo">MLOPS — PHASE 4</span><div class="step-dots" id="stepDots"></div><span class="step-label" id="stepLabel">1/8</span></nav>
+
+<div class="app">
+<header class="header"><div class="phase-badge">📖 IN PROGRESS</div><h1>Phase 4: Baseline First</h1><p class="tagline">Start simple, ship fast, measure, then add complexity only when the data proves you need it</p></header>
+<div class="topic-list" id="topicChips"></div>
+<div class="fun-fact" id="funFact"><span class="bulb">💡</span><span class="fact-text" id="funFactText"></span></div>
+<div id="slideContainer"></div>
+<div class="nav-row"><button class="nav-btn" id="prevBtn" onclick="goTo(currentSlide-1)">← Previous</button><button class="nav-btn primary" id="nextBtn" onclick="goTo(currentSlide+1)">Next →</button></div>
+</div>
+
+<script>
+function toggleTheme() { document.body.classList.toggle('light'); document.getElementById('themeToggle').textContent = document.body.classList.contains('light') ? '🌙' : '☀️'; localStorage.setItem('mlops-p4-theme', document.body.classList.contains('light') ? 'light' : 'dark'); }
+if (localStorage.getItem('mlops-p4-theme') === 'light') { document.body.classList.add('light'); document.getElementById('themeToggle').textContent = '🌙'; }
+(function() { const c=document.getElementById('bgCanvas'),ctx=c.getContext('2d'); let p=[]; function rz(){ c.width=innerWidth; c.height=innerHeight; } rz(); window.addEventListener('resize',rz); for(let i=0;i<60;i++) p.push({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-0.5)*0.4,vy:(Math.random()-0.5)*0.4,r:Math.random()*2+0.5}); function anim(){ ctx.clearRect(0,0,c.width,c.height); const isL=document.body.classList.contains('light'),lc=isL?'rgba(9,105,218,0.06)':'rgba(57,210,255,0.06)',dc=isL?'rgba(9,105,218,0.3)':'rgba(57,210,255,0.3)'; p.forEach(pp=>{pp.x+=pp.vx;pp.y+=pp.vy;if(pp.x<0)pp.x=c.width;if(pp.x>c.width)pp.x=0;if(pp.y<0)pp.y=c.height;if(pp.y>c.height)pp.y=0;}); for(let i=0;i<p.length;i++)for(let j=i+1;j<p.length;j++){const dx=p[i].x-p[j].x,dy=p[i].y-p[j].y;if(Math.sqrt(dx*dx+dy*dy)<100){ctx.beginPath();ctx.moveTo(p[i].x,p[i].y);ctx.lineTo(p[j].x,p[j].y);ctx.strokeStyle=lc;ctx.lineWidth=0.5;ctx.stroke();}} p.forEach(pp=>{ctx.beginPath();ctx.arc(pp.x,pp.y,pp.r,0,Math.PI*2);ctx.fillStyle=dc;ctx.fill();}); requestAnimationFrame(anim); } anim(); })();
+
+const slides = [
+{ id:'4.1', title:'The Simplest Possible Baseline',
+  fact:'<strong>If you cannot beat a one-line rule, you should not be using ML.</strong> The baseline is your floor — everything you build must be better than this.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">4.1</span> The Simplest Possible Baseline</h2>
+<p>Before training ANY model, build the <strong style="color:var(--cyan)">dumbest thing that could possibly work</strong>. A one-line heuristic. A single number. If ML cannot beat this, you don't need ML.</p>
+
+<h3>🏠 House Prices: v0 Baseline (Rules Only)</h3>
+<div class="eq-box"><span style="color:var(--text-muted)">// Baseline v0 — One formula, zero training:</span>
+<span style="color:var(--cyan)">Predicted Price = $150 × GrLivArea</span>
+
+<span style="color:var(--text-muted)">// Example predictions:</span>
+1500 sqft → <span style="color:var(--amber)">$225,000</span>
+2000 sqft → <span style="color:var(--amber)">$300,000</span>
+3500 sqft → <span style="color:var(--amber)">$525,000</span>
+
+<span style="color:var(--text-muted)">// Performance:</span>
+R² ≈ <span style="color:var(--amber)">0.50</span>  |  RMSE ≈ $55,000  |  MAE ≈ $40,000
+
+<span style="color:var(--cyan)">Time to build: 5 minutes. Cost: $0. Training data needed: ZERO rows.</span></div>
+
+<h3>Other Classic Baselines</h3>
+<div class="data-types">
+<div class="data-type-card"><div class="dt-icon">📊</div><h4>Always Predict the Mean</h4><p>Every house = $182K (the average). R² ≈ 0.0, but it's a valid floor.</p></div>
+<div class="data-type-card"><div class="dt-icon">📏</div><h4>Single Best Feature</h4><p>Use OverallQual alone: price = f(quality). R² ≈ 0.55. One feature, zero engineering.</p></div>
+<div class="data-type-card"><div class="dt-icon">📋</div><h4>Lookup Table</h4><p>Average price per neighborhood. "Downtown = $350K, Suburb = $220K." Simple but effective.</p></div>
+</div>
+
+<div class="quiz" id="quiz1"><div class="question">🧪 Your ML model achieves R²=0.52. The $/sqft baseline achieves R²=0.50. What should you do?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz1',this)">A. Question whether ML is worth it — a 0.02 R² improvement may not justify the complexity of maintaining an ML pipeline</div>
+<div class="option" onclick="checkQuiz('quiz1',this)">B. Deploy the ML model — any improvement is a win</div>
+<div class="option" onclick="checkQuiz('quiz1',this)">C. Add 50 more features — the model just needs more data</div></div><div class="feedback" id="quiz1-fb"></div></div>
+</div></div>`;}},
+
+{ id:'4.2', title:'Measure Baseline on Your Metrics Ladder',
+  fact:'<strong>Baseline metrics are your anchor.</strong> When someone asks "Is our model good?" you compare it to the baseline — not to 100% accuracy.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">4.2</span> Measure Baseline on Your Metrics Ladder</h2>
+<p>Don't just look at R². Measure the baseline against <strong style="color:var(--cyan)">every rung of your metrics ladder</strong>. The baseline sets expectations at each level.</p>
+
+<h3>🏠 House Prices: Baseline v0 on the Ladder</h3>
+<div class="eq-box"><span style="color:var(--text-muted)">┌─────────────────────────────────────────────┐</span>
+<span style="color:var(--text-muted)">│</span> 💼 <span style="color:var(--cyan)">BUSINESS:</span> Negotiation time                  <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">│</span>    Baseline: No change from current          <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">│</span>    (Agents still estimate manually)           <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">├─────────────────────────────────────────────┤</span>
+<span style="color:var(--text-muted)">│</span> 📱 <span style="color:var(--cyan)">PRODUCT:</span> % predictions within 5%            <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">│</span>    Baseline: ~20% (only very average homes)  <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">│</span>    Target:  > 80%                              <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">├─────────────────────────────────────────────┤</span>
+<span style="color:var(--text-muted)">│</span> 🤖 <span style="color:var(--cyan)">MODEL:</span> R² Score                              <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">│</span>    Baseline v0 (rules):  R² = 0.50           <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">│</span>    Baseline v1 (simple ML): R² = 0.78         <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">│</span>    Target (full ML): R² > 0.85               <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">├─────────────────────────────────────────────┤</span>
+<span style="color:var(--text-muted)">│</span> 📊 <span style="color:var(--cyan)">DATA:</span> Quality baseline                       <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">│</span>    Current: 2,930 rows, 82 features           <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">│</span>    Need: at least this quality maintained     <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">└─────────────────────────────────────────────┘</span></div>
+
+<div class="quiz" id="quiz2"><div class="question">🧪 Why measure the baseline on ALL rungs, not just the model metric?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz2',this)">A. A model improvement that doesn't move the product or business metric is a waste — the ladder connects them</div>
+<div class="option" onclick="checkQuiz('quiz2',this)">B. Each rung requires different code to measure</div>
+<div class="option" onclick="checkQuiz('quiz2',this)">C. Management only cares about the business rung</div></div><div class="feedback" id="quiz2-fb"></div></div>
+</div></div>`;}},
+
+{ id:'4.3', title:'Build a Simple ML Model (v1)',
+  fact:'<strong>Your first ML model should be the SIMPLEST algorithm that works.</strong> Linear Regression. Logistic Regression. Decision Tree with max_depth=3. Not XGBoost with 500 parameters.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">4.3</span> Build a Simple ML Model (Baseline v1)</h2>
+<p>Now build the <strong style="color:var(--cyan)">simplest ML model possible</strong>. Not the best model. The simplest one that captures more signal than the rule baseline.</p>
+
+<h3>🏠 House Prices: v1 = Linear Regression on 3 Features</h3>
+<div class="eq-box"><span style="color:var(--text-muted)">// Baseline v1 — Simplest ML model:</span>
+<span style="color:var(--magenta)">from</span> sklearn.linear_model <span style="color:var(--magenta)">import</span> LinearRegression
+
+features = [<span style="color:var(--amber)">'GrLivArea'</span>, <span style="color:var(--amber)">'OverallQual'</span>, <span style="color:var(--amber)">'GarageCars'</span>]
+model = LinearRegression()
+model.fit(X[features], y)
+
+<span style="color:var(--text-muted)">// Results:</span>
+R² = <span style="color:var(--green)">0.78</span>  |  RMSE = $37,000  |  MAE = $25,000
+
+<span style="color:var(--text-muted)">// Lift over baseline v0 (rules):</span>
+R² improved <span style="color:var(--green)">+0.28</span> (0.50 → 0.78)
+RMSE improved <span style="color:var(--green)">-$18,000</span> ($55K → $37K)
+
+<span style="color:var(--cyan)">Training time: 0.01 seconds. Features used: 3 out of 82.</span></div>
+
+<h3>Why Start With 3 Features, Not 82?</h3>
+<div class="compare-grid col2">
+<div class="compare-card"><h4 style="color:var(--green)">🟢 3 Features (v1)</h4><p>You can literally DRAW the decision boundary. Every coefficient is explainable. If something breaks, you debug in minutes.</p></div>
+<div class="compare-card"><h4 style="color:var(--red)">🔴 82 Features (premature)</h4><p>Hard to debug, easy to leak, impossible to explain. The model becomes a black box before you even know if the problem is solvable.</p></div>
+</div>
+
+<div class="quiz" id="quiz3"><div class="question">🧪 Your 3-feature Linear Regression gets R²=0.78. Your 82-feature XGBoost gets R²=0.83. Which do you ship first?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz3',this)">A. Ship the Linear Regression first — it's explainable, fast, and the 0.05 gap may not justify the complexity. You can always upgrade later.</div>
+<div class="option" onclick="checkQuiz('quiz3',this)">B. Ship XGBoost — 0.83 is bigger than 0.78</div>
+<div class="option" onclick="checkQuiz('quiz3',this)">C. Average them — ensemble always beats single models</div></div><div class="feedback" id="quiz3-fb"></div></div>
+</div></div>`;}},
+
+{ id:'4.4', title:'Compare v0 vs v1 — How Much Lift?',
+  fact:'<strong>Lift = (ML metric − baseline metric).</strong> If the lift is less than 10% of the baseline, ML may not be worth the operational burden.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">4.4</span> Compare v0 vs v1 — How Much Lift Does ML Give?</h2>
+<p>This is the <strong style="color:var(--cyan)">honesty check</strong>. Before building a full pipeline, quantify exactly how much value ML adds over the simplest alternative.</p>
+
+<h3>🏠 House Prices: v0 vs v1 Comparison</h3>
+<div class="compare-grid col2">
+<div class="compare-card"><h4 style="color:var(--amber)">📏 v0: $/sqft Rule</h4><p>R² = 0.50<br>RMSE = $55,000<br>MAE = $40,000</p><p style="margin-top:0.5rem"><span class="tag" style="background:#3fb95015;color:var(--green);border:1px solid var(--green)">5 min to build</span></p></div>
+<div class="compare-card"><h4 style="color:var(--green)">🤖 v1: Linear Regression (3 features)</h4><p>R² = 0.78<br>RMSE = $37,000<br>MAE = $25,000</p><p style="margin-top:0.5rem"><span class="tag" style="background:#39d2ff15;color:var(--cyan);border:1px solid var(--cyan)">30 min to build</span></p></div>
+</div>
+
+<h3>📊 Lift Analysis</h3>
+<div class="eq-box"><span style="color:var(--text-muted)">// Is ML worth it?</span>
+<span style="color:var(--cyan)">Lift in R²:</span>  0.78 − 0.50 = <span style="color:var(--green)">+0.28 (56% improvement)</span>
+<span style="color:var(--cyan)">Lift in RMSE:</span> $55K − $37K = <span style="color:var(--green)">-$18,000 per prediction</span>
+<span style="color:var(--cyan)">Lift in MAE:</span>  $40K − $25K = <span style="color:var(--green)">-$15,000 avg error</span>
+
+<span style="color:var(--green)">→ VERDICT: ML IS worth it. A 56% accuracy improvement is substantial.</span>
+
+<span style="color:var(--text-muted)">// Counter-example where ML is NOT worth it:</span>
+<span style="color:var(--red)">If v0 R²=0.72 and v1 R²=0.74 → lift=+0.02 (2.8% improvement)</span>
+<span style="color:var(--red)">→ NOT worth the pipeline, monitoring, and retraining overhead.</span>
+<span style="color:var(--red)">→ Deploy the rule. Collect more data. Revisit in 6 months.</span></div>
+
+<div class="quiz" id="quiz4"><div class="question">🧪 Rule baseline: 85% accuracy. Best ML model: 87% accuracy. What's the right call?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz4',this)">A. Deploy the rule — 2% lift doesn't justify ML infrastructure. Revisit when you have more/better data.</div>
+<div class="option" onclick="checkQuiz('quiz4',this)">B. Deploy ML — 2% improvement on 1M predictions/day = 20,000 more correct predictions</div>
+<div class="option" onclick="checkQuiz('quiz4',this)">C. Keep both and ensemble them</div></div><div class="feedback" id="quiz4-fb"></div></div>
+</div></div>`;}},
+
+{ id:'4.5', title:'Instrument Logging From Day 1',
+  fact:'<strong>You cannot improve what you don\'t measure.</strong> Logging added later is 10x harder than logging added from the start.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">4.5</span> Instrument Logging From Day 1</h2>
+<p>The baseline isn't just a model — it's <strong style="color:var(--cyan)">instrumentation</strong>. Log every prediction, every input, and every actual outcome. Without this, you'll never know if your model is getting better or worse.</p>
+
+<h3>🏠 House Prices: What to Log</h3>
+<div class="eq-box"><span style="color:var(--text-muted)">// Every single prediction must record:</span>
+{
+  <span style="color:var(--cyan)">"prediction_id"</span>: "uuid-1234",
+  <span style="color:var(--cyan)">"timestamp"</span>: "2026-07-21T14:32:00Z",
+  <span style="color:var(--cyan)">"model_version"</span>: "baseline_v0",
+  <span style="color:var(--cyan)">"input_features"</span>: { "GrLivArea": 1650, ... },
+  <span style="color:var(--cyan)">"predicted_price"</span>: 247500,
+  <span style="color:var(--cyan)">"listing_id"</span>: "MLS-98765",
+
+  <span style="color:var(--text-muted)">// Later, when the house sells:</span>
+  <span style="color:var(--cyan)">"actual_sale_price"</span>: 255000,    <span style="color:var(--text-muted)">// ← THE MOST IMPORTANT FIELD</span>
+  <span style="color:var(--cyan)">"sale_date"</span>: "2026-09-15",
+  <span style="color:var(--cyan)">"error"</span>: -7500,                 <span style="color:var(--text-muted)">// predicted − actual</span>
+  <span style="color:var(--cyan)">"error_percent"</span>: -2.9
+}</div>
+
+<h3>⚠️ The Most Common Failure</h3>
+<div class="data-types two"><div class="data-type-card"><div class="dt-icon">📝</div><h4>Logged: Predictions</h4><p>The model's output. Easy — just save it to a database. Everyone does this.</p></div><div class="data-type-card"><div class="dt-icon">❌</div><h4>Forgotten: Actual Outcomes</h4><p>The ground truth. Harder — you need a separate system to capture what ACTUALLY happened. Most teams skip this. Then they can't measure if the model works.</p></div></div>
+
+<div class="quiz" id="quiz5"><div class="question">🧪 6 months after deploying, you want to check model accuracy. What do you need that most teams forget?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz5',this)">A. The ACTUAL sale prices — not just the predictions. If you only logged predictions, you can't measure accuracy at all.</div>
+<div class="option" onclick="checkQuiz('quiz5',this)">B. The model's training code from 6 months ago</div>
+<div class="option" onclick="checkQuiz('quiz5',this)">C. The original dataset used for training</div></div><div class="feedback" id="quiz5-fb"></div></div>
+</div></div>`;}},
+
+{ id:'4.6', title:'Ship Baseline — Shadow Mode & A/B Tests',
+  fact:'<strong>Never switch from old to new in one big bang.</strong> Shadow mode lets you compare safely. A/B tests let you measure real impact.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">4.6</span> Ship Baseline — Shadow Mode & A/B Tests</h2>
+<p>Deployment is not a switch. It's a <strong style="color:var(--cyan)">gradual, measured rollout</strong>. Start with zero user impact, then 5%, then scale up as confidence grows.</p>
+
+<h3>🛡️ Shadow Mode (Safest First Step)</h3>
+<div class="eq-box"><span style="color:var(--text-muted)">// Shadow Mode: New model runs SILENTLY alongside the old system</span>
+┌──────────────────────────────────────────────┐
+│ User sees → Old system (manual agent estimate)│
+│ Behind scenes → ML model ALSO predicts       │
+│ Compare → ML vs Agent vs Actual Sale Price   │
+│ After 2 weeks → If ML is better, switch 5%   │
+└──────────────────────────────────────────────┘
+
+<span style="color:var(--green)">✅ Zero risk. Users never see ML predictions until proven.</span>
+<span style="color:var(--green)">✅ You collect real-world comparison data.</span></div>
+
+<h3>🧪 Gradual Rollout Plan (House Prices)</h3>
+<div class="eq-box"><span style="color:var(--cyan)">Week 1-2:</span> SHADOW — ML predicts silently, compared to agent estimates
+<span style="color:var(--cyan)">Week 3:</span>   5% TRAFFIC — Random 5% of listings show ML estimate + agent estimate
+<span style="color:var(--cyan)">Week 4:</span>   25% TRAFFIC — If metrics stable and guardrails pass
+<span style="color:var(--cyan)">Week 5:</span>   100% TRAFFIC — ML is the primary estimate. Agent overrides available.
+<span style="color:var(--red)">ANY WEEK:</span> Rollback if R² < 0.75 or RMSE > $35K on live data</div>
+
+<div class="quiz" id="quiz6"><div class="question">🧪 Why start with 5% traffic instead of going straight to 100%?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz6',this)">A. If the model breaks, only 5% of users are affected. You catch problems when the blast radius is small.</div>
+<div class="option" onclick="checkQuiz('quiz6',this)">B. 5% gives statistically significant results faster than 100%</div>
+<div class="option" onclick="checkQuiz('quiz6',this)">C. Infrastructure can't handle 100% traffic on launch day</div></div><div class="feedback" id="quiz6-fb"></div></div>
+</div></div>`;}},
+
+{ id:'4.7', title:'Collect Real-World Feedback',
+  fact:'<strong>Offline metrics (R²) and online metrics (user trust) are correlated — not identical.</strong> The only way to know if your model works is to watch real users use it.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">4.7</span> Collect Real-World Feedback</h2>
+<p>R² on a test set tells you about <strong style="color:var(--cyan)">statistical accuracy</strong>. It does NOT tell you whether agents <strong style="color:var(--amber)">trust</strong> the predictions, whether buyers <strong style="color:var(--amber)">act</strong> on them, or whether the business <strong style="color:var(--amber)">benefits</strong>.</p>
+
+<h3>🏠 House Prices: Feedback Signals to Track</h3>
+<div class="data-types">
+<div class="data-type-card"><div class="dt-icon">👁️</div><h4>Adoption Rate</h4><p>% of agents who look at the ML estimate before making their own. If only 10% look, your model is irrelevant — no matter how accurate.</p></div>
+<div class="data-type-card"><div class="dt-icon">🤝</div><h4>Agreement Rate</h4><p>% of times the agent's estimate is within 10% of the ML estimate. Low agreement = trust issue OR model issue.</p></div>
+<div class="data-type-card"><div class="dt-icon">⏱️</div><h4>Time Saved</h4><p>Average minutes per listing BEFORE vs AFTER ML. This is the product metric that connects to business value.</p></div>
+<div class="data-type-card"><div class="dt-icon">📉</div><h4>Error Patterns</h4><p>Which segment does the model get wrong? Luxury homes? Old homes? Certain neighborhoods? Patterns → improvement targets.</p></div>
+<div class="data-type-card"><div class="dt-icon">💬</div><h4>Qualitative Feedback</h4><p>"The estimate is always too low on waterfront properties." A single sentence from an agent can reveal what 100 metrics miss.</p></div>
+<div class="data-type-card"><div class="dt-icon">🔄</div><h4>Feedback Loop</h4><p>Did the house sell? What was the final price? This closes the loop — prediction → reality → retraining data.</p></div>
+</div>
+
+<div class="quiz" id="quiz7"><div class="question">🧪 Your model has R²=0.89 but 0% of agents use it. What's the problem?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz7',this)">A. Trust/adoption issue — maybe the UI is bad, agents don't understand the output, or the model was wrong once and they never came back. Accuracy ≠ adoption.</div>
+<div class="option" onclick="checkQuiz('quiz7',this)">B. R²=0.89 is too low — agents need 0.95+ to trust predictions</div>
+<div class="option" onclick="checkQuiz('quiz7',this)">C. Nothing — agents will adopt eventually on their own</div></div><div class="feedback" id="quiz7-fb"></div></div>
+</div></div>`;}},
+
+{ id:'4.8', title:'Document: The Business Case for Next Iteration',
+  fact:'<strong>Every model iteration needs a business case.</strong> "R² improved by 0.02" is not a business case. "Agents save 45 minutes per listing" is.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">4.8</span> Document: The Business Case for Next Iteration</h2>
+<p>After shipping the baseline, you now have <strong style="color:var(--cyan)">real data</strong> — not assumptions. Use it to justify (or cancel) the next round of investment.</p>
+
+<h3>🏠 House Prices: Baseline → Next Steps</h3>
+<div class="eq-box"><span style="color:var(--text-muted)">╔══════════════════════════════════════════════════════════╗</span>
+<span style="color:var(--text-muted)">║</span>  <span style="color:var(--cyan)">BASELINE REPORT: House Price Predictor v0/v1</span>           <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">╠══════════════════════════════════════════════════════════╣</span>
+<span style="color:var(--text-muted)">║</span>                                                        <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  <span style="color:var(--amber)">BASELINE v0 (Rules):</span>                                   <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>    R² = 0.50, RMSE = $55K, MAE = $40K                  <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>    Time to build: 5 minutes. Cost: $0.                  <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>                                                        <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  <span style="color:var(--amber)">BASELINE v1 (Simple ML — 3 features):</span>                  <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>    R² = 0.78 (+56% lift), RMSE = $37K (-$18K better)   <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>    Time to build: 30 min. Cost: $0.                     <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>                                                        <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  <span style="color:var(--amber)">NEXT TARGET (v2 — Full 82-feature pipeline):</span>            <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>    Expected R² = 0.85, RMSE = $25K                      <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>    Investment: 8-12 hours (ZenML pipeline + monitoring)  <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>    Expected business impact: agents save 30-45 min/listing<span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>                                                        <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  <span style="color:var(--amber)">DECISION:</span> ✅ Proceed to Phase 5. The 56% lift from      <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">║</span>  v0→v1 proves ML is valuable. v2 is justified.           <span style="color:var(--text-muted)">║</span>
+<span style="color:var(--text-muted)">╚══════════════════════════════════════════════════════════╝</span></div>
+
+<h3>✅ Phase 4 Complete — What You've Learned</h3>
+<div class="data-types">
+<div class="data-type-card"><div class="dt-icon">📏</div><h4>Start Dumb</h4><p>One-line rule. Always-predict-mean. Single feature. Build in 5 minutes.</p></div>
+<div class="data-type-card"><div class="dt-icon">📊</div><h4>Measure Honestly</h4><p>Compare ML vs baseline on ALL metric rungs — not just accuracy.</p></div>
+<div class="data-type-card"><div class="dt-icon">🚀</div><h4>Ship Gradually</h4><p>Shadow → 5% → 25% → 100%. Small blast radius. Easy rollback.</p></div>
+<div class="data-type-card"><div class="dt-icon">📝</div><h4>Log Everything</h4><p>Predictions AND actual outcomes. Without outcomes, you're blind.</p></div>
+<div class="data-type-card"><div class="dt-icon">👤</div><h4>Watch Users</h4><p>Accuracy ≠ adoption. If nobody uses it, the model failed.</p></div>
+<div class="data-type-card"><div class="dt-icon">📋</div><h4>Document the Case</h4><p>Lift in business terms, not model metrics. Agents save time, not R² points.</p></div>
+</div>
+
+<div class="quiz" id="quiz8"><div class="question">🧪 After baseline v1 succeeds, a colleague says "Let's add 50 more features and use XGBoost." What's the right response?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz8',this)">A. "First show me the business case. What specific problem does the extra complexity solve? What's the expected lift in $ or time saved?"</div>
+<div class="option" onclick="checkQuiz('quiz8',this)">B. "Great idea — more features always help"</div>
+<div class="option" onclick="checkQuiz('quiz8',this)">C. "Let's add features one at a time and A/B test each one"</div></div><div class="feedback" id="quiz8-fb"></div></div>
+</div></div>`;}}
+];
+
+window.checkQuiz=function(qid,el){
+  const q=document.getElementById(qid); if(q.dataset.answered==='true')return;
+  q.querySelectorAll('.option').forEach(o=>{if(o.dataset.correct==='true')o.classList.add('correct');});
+  if(el.dataset.correct!=='true')el.classList.add('wrong');
+  const fb=document.getElementById(qid+'-fb'),ok=el.dataset.correct==='true';
+  fb.className='feedback show '+(ok?'correct':'wrong');
+  fb.textContent=ok?'✅ Correct! Well done.':'❌ Not quite. The correct answer is highlighted in green.';
+  q.dataset.answered='true';
+};
+let currentSlide=0; const visitedSlides=new Set([0]);
+function renderSlide(i){currentSlide=i; visitedSlides.add(i); document.getElementById('slideContainer').innerHTML=slides[i].render(); updateDots(); updateChips(); document.getElementById('funFactText').innerHTML='<strong>'+slides[i].id+':</strong> '+slides[i].fact; document.getElementById('stepLabel').textContent=(i+1)+'/'+slides.length; document.getElementById('prevBtn').disabled=i===0; const nb=document.getElementById('nextBtn'); if(i===slides.length-1){nb.textContent='✓ Complete';nb.style.background='var(--green-bg)';nb.style.borderColor='var(--green)';nb.style.color='var(--green)';} else {nb.textContent='Next →';nb.style.background='var(--cyan-bg)';nb.style.borderColor='var(--cyan)';nb.style.color='var(--cyan)';} document.getElementById('slideContainer').scrollIntoView({behavior:'smooth',block:'start'});}
+function goTo(i){if(i>=0&&i<slides.length)renderSlide(i);}
+function updateDots(){document.getElementById('stepDots').innerHTML=slides.map((s,i)=>'<div class="step-dot '+(i===currentSlide?'active':visitedSlides.has(i)?'done':'')+'" onclick="goTo('+i+')" title="'+s.id+': '+s.title+'"></div>').join('');}
+function updateChips(){document.getElementById('topicChips').innerHTML=slides.map((s,i)=>'<span class="topic-chip '+(i===currentSlide?'current':visitedSlides.has(i)?'visited':'')+'" onclick="goTo('+i+')">'+s.id+' '+s.title+'</span>').join('');}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'&&currentSlide<slides.length-1)goTo(currentSlide+1); if(e.key==='ArrowLeft'&&currentSlide>0)goTo(currentSlide-1);});
+renderSlide(0);
+</script>
+</body>
+</html>
