@@ -3,7 +3,7 @@
 > Based on: ML System Design & MLOps For Beginners, Build ML Production Grade Projects, First-Ever Production-Grade AI Project
 > Philosophy: Think → Build → Scale (System Design thinking first, then hands-on MLOps, then enterprise-grade architecture)
 
-## 📊 Progress: 5/9 Modules Complete
+## 📊 Progress: 5/9 Modules Complete (Phases 1-4, 6G)
 
 | # | Phase | Interactive Module | Templates |
 |---|-------|--------------------|-----------|
@@ -11,9 +11,9 @@
 | ✅ 2 | Data Strategy & Engineering | [phase2_data_strategy.html](phase2_data_strategy.html) | [10 docs](Phase_2_Data_Strategy/) |
 | ✅ 3 | Feature Engineering & Pipeline | [phase3_feature_engineering.html](phase3_feature_engineering.html) | [10 docs](Phase_3_Feature_Engineering/) |
 | ✅ 4 | Baseline First | [phase4_baseline_first.html](phase4_baseline_first.html) | [8 docs](Phase_4_Baseline_First/) |
-| ✅ 4B | AI/ML Testing & QA | [phase4b_ai_testing.html](phase4b_ai_testing.html) | [10 docs](Phase_4B_AI_Testing/) |
 | ⬜ 5 | House Prices Predictor System | — | — |
 | ⬜ 6 | Enterprise Training Data Pipeline | — | — |
+| ✅ 6G | AI/ML Testing & QA | [phase4b_ai_testing.html](phase4b_ai_testing.html) | [10 docs](Phase_4B_AI_Testing/) |
 | ⬜ 7 | Monitoring & Production Ops | — | — |
 | ⬜ 8 | Capstone Project | — | — |
 
@@ -105,32 +105,6 @@
 | 4.6 | Ship baseline to small group — A/B test or shadow mode | Deployment of baseline |
 | 4.7 | Collect real-world feedback — does offline metric improvement translate to business value? | Post-launch analysis |
 | 4.8 | Document: "Baseline gives X% of value. To get remaining Y%, we need Z (more data/complex model)" | Business case for next iteration |
-
----
-
-## ✅ Phase 4B: AI/ML Testing & Quality Assurance — COMPLETE
-
-> "I review like I'm the person getting paged at 3am when this breaks."
-> **Status:** All 10 steps complete. Interactive module: [`phase4b_ai_testing.html`](phase4b_ai_testing.html)
-> **Deliverables:** [`Phase_4B_AI_Testing/`](Phase_4B_AI_Testing/) — 10 template documents
-> **Practice code:** See `Phase_4B_AI_Testing/test_practice/` — runnable pytest examples
-
-| Step | Task | Deliverable | Status |
-|------|------|-------------|--------|
-| 4B.1 | Why testing AI is different — non-deterministic, data-as-code, degrades over time | 3 differences document | ✅ |
-| 4B.2 | 3-Pass PR Review — Works? → Readable? → Safe? | PR review checklist | ✅ |
-| 4B.3 | Test Cases: Happy Path, Edge Cases, Failure Modes | Test template with examples | ✅ |
-| 4B.4 | AI Testing 4 Layers: Data → Model → Pipeline → Production | Layer overview document | ✅ |
-| 4B.5 | Layer 1: Data Testing — schema validation, ranges, nulls | Pandera/Pydantic code | ✅ |
-| 4B.6 | Layer 2: Model Testing — behavioral, invariance, directional | pytest model tests | ✅ |
-| 4B.7 | Layer 3: Pipeline Testing — E2E, error paths, retries | Pipeline test code | ✅ |
-| 4B.8 | Layer 4: Production Monitoring — drift, nulls, predictions | Evidently AI code | ✅ |
-| 4B.9 | AI Testing Pyramid — 10 layers from unit to production | Pyramid reference | ✅ |
-| 4B.10 | MLOps CI/CD Pipeline + Framework Cheat Sheet | CI/CD flow + tools table | ✅ |
-
-> 🧪 **Practice code:** Runnable pytest examples in [`Phase_4B_AI_Testing/test_practice/`](Phase_4B_AI_Testing/test_practice/) — data, model, pipeline, and monitoring tests ready to use in Phase 5/6.
-
----
 
 ## Phase 5: House Prices Predictor System (ZenML + MLflow — Real Project)
 
@@ -297,6 +271,29 @@
 | 6F.4 | Create the "one-click magic" method — `bot.quick_process(sources, tasks, output)` | Convenience method |
 | 6F.5 | Add async context manager — auto-cleanup on exit (`async with bot:`) | Resource management |
 | 6F.6 | End-to-end test: URL → load → chunk → generate QA → evaluate → export JSON | Full pipeline test |
+
+---
+
+## ✅ Phase 6G: AI/ML Testing & Quality Assurance — COMPLETE
+
+> "I review like I'm the person getting paged at 3am when this breaks."
+> **Status:** All 10 steps complete. Interactive module: [`phase4b_ai_testing.html`](phase4b_ai_testing.html)
+> **Deliverables:** [`Phase_4B_AI_Testing/`](Phase_4B_AI_Testing/) — 10 template documents + [runnable practice tests](Phase_4B_AI_Testing/test_practice/)
+
+| Step | Task | Deliverable | Status |
+|------|------|-------------|--------|
+| 6G.1 | Why testing AI is different — non-deterministic, data-as-code, degrades over time | 3 differences document | ✅ |
+| 6G.2 | 3-Pass PR Review — Works? → Readable? → Safe? | PR review checklist | ✅ |
+| 6G.3 | Test Cases: Happy Path, Edge Cases, Failure Modes | Test template with examples | ✅ |
+| 6G.4 | AI Testing 4 Layers: Data → Model → Pipeline → Production | Layer overview document | ✅ |
+| 6G.5 | Layer 1: Data Testing — schema validation, ranges, nulls | Pandera/Pydantic code | ✅ |
+| 6G.6 | Layer 2: Model Testing — behavioral, invariance, directional | pytest model tests | ✅ |
+| 6G.7 | Layer 3: Pipeline Testing — E2E, error paths, retries | Pipeline test code | ✅ |
+| 6G.8 | Layer 4: Production Monitoring — drift, nulls, predictions | Evidently AI code | ✅ |
+| 6G.9 | AI Testing Pyramid — 10 layers from unit to production | Pyramid reference | ✅ |
+| 6G.10 | MLOps CI/CD Pipeline + Framework Cheat Sheet | CI/CD flow + tools table | ✅ |
+
+> 🧪 **Practice code:** Runnable pytest examples in [`Phase_4B_AI_Testing/test_practice/`](Phase_4B_AI_Testing/test_practice/) — ready to use in Phase 5/6.
 
 ---
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Phase 4B: AI/ML Testing & QA — Interactive Learning</title>
+<title>Phase 6G: AI/ML Testing & QA — Interactive Learning</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -102,10 +102,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 <canvas class="bg-canvas" id="bgCanvas"></canvas>
 <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀️</button>
 
-<nav class="topbar"><span class="logo">MLOPS — PHASE 4B</span><div class="step-dots" id="stepDots"></div><span class="step-label" id="stepLabel">1/10</span></nav>
+<nav class="topbar"><span class="logo">MLOPS — PHASE 6G</span><div class="step-dots" id="stepDots"></div><span class="step-label" id="stepLabel">1/10</span></nav>
 
 <div class="app">
-<header class="header"><div class="phase-badge">📖 IN PROGRESS</div><h1>Phase 4B: AI/ML Testing & Quality Assurance</h1><p class="tagline">Test the data, the model, the pipeline, AND production — AI fails in ways regular software doesn't</p></header>
+<header class="header"><div class="phase-badge">📖 IN PROGRESS</div><h1>Phase 6G: AI/ML Testing & Quality Assurance</h1><p class="tagline">Test the data, the model, the pipeline, AND production — AI fails in ways regular software doesn't</p></header>
 <div class="topic-list" id="topicChips"></div>
 <div class="fun-fact" id="funFact"><span class="bulb">💡</span><span class="fact-text" id="funFactText"></span></div>
 <div id="slideContainer"></div>
@@ -118,10 +118,10 @@ if (localStorage.getItem('mlops-p4b-theme') === 'light') { document.body.classLi
 (function() { const c=document.getElementById('bgCanvas'),ctx=c.getContext('2d'); let p=[]; function rz(){ c.width=innerWidth; c.height=innerHeight; } rz(); window.addEventListener('resize',rz); for(let i=0;i<60;i++) p.push({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-0.5)*0.4,vy:(Math.random()-0.5)*0.4,r:Math.random()*2+0.5}); function anim(){ ctx.clearRect(0,0,c.width,c.height); const isL=document.body.classList.contains('light'),lc=isL?'rgba(9,105,218,0.06)':'rgba(57,210,255,0.06)',dc=isL?'rgba(9,105,218,0.3)':'rgba(57,210,255,0.3)'; p.forEach(pp=>{pp.x+=pp.vx;pp.y+=pp.vy;if(pp.x<0)pp.x=c.width;if(pp.x>c.width)pp.x=0;if(pp.y<0)pp.y=c.height;if(pp.y>c.height)pp.y=0;}); for(let i=0;i<p.length;i++)for(let j=i+1;j<p.length;j++){const dx=p[i].x-p[j].x,dy=p[i].y-p[j].y;if(Math.sqrt(dx*dx+dy*dy)<100){ctx.beginPath();ctx.moveTo(p[i].x,p[i].y);ctx.lineTo(p[j].x,p[j].y);ctx.strokeStyle=lc;ctx.lineWidth=0.5;ctx.stroke();}} p.forEach(pp=>{ctx.beginPath();ctx.arc(pp.x,pp.y,pp.r,0,Math.PI*2);ctx.fillStyle=dc;ctx.fill();}); requestAnimationFrame(anim); } anim(); })();
 
 const slides = [
-{ id:'4B.1', title:'Why Testing AI Is Different',
+{ id:'6G.1', title:'Why Testing AI Is Different',
   fact:'<strong>AI systems degrade over time in ways regular software doesn\'t.</strong> The code can be perfect and the system can still be wrong — because the world changed.',
   render(){return `<div class="slide"><div class="card">
-<h2><span class="num">4B.1</span> Why Testing AI Is Different From Regular Software</h2>
+<h2><span class="num">6G.1</span> Why Testing AI Is Different From Regular Software</h2>
 <p>In regular software, if <code>add(2,2)==4</code> today, it will be 4 forever. In AI, the SAME input can produce different outputs — and the model degrades silently as data drifts.</p>
 
 <div class="data-types">
@@ -145,10 +145,10 @@ const slides = [
 <div class="option" onclick="checkQuiz('quiz1',this)">C. Someone must have changed the code without telling you</div></div><div class="feedback" id="quiz1-fb"></div></div>
 </div></div>`;}},
 
-{ id:'4B.2', title:'The 3-Pass PR Review',
+{ id:'6G.2', title:'The 3-Pass PR Review',
   fact:'<strong>"I review like I\'m the person getting paged at 3am when this breaks."</strong> — This single sentence shows you think like an engineer who owns production.',
   render(){return `<div class="slide"><div class="card">
-<h2><span class="num">4B.2</span> The 3-Pass PR Review Method</h2>
+<h2><span class="num">6G.2</span> The 3-Pass PR Review Method</h2>
 <p>Every PR gets <strong style="color:var(--cyan)">three passes</strong>. Not one long stare. Three focused reads, each looking for different problems.</p>
 
 <div class="data-types">
@@ -169,10 +169,10 @@ const slides = [
 <div class="option" onclick="checkQuiz('quiz2',this)">C. Nothing — identifying problems is the reviewer's only job</div></div><div class="feedback" id="quiz2-fb"></div></div>
 </div></div>`;}},
 
-{ id:'4B.3', title:'Test Cases: Happy, Edge, Failure',
+{ id:'6G.3', title:'Test Cases: Happy, Edge, Failure',
   fact:'<strong>"I test the error handlers harder than the happy path — because error handlers failing is how small problems become outages."</strong>',
   render(){return `<div class="slide"><div class="card">
-<h2><span class="num">4B.3</span> The 3 Types of Test Cases</h2>
+<h2><span class="num">6G.3</span> The 3 Types of Test Cases</h2>
 <p>For every function, write <strong style="color:var(--cyan)">three types</strong> of tests. Most people only write the first. The third is where production bugs hide.</p>
 
 <div class="data-types">
@@ -207,10 +207,10 @@ const slides = [
 <div class="option" onclick="checkQuiz('quiz3',this)">C. Document the bug in a runbook so the on-call person knows what to do</div></div><div class="feedback" id="quiz3-fb"></div></div>
 </div></div>`;}},
 
-{ id:'4B.4', title:'AI Testing: The 4 Layers',
+{ id:'6G.4', title:'AI Testing: The 4 Layers',
   fact:'<strong>Most teams test only the model.</strong> Production AI systems fail at the data layer, pipeline layer, and monitoring layer — where nobody is looking.',
   render(){return `<div class="slide"><div class="card">
-<h2><span class="num">4B.4</span> AI Testing: 4 Layers, Not Just "Does the Model Work?"</h2>
+<h2><span class="num">6G.4</span> AI Testing: 4 Layers, Not Just "Does the Model Work?"</h2>
 <p>Testing an AI system means testing <strong style="color:var(--cyan)">four separate layers</strong>. Skip any one, and you have a blind spot that WILL fail in production.</p>
 
 <div class="data-types col4">
@@ -235,10 +235,10 @@ If bad data reaches the model, no amount of model tuning can fix it."</div>
 <div class="option" onclick="checkQuiz('quiz4',this)">C. Data testing — but it's the least important layer</div></div><div class="feedback" id="quiz4-fb"></div></div>
 </div></div>`;}},
 
-{ id:'4B.5', title:'Layer 1: Data Testing',
+{ id:'6G.5', title:'Layer 1: Data Testing',
   fact:'<strong>Garbage in, garbage out is the first law of ML.</strong> If your data validation catches bad data BEFORE training, you save days of debugging.',
   render(){return `<div class="slide"><div class="card">
-<h2><span class="num">4B.5</span> Layer 1: Data Testing — Catch Garbage Before Training</h2>
+<h2><span class="num">6G.5</span> Layer 1: Data Testing — Catch Garbage Before Training</h2>
 <p>Before a single row enters training, validate: <strong style="color:var(--cyan)">schema, ranges, nulls, label validity, no leakage.</strong> If validation fails — don't train. Fix the data first.</p>
 
 <h3>🏠 House Prices: Data Validation with Pandera</h3>
@@ -267,10 +267,10 @@ schema.validate(df)
 <div class="option" onclick="checkQuiz('quiz5',this)">C. Remove the column — it's unreliable now</div></div><div class="feedback" id="quiz5-fb"></div></div>
 </div></div>`;}},
 
-{ id:'4B.6', title:'Layer 2: Model Testing',
+{ id:'6G.6', title:'Layer 2: Model Testing',
   fact:'<strong>Accuracy is the least interesting metric.</strong> Behavioral tests — invariance, directional, baseline — tell you if the model learned the RIGHT thing.',
   render(){return `<div class="slide"><div class="card">
-<h2><span class="num">4B.6</span> Layer 2: Model Testing — Beyond Accuracy</h2>
+<h2><span class="num">6G.6</span> Layer 2: Model Testing — Beyond Accuracy</h2>
 <p>A model with 95% accuracy can still be <strong style="color:var(--red)">dangerously wrong</strong>. Behavioral tests check what accuracy hides.</p>
 
 <h3>🏠 5 Behavioral Tests for House Prices</h3>
@@ -306,10 +306,10 @@ schema.validate(df)
 <div class="option" onclick="checkQuiz('quiz6',this)">C. Add more features — the model needs more data to learn the right direction</div></div><div class="feedback" id="quiz6-fb"></div></div>
 </div></div>`;}},
 
-{ id:'4B.7', title:'Layer 3: Pipeline Testing',
+{ id:'6G.7', title:'Layer 3: Pipeline Testing',
   fact:'<strong>"I test the error handlers harder than the happy path."</strong> Most pipeline bugs are in the error paths — the code that only runs when something goes wrong.',
   render(){return `<div class="slide"><div class="card">
-<h2><span class="num">4B.7</span> Layer 3: Pipeline Testing — End-to-End + Error Paths</h2>
+<h2><span class="num">6G.7</span> Layer 3: Pipeline Testing — End-to-End + Error Paths</h2>
 <p>The pipeline connects everything. Test the <strong style="color:var(--cyan)">full flow</strong> AND what happens when <strong style="color:var(--red)">each component fails</strong>.</p>
 
 <h3>🔗 End-to-End Test</h3>
@@ -341,10 +341,10 @@ schema.validate(df)
 <div class="option" onclick="checkQuiz('quiz7',this)">C. Null pointers are unavoidable in Python</div></div><div class="feedback" id="quiz7-fb"></div></div>
 </div></div>`;}},
 
-{ id:'4B.8', title:'Layer 4: Production Monitoring',
+{ id:'6G.8', title:'Layer 4: Production Monitoring',
   fact:'<strong>Testing doesn't stop at deployment.</strong> The model can be running perfectly and still be wrong — because the world changed.',
   render(){return `<div class="slide"><div class="card">
-<h2><span class="num">4B.8</span> Layer 4: Production Monitoring</h2>
+<h2><span class="num">6G.8</span> Layer 4: Production Monitoring</h2>
 <p>Production monitoring is <strong style="color:var(--cyan)">continuous testing</strong>. It answers: "Is the model still working RIGHT NOW?"</p>
 
 <h3>📊 What to Monitor</h3>
@@ -371,10 +371,10 @@ report.run(reference_data=train_df, current_data=live_df)
 <div class="option" onclick="checkQuiz('quiz8',this)">C. Monitoring can't detect model quality issues</div></div><div class="feedback" id="quiz8-fb"></div></div>
 </div></div>`;}},
 
-{ id:'4B.9', title:'The AI Testing Pyramid',
+{ id:'6G.9', title:'The AI Testing Pyramid',
   fact:'<strong>AI systems have 10 layers of testing.</strong> Most teams do layers 1-2. Production AI teams do all 10.',
   render(){return `<div class="slide"><div class="card">
-<h2><span class="num">4B.9</span> The AI Testing Pyramid — 10 Layers</h2>
+<h2><span class="num">6G.9</span> The AI Testing Pyramid — 10 Layers</h2>
 <p>Unlike traditional software's 3-layer pyramid (unit → integration → e2e), AI systems need <strong style="color:var(--cyan)">10 layers</strong>. Each layer catches failures the layers below miss.</p>
 
 <div class="eq-box"><span style="color:var(--text-muted)">┌─────────────────────────────────────────────────────┐</span>
@@ -408,10 +408,10 @@ need their own regression tests.</div>
 <div class="option" onclick="checkQuiz('quiz9',this)">C. Newer model = better model — no need to test</div></div><div class="feedback" id="quiz9-fb"></div></div>
 </div></div>`;}},
 
-{ id:'4B.10', title:'MLOps CI/CD Pipeline + Frameworks',
+{ id:'6G.10', title:'MLOps CI/CD Pipeline + Frameworks',
   fact:'<strong>Every git commit should trigger a full regression pipeline.</strong> Unit → Data → Model → Eval → Deploy → Monitor. All automated.',
   render(){return `<div class="slide"><div class="card">
-<h2><span class="num">4B.10</span> MLOps CI/CD Pipeline + Framework Cheat Sheet</h2>
+<h2><span class="num">6G.10</span> MLOps CI/CD Pipeline + Framework Cheat Sheet</h2>
 <p>Every commit flows through an <strong style="color:var(--cyan)">automated pipeline</strong>. If any gate fails, deployment is blocked. This is how FAANG ships AI safely.</p>
 
 <h3>⚡ The Full CI/CD Flow</h3>
@@ -428,7 +428,7 @@ need their own regression tests.</div>
 <div class="compare-card"><h4 style="color:var(--green)">📊 Tracking & Monitoring</h4><ul><li><strong>MLflow</strong> — experiment tracking + registry</li><li><strong>W&B</strong> — experiment tracking</li><li><strong>Evidently AI</strong> — drift detection</li><li><strong>WhyLabs</strong> — AI observability</li><li><strong>LangSmith</strong> — LLM trace debugging</li><li><strong>Arize AI</strong> — model monitoring</li></ul></div>
 </div>
 
-<h3>✅ Phase 4B Complete — What You've Learned</h3>
+<h3>✅ Phase 6G Complete — What You've Learned</h3>
 <div class="data-types">
 <div class="data-type-card"><div class="dt-icon">🔍</div><h4>3-Pass Review</h4><p>Works? → Readable? → Safe? Every PR, every time.</p></div>
 <div class="data-type-card"><div class="dt-icon">✅</div><h4>3 Test Types</h4><p>Happy path, edge cases, failure modes. Most bugs hide in the third.</p></div>

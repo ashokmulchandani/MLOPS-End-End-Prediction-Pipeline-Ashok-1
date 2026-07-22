@@ -10,9 +10,9 @@ An end-to-end MLOps and ML System Design learning project built from scratch fol
 | Phase 2 | Data Strategy & Engineering (sampling, labeling, versioning) | ✅ Theory complete | [🔗 HTML](phase2_data_strategy.html) |
 | Phase 3 | Feature Engineering & Pipeline (scaling, encoding, leakage detection) | ✅ Theory complete | [🔗 HTML](phase3_feature_engineering.html) |
 | Phase 4 | Baseline First (rules → simple model → measure → iterate) | ✅ Theory complete | [🔗 HTML](phase4_baseline_first.html) |
-| Phase 4B | AI/ML Testing & QA (PR review, test cases, 4 layers, pyramid) | ✅ Theory complete | [🔗 HTML](phase4b_ai_testing.html) |
 | Phase 5 | **House Prices Predictor System** (ZenML + MLflow + Design Patterns) | ✅ Reference code | — |
 | Phase 6 | Enterprise Training Data Pipeline (async, AI generation, quality eval) | 📖 Plan ready | — |
+| Phase 6G | AI/ML Testing & QA (PR review, test cases, 4 layers, pyramid, CI/CD) | ✅ Theory complete | [🔗 HTML](phase4b_ai_testing.html) |
 | Phase 7 | Monitoring & Production Ops (drift, retraining, A/B testing) | 📖 Plan ready | — |
 | Phase 8 | Capstone Project (end-to-end from design to deployment) | 📖 Plan ready | — |
 
