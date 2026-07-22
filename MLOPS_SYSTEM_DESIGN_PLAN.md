@@ -27,6 +27,9 @@
 | Train/Test Split (2.7) — which method per data type | [train_test_split_visualizer.html](train_test_split_visualizer.html) |
 | Data Quality Gates (2.8) — 4-layer inspection pipeline | [data_quality_visualizer.html](data_quality_visualizer.html) |
 | Label Strategy (2.3) — 6 ways to get labels | [label_strategy_visualizer.html](label_strategy_visualizer.html) |
+| Feature Profiling (3.1) — histograms, correlations, missing charts | [feature_profiling_visualizer.html](feature_profiling_visualizer.html) |
+| Missing Values (3.2) — WHY before HOW, 5 scenarios | [missing_values_visualizer.html](missing_values_visualizer.html) |
+| Feature Monitoring (3.10) — live drift dashboard | [feature_monitoring_visualizer.html](feature_monitoring_visualizer.html) |
 
 ---
 

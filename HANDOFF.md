@@ -2,9 +2,9 @@
 
 ## Session Summary
 
-The user (Ashok) is working through their **MLOps & ML System Design Master Plan** interactively. They have a comprehensive 8-phase plan documented in `MLOPS_SYSTEM_DESIGN_PLAN.md`. The project follows a **Project-First Approach** — jumping into Phase 5 (Prices Predictor System) and learning Phases 1-4 concepts in context.
+The user (Ashok) is working through their **MLOps & ML System Design Master Plan** interactively. The project follows a **Project-First Approach** — Phase 5 (Prices Predictor System) is the core implementation, with Phases 1-4 teaching the thinking beforehand. A new Phase 6G was added covering AI/ML Testing & QA with runnable practice tests.
 
-The reference project (`prices-predictor-system/`) is a fully-implemented MLOps pipeline from ayushsingh's tutorial, featuring ZenML orchestration, MLflow tracking, and design patterns (Factory, Strategy, Template).
+**Session dates:** July 21-22, 2026
 
 ## Key Files
 
@@ -12,71 +12,65 @@ All files are in: `C:\Users\ashok\OneDrive\NOblox\MLOPS_System_Design_Thinking\`
 
 | File/Dir | Purpose |
 |-----------|---------|
-| `MLOPS_SYSTEM_DESIGN_PLAN.md` | Master plan — 8 phases, 22 sessions, all steps and deliverables |
+| `MLOPS_SYSTEM_DESIGN_PLAN.md` | Master plan — 8 phases + 6G, all steps and deliverables |
 | `CLAUDE.md` | Guidance for Claude Code when working in this repo |
-| `README.md` | Project overview with phase status and setup instructions |
-| `phase1_system_design.html` | Phase 1 interactive learning module — 10 slides, 10 quizzes |
-| `Phase_1_System_Design/` | 10 template documents (decision doc, framing, metrics ladder, etc.) |
-| `prices-predictor-system/` | Phase 5 reference project — complete ZenML + MLflow pipeline |
-| `Phase_2_Data_Strategy/` through `Phase_8_Capstone/` | Phase directories (currently scaffolds) |
-| `notebooks/` | Shared Jupyter notebooks |
-| Transcript `.txt` files | YouTube learning references (5 transcripts) |
+| `README.md` | Project overview with phase status, visual explainer links |
+| `index.html` | Dashboard landing page with all phase cards + visual explainers |
+| `HANDOFF.md` | This file — session handoff document |
 
-## Current State
+## Current Progress: 5/9 Modules Complete
 
-- **Phase 1 (ML System Design Thinking)**: ✅ Complete — `phase1_system_design.html` + 10 template documents in `Phase_1_System_Design/`.
-- **Phase 2 (Data Strategy & Engineering)**: ✅ Complete — `phase2_data_strategy.html` + 10 template documents in `Phase_2_Data_Strategy/`.
-- **Phase 3-4**: Plans exist in `MLOPS_SYSTEM_DESIGN_PLAN.md` but no implementations yet.
-- **Phase 5 (Prices Predictor)**: Reference project exists in `prices-predictor-system/` with full code (ZenML steps, MLflow tracking, design patterns). The code still has hardcoded paths from the original author (`ayushsingh`) that need updating for local execution.
-- **Phases 6-8**: Architecture plans exist but not implemented. These are stretch goals.
+| # | Phase | Status | HTML |
+|---|-------|--------|------|
+| ✅ 1 | ML System Design Thinking | Done | [phase1_system_design.html](phase1_system_design.html) |
+| ✅ 2 | Data Strategy & Engineering | Done | [phase2_data_strategy.html](phase2_data_strategy.html) |
+| ✅ 3 | Feature Engineering & Pipeline | Done | [phase3_feature_engineering.html](phase3_feature_engineering.html) |
+| ✅ 4 | Baseline First | Done | [phase4_baseline_first.html](phase4_baseline_first.html) |
+| ⬜ 5 | House Prices Predictor System | Pending | — |
+| ⬜ 6 | Enterprise Training Data Pipeline | Pending | — |
+| ✅ 6G | AI/ML Testing & QA | Done | [phase4b_ai_testing.html](phase4b_ai_testing.html) |
+| ⬜ 7 | Monitoring & Production Ops | Pending | — |
+| ⬜ 8 | Capstone Project | Pending | — |
+
+## Visual Explainers (Interactive HTMLs)
+
+| Topic | File | Description |
+|-------|------|-------------|
+| Class Imbalance (2.6) | [class_imbalance_visualizer.html](class_imbalance_visualizer.html) | 5 techniques applied live to same dataset |
+| Train/Test Split (2.7) | [train_test_split_visualizer.html](train_test_split_visualizer.html) | Which split for houses vs stocks vs users |
+| Data Quality Gates (2.8) | [data_quality_visualizer.html](data_quality_visualizer.html) | 4-layer inspection pipeline |
+| Label Strategy (2.3) | [label_strategy_visualizer.html](label_strategy_visualizer.html) | 6 ways to get labels compared |
+| Feature Profiling (3.1) | [feature_profiling_visualizer.html](feature_profiling_visualizer.html) | Histograms, correlations, missing charts |
+| Missing Values (3.2) | [missing_values_visualizer.html](missing_values_visualizer.html) | WHY before HOW — 5 scenarios |
+| Feature Monitoring (3.10) | [feature_monitoring_visualizer.html](feature_monitoring_visualizer.html) | Live drift dashboard |
+
+## Phase 6G Practice Tests
+
+5 runnable test files in [Phase_4B_AI_Testing/test_practice/](Phase_4B_AI_Testing/test_practice/):
+- `test_data_quality.py` — schema, ranges, leakage
+- `test_model_behavior.py` — shape, NaN, directional, stability
+- `test_pipeline_e2e.py` — E2E flow, error paths, retry
+- `monitor_drift.py` — PSI drift detection
+- `test_enterprise_pipeline.py` — Unit tests for Phase 6 patterns
+
+## User Preferences
+
+- Prefers **interactive HTML** over static explanations
+- Likes **quizzes** at the end of each topic
+- Wants **concrete examples** (House Prices project throughout)
+- Prefers **dark/light theme toggle** on every HTML
+- Uses **arrow keys** for navigation
+- Wants the **"why"** before the "how"
+- Prefers **visual, interactive explainers** for complex concepts
 
 ## What Needs to Happen Next
 
-1. **Phase 3 (Feature Engineering)** — Build interactive HTML + template documents
-2. **Set up and run Phase 5 locally** — Update hardcoded paths, set up ZenML/MLflow, run the training pipeline end-to-end
-3. **Phases 3-4** — Feature engineering and baseline first modules
-4. **Phase 6 (Enterprise Pipeline)** — Stretch goal after Phase 5 is mastered
-
-## User Preferences (From Fine-Tuning Project)
-
-These preferences were established in the Fine-tuning project and likely carry over:
-
-- Prefers **interactive HTML** over static explanations for learning complex concepts
-- Likes **quizzes** at the end of each topic to check understanding
-- Wants **concrete examples** (small numbers, real data) rather than abstract theory
-- Prefers **analogies** to explain technical concepts
-- Prefers **light/white background** for learning materials
-- Uses **arrow keys** for navigation (keyboard-friendly)
-- Wants the **"why"** before the "how" — intuition first, details second
-- Asks follow-up questions when concepts don't fully land
-
-## Design Patterns for Interactive HTMLs
-
-When building Phase HTMLs, follow these patterns from the Fine-tuning project:
-
-- **Single-file HTML** with embedded CSS and JS (no dependencies except Google Fonts)
-- **Orbitron** for headings, **JetBrains Mono** for code, **DM Sans** for body
-- **Slide-based navigation** with step dots and arrow key support
-- **Quiz at bottom** of each slide with correct/wrong feedback and green highlighting
-- **Fun fact box** (💡) that changes per slide
-- **Equation/code boxes** with `border-left: 3px solid` accent
-- **Comparison grids** (1fr 1fr) for A-vs-B topics
-- **Diagrams and visualizations** for architecture concepts (pipeline DAGs, pattern diagrams)
-
-## Suggested Skills
-
-- `frontend-design` — For building interactive Phase HTMLs
-- `senior-architect` — For system design discussions and architecture decisions
-- `clean-code` — For refactoring pipeline code
-- `senior-backend` — For Phase 6 enterprise pipeline work
+1. **Phase 5 (House Prices Predictor)** — The core implementation. Set up ZenML + MLflow locally, run the pipeline.
+2. **Phase 6 (Enterprise Pipeline)** — Async document loading, AI generation, quality evaluation.
+3. **Phase 7 (Monitoring)** — Drift detection, retraining triggers.
+4. **Phase 8 (Capstone)** — Customer churn end-to-end.
 
 ## Repo URLs
 
-- **Project repo:** `https://github.com/ashokmulchandani/MLOPS-End-End-Prediction-Pipeline-Ashok-1.git`
-- **Plan file:** `MLOPS_SYSTEM_DESIGN_PLAN.md` (root of repo)
-
-## Related Projects
-
-- **Fine-Tuning Project:** `C:\Users\ashok\OneDrive\NOblox\Fine_tuning-ML-Pipleine--Synthetic_Data-Ashok-1\` — LLM fine-tuning curriculum (10 phases)
-- **DevOps Projects:** `C:\Users\ashok\OneDrive\NOblox\Ashok_DEVOPS_Projects\` — Docker, K8s, CI/CD
-- **CUDA Projects:** `C:\Users\ashok\OneDrive\NOblox\CUDA_Projects-Ashok\` — GPU optimization
+- **Project repo:** https://github.com/ashokmulchandani/MLOPS-End-End-Prediction-Pipeline-Ashok-1.git
+- **GitHub Pages:** https://ashokmulchandani.github.io/MLOPS-End-End-Prediction-Pipeline-Ashok-1/

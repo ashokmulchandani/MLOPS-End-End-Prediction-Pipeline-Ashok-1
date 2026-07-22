@@ -26,6 +26,9 @@ An end-to-end MLOps and ML System Design learning project built from scratch fol
 | Train/Test Split (2.7) | [🔗 HTML](train_test_split_visualizer.html) | Which split method for houses vs stocks vs users? |
 | Data Quality Gates (2.8) | [🔗 HTML](data_quality_visualizer.html) | 12 rows pass through 4 quality gates — see what fails |
 | Label Strategy (2.3) | [🔗 HTML](label_strategy_visualizer.html) | 6 ways to get labels — cost, quality, speed compared |
+| Feature Profiling (3.1) | [🔗 HTML](feature_profiling_visualizer.html) | Distributions, correlations, missing value analysis |
+| Missing Values (3.2) | [🔗 HTML](missing_values_visualizer.html) | WHY before HOW — apply strategies to 5 scenarios |
+| Feature Monitoring (3.10) | [🔗 HTML](feature_monitoring_visualizer.html) | Live drift dashboard — simulate market shifts |
 
 ## Key Project: Prices Predictor System (Phase 5)
 
