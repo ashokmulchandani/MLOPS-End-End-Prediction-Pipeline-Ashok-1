@@ -3,7 +3,7 @@
 > Based on: ML System Design & MLOps For Beginners, Build ML Production Grade Projects, First-Ever Production-Grade AI Project
 > Philosophy: Think → Build → Scale (System Design thinking first, then hands-on MLOps, then enterprise-grade architecture)
 
-## 📊 Progress: 4/8 Phases Complete
+## 📊 Progress: 5/9 Modules Complete
 
 | # | Phase | Interactive Module | Templates |
 |---|-------|--------------------|-----------|
@@ -11,7 +11,7 @@
 | ✅ 2 | Data Strategy & Engineering | [phase2_data_strategy.html](phase2_data_strategy.html) | [10 docs](Phase_2_Data_Strategy/) |
 | ✅ 3 | Feature Engineering & Pipeline | [phase3_feature_engineering.html](phase3_feature_engineering.html) | [10 docs](Phase_3_Feature_Engineering/) |
 | ✅ 4 | Baseline First | [phase4_baseline_first.html](phase4_baseline_first.html) | [8 docs](Phase_4_Baseline_First/) |
-| ⬜ 4 | Baseline First | — | — |
+| ✅ 4B | AI/ML Testing & QA | [phase4b_ai_testing.html](phase4b_ai_testing.html) | [10 docs](Phase_4B_AI_Testing/) |
 | ⬜ 5 | House Prices Predictor System | — | — |
 | ⬜ 6 | Enterprise Training Data Pipeline | — | — |
 | ⬜ 7 | Monitoring & Production Ops | — | — |
@@ -105,6 +105,133 @@
 | 4.6 | Ship baseline to small group — A/B test or shadow mode | Deployment of baseline |
 | 4.7 | Collect real-world feedback — does offline metric improvement translate to business value? | Post-launch analysis |
 | 4.8 | Document: "Baseline gives X% of value. To get remaining Y%, we need Z (more data/complex model)" | Business case for next iteration |
+
+---
+
+## ✅ Phase 4B: AI/ML Testing & Quality Assurance — COMPLETE
+
+> "I review like I'm the person getting paged at 3am when this breaks."
+> **Status:** All 10 steps complete. Interactive module: [`phase4b_ai_testing.html`](phase4b_ai_testing.html)
+> **Deliverables:** [`Phase_4B_AI_Testing/`](Phase_4B_AI_Testing/) — 10 template documents
+> **Practice code:** See `Phase_4B_AI_Testing/test_practice/` — runnable pytest examples
+
+| Step | Task | Deliverable | Status |
+|------|------|-------------|--------|
+| 4B.1 | Why testing AI is different — non-deterministic, data-as-code, degrades over time | 3 differences document | ✅ |
+| 4B.2 | 3-Pass PR Review — Works? → Readable? → Safe? | PR review checklist | ✅ |
+| 4B.3 | Test Cases: Happy Path, Edge Cases, Failure Modes | Test template with examples | ✅ |
+| 4B.4 | AI Testing 4 Layers: Data → Model → Pipeline → Production | Layer overview document | ✅ |
+| 4B.5 | Layer 1: Data Testing — schema validation, ranges, nulls | Pandera/Pydantic code | ✅ |
+| 4B.6 | Layer 2: Model Testing — behavioral, invariance, directional | pytest model tests | ✅ |
+| 4B.7 | Layer 3: Pipeline Testing — E2E, error paths, retries | Pipeline test code | ✅ |
+| 4B.8 | Layer 4: Production Monitoring — drift, nulls, predictions | Evidently AI code | ✅ |
+| 4B.9 | AI Testing Pyramid — 10 layers from unit to production | Pyramid reference | ✅ |
+| 4B.10 | MLOps CI/CD Pipeline + Framework Cheat Sheet | CI/CD flow + tools table | ✅ |
+
+### 🧪 Practice Code Snippets (Ready to Run in Phase 5/6)
+
+#### Data Testing (Layer 1)
+```python
+# test_data_quality.py — run BEFORE training
+import pandera as pa
+import pandas as pd
+
+def test_house_prices_schema():
+    """Validate schema BEFORE training. If this fails, DON'T train."""
+    df = pd.read_csv("data/AmesHousing.csv")
+    schema = pa.DataFrameSchema({
+        "GrLivArea":  pa.Column(int, pa.Check.between(300, 6000)),
+        "SalePrice":  pa.Column(int, pa.Check.between(12000, 800000)),
+        "YearBuilt":  pa.Column(int, pa.Check.between(1800, 2026)),
+        "OverallQual":pa.Column(int, pa.Check.isin(range(1, 11))),
+        "Bedrooms":   pa.Column(int, pa.Check.between(0, 10)),
+    })
+    schema.validate(df)  # Raises error if data is bad
+
+def test_no_target_leakage():
+    """Features must not contain target-derived columns"""
+    df = pd.read_csv("data/train.csv")
+    forbidden = ["PricePerSqft", "SalePrice_Normalized", "LogSalePrice"]
+    for col in forbidden:
+        assert col not in df.columns, f"LEAKAGE: {col} derived from target!"
+```
+
+#### Model Testing (Layer 2)
+```python
+# test_model_behavior.py — behavioral tests beyond accuracy
+import numpy as np
+
+def test_model_output_shape(model, X_test):
+    preds = model.predict(X_test[:10])
+    assert preds.shape == (10,), f"Expected (10,), got {preds.shape}"
+
+def test_predictions_never_nan(model, X_test):
+    preds = model.predict(X_test)
+    assert not np.isnan(preds).any(), "Model returned NaN!"
+
+def test_bigger_house_higher_price(model, preprocessor):
+    small = {"GrLivArea": 1000, "OverallQual": 4, "GarageCars": 1}
+    big   = {"GrLivArea": 3000, "OverallQual": 9, "GarageCars": 3}
+    assert model.predict(preprocessor.transform([big]))[0] > \
+           model.predict(preprocessor.transform([small]))[0]
+
+def test_beats_baseline(model_r2_score):
+    assert model_r2_score > 0.50, f"R²={model_r2_score:.2f} — worse than $/sqft rule!"
+
+def test_stable_with_small_noise(model, preprocessor, sample_house):
+    p1 = model.predict(preprocessor.transform([sample_house]))[0]
+    noisy = {k: v*1.001 for k,v in sample_house.items()}
+    p2 = model.predict(preprocessor.transform([noisy]))[0]
+    assert abs(p1-p2)/p1 < 0.05, f"Unstable! {p1:.0f} vs {p2:.0f}"
+```
+
+#### Pipeline Testing (Layer 3)
+```python
+# test_pipeline_e2e.py — full workflow tests
+import json, pytest
+from pipelines.training_pipeline import run_pipeline
+
+def test_full_pipeline_success():
+    result = run_pipeline("data/test_house.json")
+    assert result["status"] == "success"
+    assert "predicted_price" in result
+    assert 100000 < result["predicted_price"] < 1000000
+
+def test_malformed_input_returns_error():
+    result = run_pipeline("data/garbage.json")
+    assert result["status"] == "error"
+    assert result["error_code"] == "INVALID_INPUT"
+
+@pytest.mark.parametrize("missing_field", ["GrLivArea", "OverallQual", "YearBuilt"])
+def test_missing_required_field(missing_field):
+    """Every required field missing should give a clear error"""
+    house = {"GrLivArea": 1500, "OverallQual": 7, "YearBuilt": 2000}
+    del house[missing_field]
+    result = run_pipeline(json.dumps(house))
+    assert result["status"] == "error"
+```
+
+#### Production Monitoring (Layer 4)
+```python
+# monitor_drift.py — run weekly in production
+from evidently.report import Report
+from evidently.metrics import DataDriftTable
+import pandas as pd
+
+def check_for_drift():
+    train_df = pd.read_csv("data/training_baseline.csv")
+    live_df = pd.read_csv("data/live_predictions_this_week.csv")
+
+    report = Report(metrics=[DataDriftTable()])
+    report.run(reference_data=train_df, current_data=live_df)
+    report.save_html("drift_report.html")
+
+    # Auto-check: did any feature drift significantly?
+    results = report.as_dict()
+    for feature in results["metrics"][0]["result"]:
+        if feature.get("drift_score", 0) > 0.2:
+            print(f"⚠️ DRIFT ALERT: {feature['feature_name']} — retrain recommended")
+```
 
 ---
 
