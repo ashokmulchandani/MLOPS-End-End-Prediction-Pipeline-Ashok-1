@@ -27,6 +27,15 @@
   --radius: 14px;
   --radius-sm: 8px;
 }
+body.light {
+  --bg: #f6f8fa; --bg-card: #ffffff; --bg-raised: #e8ecf0;
+  --border: #d0d7de; --border-active: #afb8c1;
+  --text: #1f2328; --text-dim: #656d76; --text-muted: #8b949e;
+  --cyan: #0969da; --cyan-bg: #ddf4ff; --cyan-border: #54aeff;
+  --amber: #9a6700; --amber-bg: #fff8c5;
+  --green: #1a7f37; --green-bg: #dafbe1;
+  --magenta: #bf3989; --violet: #8250df;
+}
 
 * { margin:0; padding:0; box-sizing:border-box; }
 
@@ -35,6 +44,10 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+}
+.theme-toggle { position: fixed; top: 1rem; right: 1.5rem; z-index: 999; background: var(--bg-raised); border: 1px solid var(--border); color: var(--text); font-size: 1.1rem; cursor: pointer; padding: 0.35rem 0.6rem; border-radius: 6px; transition: 0.2s; font-family: 'JetBrains Mono', monospace; }
+.theme-toggle:hover { border-color: var(--cyan); color: var(--cyan); }
   line-height: 1.65;
 }
 
@@ -171,6 +184,7 @@ body {
 <body>
 
 <canvas class="bg-canvas" id="bgCanvas"></canvas>
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀️</button>
 
 <div class="app">
   <header class="header">
@@ -274,6 +288,24 @@ body {
 
   </div>
 
+  <h2 class="section-title" style="margin-top:2rem">🎨 Visual Explainers</h2>
+  <div class="phase-grid">
+    <a href="class_imbalance_visualizer.html" class="phase-card" style="border-left:3px solid var(--magenta)">
+      <div class="phase-info"><div class="phase-title">Class Imbalance (2.6)</div><div class="phase-desc">Apply 5 techniques — see data transform live</div></div></a>
+    <a href="train_test_split_visualizer.html" class="phase-card" style="border-left:3px solid var(--cyan)">
+      <div class="phase-info"><div class="phase-title">Train/Test Split (2.7)</div><div class="phase-desc">Which method for houses vs stocks vs users?</div></div></a>
+    <a href="data_quality_visualizer.html" class="phase-card" style="border-left:3px solid var(--violet)">
+      <div class="phase-info"><div class="phase-title">Data Quality Gates (2.8)</div><div class="phase-desc">4-layer inspection pipeline with live data</div></div></a>
+    <a href="label_strategy_visualizer.html" class="phase-card" style="border-left:3px solid var(--amber)">
+      <div class="phase-info"><div class="phase-title">Label Strategy (2.3)</div><div class="phase-desc">6 ways to get labels — cost vs quality</div></div></a>
+    <a href="feature_profiling_visualizer.html" class="phase-card" style="border-left:3px solid var(--cyan)">
+      <div class="phase-info"><div class="phase-title">Feature Profiling (3.1)</div><div class="phase-desc">Histograms, correlations, missing value charts</div></div></a>
+    <a href="missing_values_visualizer.html" class="phase-card" style="border-left:3px solid var(--amber)">
+      <div class="phase-info"><div class="phase-title">Missing Values (3.2)</div><div class="phase-desc">WHY before HOW — 5 scenarios compared</div></div></a>
+    <a href="feature_monitoring_visualizer.html" class="phase-card" style="border-left:3px solid var(--red)">
+      <div class="phase-info"><div class="phase-title">Feature Monitoring (3.10)</div><div class="phase-desc">Live drift dashboard — simulate market shifts</div></div></a>
+  </div>
+
   <div class="quick-links">
     <a href="MLOPS_SYSTEM_DESIGN_PLAN.md" class="quick-link">
       <div class="ql-icon">📋</div>
@@ -295,6 +327,16 @@ body {
 </div>
 
 <script>
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  document.getElementById('themeToggle').textContent = document.body.classList.contains('light') ? '🌙' : '☀️';
+  localStorage.setItem('dashboard-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+if (localStorage.getItem('dashboard-theme') === 'light') {
+  document.body.classList.add('light');
+  document.getElementById('themeToggle').textContent = '🌙';
+}
+
 // ── Background Particles ──
 (function() {
   const canvas = document.getElementById('bgCanvas');
