@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 4B: AI/ML Testing & QA — Interactive Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06090f; --bg-card: #0d1117; --bg-raised: #161b22;
+  --border: #21262d; --text: #e6edf3; --text-dim: #8b949e; --text-muted: #484f58;
+  --cyan: #39d2ff; --cyan-bg: #39d2ff15; --amber: #ffb347; --amber-bg: #ffb34715;
+  --green: #3fb950; --green-bg: #3fb95015; --magenta: #ff6ec7; --magenta-bg: #ff6ec715;
+  --red: #f85149; --violet: #a371f7; --radius: 14px; --radius-sm: 8px;
+  --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+body.light {
+  --bg: #f6f8fa; --bg-card: #ffffff; --bg-raised: #e8ecf0;
+  --border: #d0d7de; --text: #1f2328; --text-dim: #656d76; --text-muted: #8b949e;
+  --cyan: #0969da; --cyan-bg: #ddf4ff; --amber: #9a6700; --amber-bg: #fff8c5;
+  --green: #1a7f37; --green-bg: #dafbe1; --magenta: #bf3989; --magenta-bg: #fbefff;
+  --red: #cf222e; --violet: #8250df;
+}
+body.light .topbar { background: rgba(246,248,250,0.9); }
+body.light .eq-box { background: rgba(0,0,0,0.03); }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; line-height: 1.65; transition: background 0.3s, color 0.3s; }
+.bg-canvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
+.app { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:2rem; }
+.theme-toggle { position: fixed; top: 0.7rem; right: 2rem; z-index: 200; background: var(--bg-raised); border: 1px solid var(--border); color: var(--text); font-size: 1.1rem; cursor: pointer; padding: 0.35rem 0.6rem; border-radius: 6px; transition: var(--transition); font-family: 'JetBrains Mono', monospace; }
+.theme-toggle:hover { border-color: var(--cyan); color: var(--cyan); }
+.topbar { position: sticky; top:0; z-index:100; background: rgba(6,9,15,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0.6rem 2rem; display: flex; align-items: center; gap: 1rem; font-size: 0.8rem; }
+.topbar .logo { font-family: 'Orbitron', sans-serif; font-size: 0.7rem; letter-spacing: 0.15em; color: var(--cyan); white-space: nowrap; }
+.topbar .step-dots { display: flex; gap: 0.4rem; flex:1; justify-content: center; }
+.topbar .step-dot { width: 28px; height: 4px; border-radius: 2px; background: var(--border); transition: var(--transition); cursor: pointer; }
+.topbar .step-dot.done { background: var(--green); }
+.topbar .step-dot.active { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+.topbar .step-dot:hover { background: var(--text-dim); }
+.topbar .step-label { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--text-dim); white-space: nowrap; }
+.header { text-align: center; padding: 3rem 0 1rem; }
+.header .phase-badge { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.2em; color: var(--green); border: 1px solid var(--green-bg); border-radius: 100px; padding: 0.4em 1.4em; margin-bottom: 1rem; }
+.header h1 { font-family: 'Orbitron', sans-serif; font-size: clamp(1.4rem, 3.5vw, 2.2rem); font-weight: 700; background: linear-gradient(135deg, var(--cyan), var(--violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.5rem; }
+.header .tagline { color: var(--text-dim); font-size: 1rem; }
+.topic-list { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin: 1.5rem 0 1rem; }
+.topic-chip { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.04em; padding: 0.3rem 0.7rem; border-radius: 100px; border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; transition: var(--transition); background: transparent; }
+.topic-chip.visited { border-color: var(--green); color: var(--green); background: var(--green-bg); }
+.topic-chip.current { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-bg); box-shadow: 0 0 10px var(--cyan-border, #39d2ff40); }
+.topic-chip:hover { border-color: var(--text-dim); color: var(--text-dim); }
+.fun-fact { background: linear-gradient(135deg, var(--amber-bg), var(--magenta-bg)); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.65rem 1.2rem; margin-bottom: 1.5rem; font-size: 0.78rem; color: var(--text-dim); display: flex; align-items: center; gap: 0.6rem; }
+.fun-fact .bulb { font-size: 1.2rem; flex-shrink: 0; }
+.fun-fact strong { color: var(--amber); }
+.slide { animation: slideIn 0.35s ease; }
+@keyframes slideIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; }
+.card h2 { font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; color: var(--text); }
+.card h2 .num { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--cyan); background: var(--cyan-bg); border-radius: 6px; padding: 0.2em 0.6em; }
+.card p { color: var(--text-dim); margin-bottom: 1rem; font-size: 0.95rem; }
+.card h3 { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; color: var(--cyan); margin: 1.2rem 0 0.5rem; }
+.card ul, .card ol { color: var(--text-dim); padding-left: 1.5rem; margin-bottom: 1rem; font-size: 0.9rem; }
+.card ul li, .card ol li { margin-bottom: 0.4rem; }
+.eq-box { background: rgba(0,0,0,0.4); border-left: 3px solid var(--cyan); border-radius: var(--radius-sm); padding: 1.2rem 1.5rem; margin: 1rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; line-height: 1.8; color: var(--text); white-space: pre-wrap; overflow-x: auto; }
+.data-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin: 1rem 0; }
+.data-types.two { grid-template-columns: repeat(2, 1fr); }
+.data-types.col4 { grid-template-columns: repeat(4, 1fr); }
+.data-type-card { background: var(--bg-raised); border: 1px solid var(--border); border-top: 3px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; transition: var(--transition); cursor: default; }
+.data-type-card:nth-child(1) { border-top-color: var(--cyan); }
+.data-type-card:nth-child(2) { border-top-color: var(--amber); }
+.data-type-card:nth-child(3) { border-top-color: var(--magenta); }
+.data-type-card:nth-child(4) { border-top-color: var(--green); }
+.data-type-card:nth-child(5) { border-top-color: var(--violet); }
+.data-type-card:hover { transform: translateY(-3px); border-color: var(--border-active, #30363d); }
+.data-type-card .dt-icon { font-size: 1.5rem; margin-bottom: 0.3rem; }
+.data-type-card h4 { font-family: 'Orbitron', sans-serif; font-size: 0.78rem; margin-bottom: 0.3rem; }
+.data-type-card p { font-size: 0.76rem !important; color: var(--text-muted) !important; margin-bottom: 0 !important; }
+.compare-grid { display: grid; gap: 1rem; margin: 1rem 0; }
+.compare-grid.col2 { grid-template-columns: 1fr 1fr; }
+.compare-card { background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.2rem; transition: var(--transition); }
+.compare-card:hover { transform: translateY(-3px); }
+.compare-card h4 { font-family: 'Orbitron', sans-serif; font-size: 0.78rem; margin-bottom: 0.5rem; }
+.compare-card p, .compare-card li { font-size: 0.8rem !important; color: var(--text-dim) !important; }
+.quiz { background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.2rem; margin-top: 1.5rem; }
+.quiz .question { font-family: 'Orbitron', sans-serif; font-size: 0.82rem; color: var(--text); margin-bottom: 0.8rem; }
+.quiz .options { display: flex; flex-direction: column; gap: 0.4rem; }
+.quiz .option { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 0.6rem 1rem; font-size: 0.82rem; color: var(--text-dim); cursor: pointer; transition: var(--transition); }
+.quiz .option:hover { border-color: var(--cyan); color: var(--cyan); }
+.quiz .option.correct { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+.quiz .option.wrong { border-color: var(--red); background: #f8514920; color: var(--red); }
+.quiz .feedback { display: none; margin-top: 0.8rem; padding: 0.6rem 1rem; border-radius: 6px; font-size: 0.82rem; }
+.quiz .feedback.show { display: block; }
+.quiz .feedback.correct { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+.quiz .feedback.wrong { background: #f8514920; color: var(--red); border: 1px solid var(--red); }
+.nav-row { display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem; }
+.nav-btn { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; padding: 0.6rem 1.8rem; border-radius: 100px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); cursor: pointer; transition: var(--transition); }
+.nav-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.nav-btn.primary { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-bg); }
+@media (max-width: 768px) { .app { padding: 1rem; } .data-types, .data-types.col4 { grid-template-columns: 1fr 1fr; } .header h1 { font-size: 1.2rem; } .card { padding: 1.2rem; } .theme-toggle { right: 0.5rem; top: 0.5rem; } }
+</style>
+</head>
+<body>
+
+<canvas class="bg-canvas" id="bgCanvas"></canvas>
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀️</button>
+
+<nav class="topbar"><span class="logo">MLOPS — PHASE 4B</span><div class="step-dots" id="stepDots"></div><span class="step-label" id="stepLabel">1/10</span></nav>
+
+<div class="app">
+<header class="header"><div class="phase-badge">📖 IN PROGRESS</div><h1>Phase 4B: AI/ML Testing & Quality Assurance</h1><p class="tagline">Test the data, the model, the pipeline, AND production — AI fails in ways regular software doesn't</p></header>
+<div class="topic-list" id="topicChips"></div>
+<div class="fun-fact" id="funFact"><span class="bulb">💡</span><span class="fact-text" id="funFactText"></span></div>
+<div id="slideContainer"></div>
+<div class="nav-row"><button class="nav-btn" id="prevBtn" onclick="goTo(currentSlide-1)">← Previous</button><button class="nav-btn primary" id="nextBtn" onclick="goTo(currentSlide+1)">Next →</button></div>
+</div>
+
+<script>
+function toggleTheme() { document.body.classList.toggle('light'); document.getElementById('themeToggle').textContent = document.body.classList.contains('light') ? '🌙' : '☀️'; localStorage.setItem('mlops-p4b-theme', document.body.classList.contains('light') ? 'light' : 'dark'); }
+if (localStorage.getItem('mlops-p4b-theme') === 'light') { document.body.classList.add('light'); document.getElementById('themeToggle').textContent = '🌙'; }
+(function() { const c=document.getElementById('bgCanvas'),ctx=c.getContext('2d'); let p=[]; function rz(){ c.width=innerWidth; c.height=innerHeight; } rz(); window.addEventListener('resize',rz); for(let i=0;i<60;i++) p.push({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-0.5)*0.4,vy:(Math.random()-0.5)*0.4,r:Math.random()*2+0.5}); function anim(){ ctx.clearRect(0,0,c.width,c.height); const isL=document.body.classList.contains('light'),lc=isL?'rgba(9,105,218,0.06)':'rgba(57,210,255,0.06)',dc=isL?'rgba(9,105,218,0.3)':'rgba(57,210,255,0.3)'; p.forEach(pp=>{pp.x+=pp.vx;pp.y+=pp.vy;if(pp.x<0)pp.x=c.width;if(pp.x>c.width)pp.x=0;if(pp.y<0)pp.y=c.height;if(pp.y>c.height)pp.y=0;}); for(let i=0;i<p.length;i++)for(let j=i+1;j<p.length;j++){const dx=p[i].x-p[j].x,dy=p[i].y-p[j].y;if(Math.sqrt(dx*dx+dy*dy)<100){ctx.beginPath();ctx.moveTo(p[i].x,p[i].y);ctx.lineTo(p[j].x,p[j].y);ctx.strokeStyle=lc;ctx.lineWidth=0.5;ctx.stroke();}} p.forEach(pp=>{ctx.beginPath();ctx.arc(pp.x,pp.y,pp.r,0,Math.PI*2);ctx.fillStyle=dc;ctx.fill();}); requestAnimationFrame(anim); } anim(); })();
+
+const slides = [
+{ id:'4B.1', title:'Why Testing AI Is Different',
+  fact:'<strong>AI systems degrade over time in ways regular software doesn\'t.</strong> The code can be perfect and the system can still be wrong — because the world changed.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">4B.1</span> Why Testing AI Is Different From Regular Software</h2>
+<p>In regular software, if <code>add(2,2)==4</code> today, it will be 4 forever. In AI, the SAME input can produce different outputs — and the model degrades silently as data drifts.</p>
+
+<div class="data-types">
+<div class="data-type-card"><div class="dt-icon">🎲</div><h4>Non-Deterministic</h4><p>Same input → different output. You can't assert <code>result == expected</code>. You test ranges, shapes, and invariants instead.</p></div>
+<div class="data-type-card"><div class="dt-icon">📊</div><h4>Data IS Part of the System</h4><p>Testing the code isn't enough. If the data changes, the system breaks — even if the code never changed.</p></div>
+<div class="data-type-card"><div class="dt-icon">📉</div><h4>Degrades Over Time</h4><p>Regular software rots if unmaintained. AI degrades even while maintained — because the world drifts. You need production monitoring, not just uptime checks.</p></div>
+</div>
+
+<div class="eq-box"><span style="color:var(--text-muted)">// Regular software test:</span>
+<span style="color:var(--green)">assert</span> add(2, 2) == 4  <span style="color:var(--text-muted)">// Always true. Forever.</span>
+
+<span style="color:var(--text-muted)">// AI system test:</span>
+<span style="color:var(--green)">assert</span> 200000 < predicted_price < 300000  <span style="color:var(--text-muted)">// Range check</span>
+<span style="color:var(--green)">assert</span> not np.isnan(predicted_price)      <span style="color:var(--text-muted)">// Invariant check</span>
+<span style="color:var(--green)">assert</span> predicted_price > 0               <span style="color:var(--text-muted)">// Sanity check</span>
+<span style="color:var(--text-muted)">// You cannot assert == exact value. That's the difference.</span></div>
+
+<div class="quiz" id="quiz1"><div class="question">🧪 An AI model was perfect 6 months ago. Now it's making systematic errors. Code hasn't changed. What happened?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz1',this)">A. The world drifted — data distribution changed. This is normal AI degradation. You need production monitoring to detect it.</div>
+<div class="option" onclick="checkQuiz('quiz1',this)">B. The model has a bug that only appears after 6 months of runtime</div>
+<div class="option" onclick="checkQuiz('quiz1',this)">C. Someone must have changed the code without telling you</div></div><div class="feedback" id="quiz1-fb"></div></div>
+</div></div>`;}},
+
+{ id:'4B.2', title:'The 3-Pass PR Review',
+  fact:'<strong>"I review like I\'m the person getting paged at 3am when this breaks."</strong> — This single sentence shows you think like an engineer who owns production.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">4B.2</span> The 3-Pass PR Review Method</h2>
+<p>Every PR gets <strong style="color:var(--cyan)">three passes</strong>. Not one long stare. Three focused reads, each looking for different problems.</p>
+
+<div class="data-types">
+<div class="data-type-card"><div class="dt-icon">⚙️</div><h4>Pass 1: Does It Work?</h4><p>Logic, edge cases, null handling, test coverage. "What happens if this list is empty?" "What if the input is negative?"</p></div>
+<div class="data-type-card"><div class="dt-icon">📖</div><h4>Pass 2: Can I Read It?</h4><p>Naming, structure, duplication, comments. "Would someone new understand this in 6 months?" "This function does 3 things — split it."</p></div>
+<div class="data-type-card"><div class="dt-icon">🛡️</div><h4>Pass 3: Is It Safe?</h4><p>Secrets, error handling, auth, data leaks. "API key is hardcoded — use env var." "What happens if this external call times out?"</p></div>
+</div>
+
+<h3>🗣️ The 3 Phrases Interviewers Love</h3>
+<div class="eq-box"><span style="color:var(--cyan)">1.</span> "I review like I'm the person getting paged at 3am when this breaks."
+<span style="color:var(--cyan)">2.</span> "I look for what the tests DON'T cover — everyone checks the happy path."
+<span style="color:var(--cyan)">3.</span> "I treat error handlers as first-class code. Most bugs I've caught were
+    in the error paths, not the main logic."</div>
+
+<div class="quiz" id="quiz2"><div class="question">🧪 A colleague leaves a PR comment: "This could break." What's wrong with this feedback?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz2',this)">A. It identifies a problem but offers no solution. Better: "This could break if the API times out — wrap it in try/except with exponential backoff."</div>
+<div class="option" onclick="checkQuiz('quiz2',this)">B. It's too vague — should specify which line</div>
+<div class="option" onclick="checkQuiz('quiz2',this)">C. Nothing — identifying problems is the reviewer's only job</div></div><div class="feedback" id="quiz2-fb"></div></div>
+</div></div>`;}},
+
+{ id:'4B.3', title:'Test Cases: Happy, Edge, Failure',
+  fact:'<strong>"I test the error handlers harder than the happy path — because error handlers failing is how small problems become outages."</strong>',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">4B.3</span> The 3 Types of Test Cases</h2>
+<p>For every function, write <strong style="color:var(--cyan)">three types</strong> of tests. Most people only write the first. The third is where production bugs hide.</p>
+
+<div class="data-types">
+<div class="data-type-card"><div class="dt-icon">✅</div><h4>Happy Path</h4><p>"Does it work when everything goes right?" 3 valid features in → correct prediction out.</p></div>
+<div class="data-type-card"><div class="dt-icon">⚠️</div><h4>Edge Cases</h4><p>"What breaks at the boundaries?" Empty list, 1 row, 1M rows, NaN, negative values, extreme values.</p></div>
+<div class="data-type-card"><div class="dt-icon">💥</div><h4>Failure Modes</h4><p>"What if the outside world fails?" API timeout, DB down, corrupt file, wrong schema, duplicate IDs.</p></div>
+</div>
+
+<h3>🏠 House Prices: Real Test Examples</h3>
+<div class="eq-box"><span style="color:var(--text-muted)"># Happy Path</span>
+<span style="color:var(--green)">def</span> <span style="color:var(--cyan)">test_predict_valid_house</span>():
+    result = model.predict(valid_3bed_2bath_house)
+    <span style="color:var(--green)">assert</span> 150000 < result < 350000
+
+<span style="color:var(--text-muted)"># Edge Cases</span>
+<span style="color:var(--green)">def</span> <span style="color:var(--cyan)">test_predict_empty_features</span>():
+    <span style="color:var(--magenta)">with</span> pytest.raises(ValueError):
+        model.predict([])
+
+<span style="color:var(--green)">def</span> <span style="color:var(--cyan)">test_predict_extreme_values</span>():
+    result = model.predict(house_with_20_bedrooms) <span style="color:var(--text-muted)"># should still return a number</span>
+    <span style="color:var(--green)">assert</span> result > 0
+
+<span style="color:var(--text-muted)"># Failure Modes</span>
+<span style="color:var(--green)">def</span> <span style="color:var(--cyan)">test_predict_with_corrupt_input</span>():
+    result = model.predict(malformed_json)
+    <span style="color:var(--green)">assert</span> result[<span style="color:var(--amber)">"status"</span>] == <span style="color:var(--amber)">"error"</span></div>
+
+<div class="quiz" id="quiz3"><div class="question">🧪 A rate-limit bug made it to production. What's the rule for preventing it happening again?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz3',this)">A. Write a test for rate-limiting BEFORE fixing the bug. The test fails now, passes after fix. No repeat bugs — every production bug becomes a permanent test.</div>
+<div class="option" onclick="checkQuiz('quiz3',this)">B. Fix the bug immediately and deploy — write the test later if there's time</div>
+<div class="option" onclick="checkQuiz('quiz3',this)">C. Document the bug in a runbook so the on-call person knows what to do</div></div><div class="feedback" id="quiz3-fb"></div></div>
+</div></div>`;}},
+
+{ id:'4B.4', title:'AI Testing: The 4 Layers',
+  fact:'<strong>Most teams test only the model.</strong> Production AI systems fail at the data layer, pipeline layer, and monitoring layer — where nobody is looking.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">4B.4</span> AI Testing: 4 Layers, Not Just "Does the Model Work?"</h2>
+<p>Testing an AI system means testing <strong style="color:var(--cyan)">four separate layers</strong>. Skip any one, and you have a blind spot that WILL fail in production.</p>
+
+<div class="data-types col4">
+<div class="data-type-card"><div class="dt-icon">📊</div><h4>1. Data</h4><p>Is the data broken BEFORE training? Schema, nulls, ranges, leaks.</p></div>
+<div class="data-type-card"><div class="dt-icon">🤖</div><h4>2. Model</h4><p>Does the model learn the right thing? Accuracy, invariance, directional.</p></div>
+<div class="data-type-card"><div class="dt-icon">🔗</div><h4>3. Pipeline</h4><p>Does the whole system work end-to-end? Error paths, retries, rollbacks.</p></div>
+<div class="data-type-card"><div class="dt-icon">📈</div><h4>4. Production</h4><p>Is it still working right now? Drift, null rates, prediction stability.</p></div>
+</div>
+
+<h3>🔧 Tools Per Layer (Name These in Interviews)</h3>
+<div class="eq-box"><span style="color:var(--cyan)">Data:</span>      Great Expectations, Pandera, Pydantic, DVC, Soda
+<span style="color:var(--cyan)">Model:</span>      pytest, unittest, MLflow, Weights & Biases
+<span style="color:var(--cyan)">Pipeline:</span>   pytest + Docker, GitHub Actions, Jenkins
+<span style="color:var(--cyan)">Production:</span> Evidently AI, NannyML, Prometheus, Grafana, WhyLabs
+
+<span style="color:var(--amber)">Interview tip:</span> "We test the data pipeline as rigorously as the code.
+If bad data reaches the model, no amount of model tuning can fix it."</div>
+
+<div class="quiz" id="quiz4"><div class="question">🧪 Which layer do most teams completely skip — and then wonder why production is broken?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz4',this)">A. Production monitoring — they deploy and move on. 3 months later the model is silently failing and nobody knows because nobody set up drift detection.</div>
+<div class="option" onclick="checkQuiz('quiz4',this)">B. Model testing — they deploy without checking accuracy</div>
+<div class="option" onclick="checkQuiz('quiz4',this)">C. Data testing — but it's the least important layer</div></div><div class="feedback" id="quiz4-fb"></div></div>
+</div></div>`;}},
+
+{ id:'4B.5', title:'Layer 1: Data Testing',
+  fact:'<strong>Garbage in, garbage out is the first law of ML.</strong> If your data validation catches bad data BEFORE training, you save days of debugging.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">4B.5</span> Layer 1: Data Testing — Catch Garbage Before Training</h2>
+<p>Before a single row enters training, validate: <strong style="color:var(--cyan)">schema, ranges, nulls, label validity, no leakage.</strong> If validation fails — don't train. Fix the data first.</p>
+
+<h3>🏠 House Prices: Data Validation with Pandera</h3>
+<div class="eq-box"><span style="color:var(--magenta)">import</span> pandera <span style="color:var(--magenta)">as</span> pa
+
+schema = pa.DataFrameSchema({
+    <span style="color:var(--amber)">"GrLivArea"</span>:  pa.Column(<span style="color:var(--magenta)">int</span>, pa.Check.between(300, 6000)),
+    <span style="color:var(--amber)">"SalePrice"</span>:  pa.Column(<span style="color:var(--magenta)">int</span>, pa.Check.between(12000, 800000)),
+    <span style="color:var(--amber)">"YearBuilt"</span>:  pa.Column(<span style="color:var(--magenta)">int</span>, pa.Check.between(1800, 2026)),
+    <span style="color:var(--amber)">"OverallQual"</span>:pa.Column(<span style="color:var(--magenta)">int</span>, pa.Check.isin([1,2,3,4,5,6,7,8,9,10])),
+    <span style="color:var(--amber)">"Bedrooms"</span>:   pa.Column(<span style="color:var(--magenta)">int</span>, pa.Check.between(0, 10)),
+})
+
+<span style="color:var(--text-muted)"># If this raises an error → STOP. Fix the data. Don't train.</span>
+schema.validate(df)
+
+<span style="color:var(--text-muted)"># What this catches BEFORE training:</span>
+<span style="color:var(--green)">✓</span> Negative SalePrice (impossible)
+<span style="color:var(--green)">✓</span> YearBuilt = 2027 (time traveler)
+<span style="color:var(--green)">✓</span> OverallQual = 99 (out of valid range 1-10)
+<span style="color:var(--green)">✓</span> Bedrooms = -3 (nonsense)</div>
+
+<div class="quiz" id="quiz5"><div class="question">🧪 Data validation catches a column that suddenly went from 2% null to 50% null. What's the right action?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz5',this)">A. Block training. Investigate the data source. A field may have been renamed or a service may be down. Training on half-missing data produces a broken model.</div>
+<div class="option" onclick="checkQuiz('quiz5',this)">B. Fill nulls with median and continue — the model handles missing values</div>
+<div class="option" onclick="checkQuiz('quiz5',this)">C. Remove the column — it's unreliable now</div></div><div class="feedback" id="quiz5-fb"></div></div>
+</div></div>`;}},
+
+{ id:'4B.6', title:'Layer 2: Model Testing',
+  fact:'<strong>Accuracy is the least interesting metric.</strong> Behavioral tests — invariance, directional, baseline — tell you if the model learned the RIGHT thing.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">4B.6</span> Layer 2: Model Testing — Beyond Accuracy</h2>
+<p>A model with 95% accuracy can still be <strong style="color:var(--red)">dangerously wrong</strong>. Behavioral tests check what accuracy hides.</p>
+
+<h3>🏠 5 Behavioral Tests for House Prices</h3>
+<div class="eq-box"><span style="color:var(--text-muted)"># 1. Output shape — does it return what we expect?</span>
+<span style="color:var(--green)">def</span> <span style="color:var(--cyan)">test_output_shape</span>():
+    preds = model.predict(X_test[:10])
+    <span style="color:var(--green)">assert</span> preds.shape == (10,)         <span style="color:var(--text-muted)"># 10 inputs → 10 outputs</span>
+
+<span style="color:var(--text-muted)"># 2. Never NaN — predictions must always be valid numbers</span>
+<span style="color:var(--green)">def</span> <span style="color:var(--cyan)">test_never_nan</span>():
+    preds = model.predict(X_test)
+    <span style="color:var(--green)">assert</span> not np.isnan(preds).<span style="color:var(--cyan)">any</span>()
+
+<span style="color:var(--text-muted)"># 3. Directional — bigger house → higher price (sanity check)</span>
+<span style="color:var(--green)">def</span> <span style="color:var(--cyan)">test_bigger_house_higher_price</span>():
+    small = model.predict(small_house)
+    big   = model.predict(big_house)
+    <span style="color:var(--green)">assert</span> big > small                 <span style="color:var(--text-muted)"># Must hold!</span>
+
+<span style="color:var(--text-muted)"># 4. Baseline — ML must beat a dumb rule</span>
+<span style="color:var(--green)">def</span> <span style="color:var(--cyan)">test_beats_baseline</span>():
+    <span style="color:var(--green)">assert</span> model_r2 > 0.50             <span style="color:var(--text-muted)"># Must beat $/sqft rule</span>
+
+<span style="color:var(--text-muted)"># 5. Invariance — small noise shouldn't change prediction wildly</span>
+<span style="color:var(--green)">def</span> <span style="color:var(--cyan)">test_stable_with_small_noise</span>():
+    p1 = model.predict(house)
+    p2 = model.predict(house + tiny_noise)
+    <span style="color:var(--green)">assert</span> abs(p1 - p2) / p1 < 0.05    <span style="color:var(--text-muted)"># Within 5%</span></div>
+
+<div class="quiz" id="quiz6"><div class="question">🧪 Your model has R²=0.92 but fails the directional test (bigger house → LOWER price). What happened?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz6',this)">A. The model learned a spurious correlation — maybe bigger houses in the training set happened to be in worse neighborhoods. Your high R² is misleading.</div>
+<div class="option" onclick="checkQuiz('quiz6',this)">B. R²=0.92 is impossible with directional failure — must be a measurement error</div>
+<div class="option" onclick="checkQuiz('quiz6',this)">C. Add more features — the model needs more data to learn the right direction</div></div><div class="feedback" id="quiz6-fb"></div></div>
+</div></div>`;}},
+
+{ id:'4B.7', title:'Layer 3: Pipeline Testing',
+  fact:'<strong>"I test the error handlers harder than the happy path."</strong> Most pipeline bugs are in the error paths — the code that only runs when something goes wrong.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">4B.7</span> Layer 3: Pipeline Testing — End-to-End + Error Paths</h2>
+<p>The pipeline connects everything. Test the <strong style="color:var(--cyan)">full flow</strong> AND what happens when <strong style="color:var(--red)">each component fails</strong>.</p>
+
+<h3>🔗 End-to-End Test</h3>
+<div class="eq-box"><span style="color:var(--green)">def</span> <span style="color:var(--cyan)">test_full_pipeline_e2e</span>():
+    <span style="color:var(--text-muted)"># Run the ENTIRE pipeline on test input</span>
+    result = run_pipeline(<span style="color:var(--amber)">"test_house.json"</span>)
+
+    <span style="color:var(--green)">assert</span> result[<span style="color:var(--amber)">"status"</span>] == <span style="color:var(--amber)">"success"</span>
+    <span style="color:var(--green)">assert</span> <span style="color:var(--amber)">"predicted_price"</span> <span style="color:var(--magenta)">in</span> result
+    <span style="color:var(--green)">assert</span> result[<span style="color:var(--amber)">"model_version"</span>] == <span style="color:var(--amber)">"v1.2.3"</span>
+    <span style="color:var(--green)">assert</span> 100000 < result[<span style="color:var(--amber)">"predicted_price"</span>] < 1000000</div>
+
+<h3>💥 Error Path Tests (Where Bugs Hide)</h3>
+<div class="eq-box"><span style="color:var(--text-muted)"># Malformed input → graceful error, not a crash</span>
+<span style="color:var(--green)">def</span> <span style="color:var(--cyan)">test_malformed_input_returns_error</span>():
+    result = run_pipeline(<span style="color:var(--amber)">"garbage_input.json"</span>)
+    <span style="color:var(--green)">assert</span> result[<span style="color:var(--amber)">"status"</span>] == <span style="color:var(--amber)">"error"</span>
+    <span style="color:var(--green)">assert</span> result[<span style="color:var(--amber)">"error_code"</span>] == <span style="color:var(--amber)">"INVALID_INPUT"</span>
+
+<span style="color:var(--text-muted)"># API fails once → retry succeeds</span>
+<span style="color:var(--green)">def</span> <span style="color:var(--cyan)">test_retry_on_transient_failure</span>():
+    <span style="color:var(--magenta)">with</span> mock_api_failure(times=1):  <span style="color:var(--text-muted)"># API fails first call</span>
+        result = run_pipeline(<span style="color:var(--amber)">"input.json"</span>)
+        <span style="color:var(--green)">assert</span> result[<span style="color:var(--amber)">"status"</span>] == <span style="color:var(--amber)">"success"</span>   <span style="color:var(--text-muted)"># Retry worked</span></div>
+
+<div class="quiz" id="quiz7"><div class="question">🧪 An error handler crashes because of a null pointer. The main logic was tested perfectly. Why did this reach production?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz7',this)">A. The error path was never tested — the team only tested the happy path. Error handlers need their own tests, including tests where the error handler itself receives bad input.</div>
+<div class="option" onclick="checkQuiz('quiz7',this)">B. The main logic test should have caught null pointers everywhere</div>
+<div class="option" onclick="checkQuiz('quiz7',this)">C. Null pointers are unavoidable in Python</div></div><div class="feedback" id="quiz7-fb"></div></div>
+</div></div>`;}},
+
+{ id:'4B.8', title:'Layer 4: Production Monitoring',
+  fact:'<strong>Testing doesn't stop at deployment.</strong> The model can be running perfectly and still be wrong — because the world changed.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">4B.8</span> Layer 4: Production Monitoring</h2>
+<p>Production monitoring is <strong style="color:var(--cyan)">continuous testing</strong>. It answers: "Is the model still working RIGHT NOW?"</p>
+
+<h3>📊 What to Monitor</h3>
+<div class="data-types">
+<div class="data-type-card"><div class="dt-icon">📈</div><h4>Model Drift</h4><p>Training data distribution vs production data. Has the input changed? Evidently AI, WhyLabs.</p></div>
+<div class="data-type-card"><div class="dt-icon">📊</div><h4>Data Drift</h4><p>Individual feature distributions. Age was 20-50 in training, now 70-95? Model may be inaccurate.</p></div>
+<div class="data-type-card"><div class="dt-icon">🎯</div><h4>Prediction Drift</h4><p>Is the model output distribution stable? Mean prediction shifted 20%? Something changed.</p></div>
+<div class="data-type-card"><div class="dt-icon">🕳️</div><h4>Null Rate</h4><p>Feature that was 0% null now 15% null? Data pipeline may be broken upstream.</p></div>
+<div class="data-type-card"><div class="dt-icon">⏱️</div><h4>Latency</h4><p>p95 latency doubled? Model serving may be overloaded or a new version is slower.</p></div>
+<div class="data-type-card"><div class="dt-icon">💰</div><h4>Cost</h4><p>API costs per prediction. If you're calling GPT-4 and costs spike, something is wrong.</p></div>
+</div>
+
+<h3>🔧 Evidently AI — Drift Detection in 3 Lines</h3>
+<div class="eq-box"><span style="color:var(--magenta)">from</span> evidently.report <span style="color:var(--magenta)">import</span> Report
+<span style="color:var(--magenta)">from</span> evidently.metrics <span style="color:var(--magenta)">import</span> DataDriftTable
+
+report = Report(metrics=[DataDriftTable()])
+report.run(reference_data=train_df, current_data=live_df)
+<span style="color:var(--text-muted)"># → Shows exactly which features drifted and by how much</span></div>
+
+<div class="quiz" id="quiz8"><div class="question">🧪 Model latency is fine, server uptime is 100%, but predictions are wrong. Why didn't monitoring catch it?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz8',this)">A. They monitored uptime and latency (infra metrics) but NOT model drift or prediction quality. The model was "healthy" by DevOps standards — broken by ML standards.</div>
+<div class="option" onclick="checkQuiz('quiz8',this)">B. 100% uptime means the model must be working correctly</div>
+<div class="option" onclick="checkQuiz('quiz8',this)">C. Monitoring can't detect model quality issues</div></div><div class="feedback" id="quiz8-fb"></div></div>
+</div></div>`;}},
+
+{ id:'4B.9', title:'The AI Testing Pyramid',
+  fact:'<strong>AI systems have 10 layers of testing.</strong> Most teams do layers 1-2. Production AI teams do all 10.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">4B.9</span> The AI Testing Pyramid — 10 Layers</h2>
+<p>Unlike traditional software's 3-layer pyramid (unit → integration → e2e), AI systems need <strong style="color:var(--cyan)">10 layers</strong>. Each layer catches failures the layers below miss.</p>
+
+<div class="eq-box"><span style="color:var(--text-muted)">┌─────────────────────────────────────────────────────┐</span>
+<span style="color:var(--text-muted)">│</span> <span style="color:var(--red)">10. Production Monitoring</span>   Drift, hallucinations, cost <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">│</span> <span style="color:var(--amber)"> 9. Human Evaluation / A-B Testing</span>                 <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">│</span> <span style="color:var(--cyan)"> 8. End-to-End AI Workflow Tests</span>                    <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">│</span> <span style="color:var(--violet)"> 7. Prompt Tests + Model Evaluation Tests</span>            <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">│</span> <span style="color:var(--magenta)"> 6. RAG / Retrieval Tests</span>                            <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">│</span> <span style="color:var(--green)"> 5. Embedding Regression Tests</span>                       <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">│</span> <span style="color:var(--amber)"> 4. Model Regression Tests</span>                           <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">│</span> <span style="color:var(--cyan)"> 3. Prompt Regression Tests</span>                          <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">│</span> <span style="color:var(--violet)"> 2. Data Validation + Feature Validation</span>              <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">│</span> <span style="color:var(--green)"> 1. Unit Tests + Integration Tests + API Tests</span>        <span style="color:var(--text-muted)">│</span>
+<span style="color:var(--text-muted)">└─────────────────────────────────────────────────────┘</span>
+
+<span style="color:var(--cyan)">For House Prices (classical ML):</span> Layers 1, 2, 4, 8, 10 are critical.
+<span style="color:var(--amber)">For LLM/RAG systems:</span> Add layers 3, 5, 6, 7. Prompts and embeddings
+need their own regression tests.</div>
+
+<h3>🔧 Key Frameworks Per Layer</h3>
+<div class="data-types two">
+<div class="data-type-card"><div class="dt-icon">🧪</div><h4>Prompt Testing</h4><p>Promptfoo, LangSmith, Braintrust. Test prompts like code — in CI.</p></div>
+<div class="data-type-card"><div class="dt-icon">🔍</div><h4>RAG Testing</h4><p>Ragas, TruLens, DeepEval. Is the retriever fetching the RIGHT document?</p></div>
+<div class="data-type-card"><div class="dt-icon">📊</div><h4>Model Eval</h4><p>DeepEval, OpenAI Evals. 500 golden questions run every deployment.</p></div>
+<div class="data-type-card"><div class="dt-icon">🔄</div><h4>CI/CD Pipeline</h4><p>GitHub Actions runs all layers on every commit. Gate deployment on test pass.</p></div>
+</div>
+
+<div class="quiz" id="quiz9"><div class="question">🧪 You upgrade from GPT-4 to GPT-5. The new model is faster and cheaper — but how do you know quality didn't drop?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz9',this)">A. Run a benchmark of 500+ golden questions through both models and compare accuracy, faithfulness, and hallucination rate before switching</div>
+<div class="option" onclick="checkQuiz('quiz9',this)">B. Deploy to 5% traffic and watch for user complaints</div>
+<div class="option" onclick="checkQuiz('quiz9',this)">C. Newer model = better model — no need to test</div></div><div class="feedback" id="quiz9-fb"></div></div>
+</div></div>`;}},
+
+{ id:'4B.10', title:'MLOps CI/CD Pipeline + Frameworks',
+  fact:'<strong>Every git commit should trigger a full regression pipeline.</strong> Unit → Data → Model → Eval → Deploy → Monitor. All automated.',
+  render(){return `<div class="slide"><div class="card">
+<h2><span class="num">4B.10</span> MLOps CI/CD Pipeline + Framework Cheat Sheet</h2>
+<p>Every commit flows through an <strong style="color:var(--cyan)">automated pipeline</strong>. If any gate fails, deployment is blocked. This is how FAANG ships AI safely.</p>
+
+<h3>⚡ The Full CI/CD Flow</h3>
+<div class="eq-box"><span style="color:var(--cyan)">Commit →</span>
+  Unit Tests → Data Validation → Feature Validation →
+  Train Model → Evaluate Model → Compare with Previous →
+  <span style="color:var(--amber)">[For LLMs: Prompt Eval → RAG Eval → Latency Test → Security Scan]</span> →
+  Deploy Staging → Smoke Tests → Human Approval →
+  Production → Monitor Drift</div>
+
+<h3>🧰 Framework Cheat Sheet (Interview Ready)</h3>
+<div class="compare-grid col2">
+<div class="compare-card"><h4 style="color:var(--cyan)">🧪 Testing</h4><ul><li><strong>pytest</strong> — standard Python testing</li><li><strong>Great Expectations</strong> — data validation</li><li><strong>Pandera</strong> — schema validation</li><li><strong>Promptfoo</strong> — prompt testing in CI</li><li><strong>DeepEval</strong> — LLM evaluation</li><li><strong>Ragas</strong> — RAG testing</li></ul></div>
+<div class="compare-card"><h4 style="color:var(--green)">📊 Tracking & Monitoring</h4><ul><li><strong>MLflow</strong> — experiment tracking + registry</li><li><strong>W&B</strong> — experiment tracking</li><li><strong>Evidently AI</strong> — drift detection</li><li><strong>WhyLabs</strong> — AI observability</li><li><strong>LangSmith</strong> — LLM trace debugging</li><li><strong>Arize AI</strong> — model monitoring</li></ul></div>
+</div>
+
+<h3>✅ Phase 4B Complete — What You've Learned</h3>
+<div class="data-types">
+<div class="data-type-card"><div class="dt-icon">🔍</div><h4>3-Pass Review</h4><p>Works? → Readable? → Safe? Every PR, every time.</p></div>
+<div class="data-type-card"><div class="dt-icon">✅</div><h4>3 Test Types</h4><p>Happy path, edge cases, failure modes. Most bugs hide in the third.</p></div>
+<div class="data-type-card"><div class="dt-icon">📊</div><h4>4 Test Layers</h4><p>Data → Model → Pipeline → Production. Skip one, blind spot.</p></div>
+<div class="data-type-card"><div class="dt-icon">🔺</div><h4>10-Layer Pyramid</h4><p>Unit tests to production monitoring. AI needs all 10.</p></div>
+<div class="data-type-card"><div class="dt-icon">⚡</div><h4>CI/CD Pipeline</h4><p>Every commit → full regression → gate on pass → deploy safely.</p></div>
+<div class="data-type-card"><div class="dt-icon">🧰</div><h4>Framework Stack</h4><p>pytest + Great Expectations + MLflow + Evidently AI + Promptfoo.</p></div>
+</div>
+
+<div class="quiz" id="quiz10"><div class="question">🧪 In an interview, they ask: "What's different about testing AI vs regular software?" Which answer is strongest?</div><div class="options">
+<div class="option" data-correct="true" onclick="checkQuiz('quiz10',this)">A. "Three things. AI outputs are non-deterministic — you test ranges and invariants, not exact values. The data IS part of the system — you test data as rigorously as code. And AI degrades silently over time — production monitoring for drift is mandatory, not optional."</div>
+<div class="option" onclick="checkQuiz('quiz10',this)">B. "AI needs more test cases because models are more complex than regular code"</div>
+<div class="option" onclick="checkQuiz('quiz10',this)">C. "You can't really test AI — you just deploy and hope for the best"</div></div><div class="feedback" id="quiz10-fb"></div></div>
+</div></div>`;}}
+];
+
+window.checkQuiz=function(qid,el){
+  const q=document.getElementById(qid); if(q.dataset.answered==='true')return;
+  q.querySelectorAll('.option').forEach(o=>{if(o.dataset.correct==='true')o.classList.add('correct');});
+  if(el.dataset.correct!=='true')el.classList.add('wrong');
+  const fb=document.getElementById(qid+'-fb'),ok=el.dataset.correct==='true';
+  fb.className='feedback show '+(ok?'correct':'wrong');
+  fb.textContent=ok?'✅ Correct! Well done.':'❌ Not quite. The correct answer is highlighted in green.';
+  q.dataset.answered='true';
+};
+let currentSlide=0; const visitedSlides=new Set([0]);
+function renderSlide(i){currentSlide=i; visitedSlides.add(i); document.getElementById('slideContainer').innerHTML=slides[i].render(); updateDots(); updateChips(); document.getElementById('funFactText').innerHTML='<strong>'+slides[i].id+':</strong> '+slides[i].fact; document.getElementById('stepLabel').textContent=(i+1)+'/'+slides.length; document.getElementById('prevBtn').disabled=i===0; const nb=document.getElementById('nextBtn'); if(i===slides.length-1){nb.textContent='✓ Complete';nb.style.background='var(--green-bg)';nb.style.borderColor='var(--green)';nb.style.color='var(--green)';} else {nb.textContent='Next →';nb.style.background='var(--cyan-bg)';nb.style.borderColor='var(--cyan)';nb.style.color='var(--cyan)';} document.getElementById('slideContainer').scrollIntoView({behavior:'smooth',block:'start'});}
+function goTo(i){if(i>=0&&i<slides.length)renderSlide(i);}
+function updateDots(){document.getElementById('stepDots').innerHTML=slides.map((s,i)=>'<div class="step-dot '+(i===currentSlide?'active':visitedSlides.has(i)?'done':'')+'" onclick="goTo('+i+')" title="'+s.id+': '+s.title+'"></div>').join('');}
+function updateChips(){document.getElementById('topicChips').innerHTML=slides.map((s,i)=>'<span class="topic-chip '+(i===currentSlide?'current':visitedSlides.has(i)?'visited':'')+'" onclick="goTo('+i+')">'+s.id+' '+s.title+'</span>').join('');}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'&&currentSlide<slides.length-1)goTo(currentSlide+1); if(e.key==='ArrowLeft'&&currentSlide>0)goTo(currentSlide-1);});
+renderSlide(0);
+</script>
+</body>
+</html>
