@@ -293,7 +293,12 @@
 | 6G.9 | AI Testing Pyramid — 10 layers from unit to production | Pyramid reference | ✅ |
 | 6G.10 | MLOps CI/CD Pipeline + Framework Cheat Sheet | CI/CD flow + tools table | ✅ |
 
-> 🧪 **Practice code:** Runnable pytest examples in [`Phase_4B_AI_Testing/test_practice/`](Phase_4B_AI_Testing/test_practice/) — ready to use in Phase 5/6.
+> 🧪 **Practice code:** 5 runnable test files in [`Phase_4B_AI_Testing/test_practice/`](Phase_4B_AI_Testing/test_practice/):
+> - `test_data_quality.py` — schema, ranges, leakage (Layer 1)
+> - `test_model_behavior.py` — shape, NaN, directional, stability (Layer 2)
+> - `test_pipeline_e2e.py` — E2E flow, error paths, retry (Layer 3)
+> - `monitor_drift.py` — PSI drift detection (Layer 4)
+> - `test_enterprise_pipeline.py` — Unit tests for Phase 6 loaders, chunkers, generators, evaluators, exporters
 
 ---
 
