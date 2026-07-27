@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MLOps Pipeline Visualizer — End-to-End Learning Journey</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f8f9fc;--card:#fff;--border:#dde0e6;--text:#1a1d23;--tdim:#4a4f5b;--tmut:#8b909b;--violet:#5b3aa8;--vbg:#f3effc;--green:#1a6e34;--amber:#b87000;--red:#c62828;--cyan:#007a99;--magenta:#9e2a6b;--blue:#2979ff;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;overflow-x:hidden;}
+.app{max-width:1000px;margin:0 auto;padding:1.5rem;}
+.header{text-align:center;padding:1.5rem 0 1rem;}
+.header .title-row{display:flex;align-items:center;justify-content:center;gap:0.5rem;margin-bottom:0.5rem;}
+.header .mega-emoji{font-size:3rem;animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.header h1{font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;color:var(--violet);}
+.header .subtitle{color:var(--tdim);font-size:0.9rem;margin-top:0.2rem;}
+.tabs{display:flex;gap:0.3rem;justify-content:center;margin:1rem 0;flex-wrap:wrap;}
+.tab{font-family:'Space Grotesk',sans-serif;font-size:0.62rem;font-weight:600;padding:0.5em 1em;border:2px solid var(--border);border-radius:100px;background:var(--card);color:var(--tmut);cursor:pointer;transition:0.15s;display:flex;align-items:center;gap:0.3em;}
+.tab:hover{border-color:var(--violet);color:var(--violet);}
+.tab.active{background:var(--violet);border-color:var(--violet);color:#fff;}
+.tab .tb-emoji{font-size:0.9rem;}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem;margin:1rem 0;}
+.metric{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;text-align:center;}
+.metric .val{font-family:'Space Grotesk',sans-serif;font-size:1.3rem;font-weight:700;}
+.metric .lbl{font-size:0.6rem;color:var(--tmut);margin-top:0.15rem;text-transform:uppercase;letter-spacing:0.06em;}
+.pipeline-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin:1rem 0;}
+.pipeline{display:flex;align-items:flex-start;justify-content:center;gap:0;flex-wrap:wrap;}
+.pipe-stage{text-align:center;padding:1rem 1rem;border-radius:14px;cursor:pointer;transition:0.2s;min-width:110px;max-width:140px;border:2px solid var(--border);background:rgba(255,255,255,0.5);}
+.pipe-stage:hover{border-color:var(--violet);transform:translateY(-3px);box-shadow:0 6px 24px rgba(91,58,168,0.1);}
+.pipe-stage.active-stage{border-color:var(--violet);background:var(--vbg);box-shadow:0 0 0 4px rgba(91,58,168,0.08);}
+.pipe-stage .st-emoji{font-size:1.8rem;display:block;margin-bottom:0.3rem;}
+.pipe-stage .st-name{font-family:'Space Grotesk',sans-serif;font-size:0.65rem;font-weight:700;text-transform:uppercase;}
+.pipe-stage .st-desc{font-size:0.55rem;color:var(--tdim);margin-top:0.2rem;line-height:1.3;}
+.pipe-arrow{display:flex;align-items:center;padding:0 0.3rem;color:var(--violet);font-size:1.5rem;margin-top:1rem;animation:pulse 1.5s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:0.3}50%{opacity:1}}
+.substeps{background:var(--vbg);border:1px solid rgba(91,58,168,0.2);border-radius:12px;padding:1.25rem;margin:1.25rem 0 0;display:none;}
+.substeps.show{display:block;animation:slideDown 0.3s ease;}
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.substeps h4{font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin-bottom:0.75rem;}
+.substep-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;}
+.substep{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:0.75rem;}
+.substep .ss-num{font-family:'Space Grotesk',sans-serif;font-size:0.55rem;color:var(--violet);font-weight:700;}
+.substep .ss-title{font-weight:600;font-size:0.75rem;margin:0.2rem 0;}
+.substep .ss-code{font-family:monospace;font-size:0.6rem;color:var(--tdim);background:rgba(0,0,0,0.03);padding:0.3rem 0.5rem;border-radius:4px;margin-top:0.3rem;white-space:pre-wrap;max-height:200px;overflow-y:auto;}
+.substep .ss-tag{display:inline-block;font-size:0.5rem;padding:1px 6px;border-radius:100px;margin-top:0.3rem;}
+.ss-tag.design{background:var(--vbg);color:var(--violet);}
+.ss-tag.data{background:rgba(0,122,153,0.1);color:var(--cyan);}
+.ss-tag.features{background:rgba(158,42,107,0.1);color:var(--magenta);}
+.ss-tag.baseline{background:rgba(41,121,255,0.1);color:var(--blue);}
+.ss-tag.pipeline{background:rgba(26,110,52,0.1);color:var(--green);}
+.ss-tag.mlops{background:rgba(184,112,0,0.1);color:var(--amber);}
+.callout{background:var(--vbg);border:1px solid rgba(91,58,168,0.15);border-radius:10px;padding:0.6rem 1rem;margin:0.75rem 0;font-size:0.78rem;text-align:center;}
+.banner{display:flex;align-items:center;justify-content:center;gap:0.75rem;padding:0.75rem 1.5rem;background:var(--card);border:1px solid var(--border);border-radius:12px;margin:0.75rem 0;flex-wrap:wrap;}
+.banner .bi{text-align:center;}
+.banner .bv{font-family:'Space Grotesk',sans-serif;font-size:1.1rem;font-weight:700;}
+.banner .bl{font-size:0.55rem;color:var(--tmut);text-transform:uppercase;letter-spacing:0.06em;}
+.banner .bd{width:1px;height:30px;background:var(--border);}
+@media(max-width:768px){.pipeline{flex-direction:column;align-items:center}.pipe-arrow{transform:rotate(90deg);margin:0}.metrics{grid-template-columns:1fr 1fr}.substep-grid{grid-template-columns:1fr}.banner{gap:0.5rem}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="header">
+  <div class="title-row"><span class="mega-emoji">🔗</span><h1>MLOps Pipeline Visualizer</h1></div>
+  <p class="subtitle">Click any stage, then explore its steps. The full journey — Think → Build → Scale.</p>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab(0)"><span class="tb-emoji">🧠</span> Phase 1-4: Think</button>
+  <button class="tab" onclick="switchTab(1)"><span class="tb-emoji">🏠</span> Phase 5: Build</button>
+  <button class="tab" onclick="switchTab(2)"><span class="tb-emoji">🏗️</span> Phase 6: Enterprise</button>
+  <button class="tab" onclick="switchTab(3)"><span class="tb-emoji">🧪</span> Phase 6G: Testing</button>
+  <button class="tab" onclick="switchTab(4)"><span class="tb-emoji">📈</span> Phase 7: Monitor</button>
+  <button class="tab" onclick="switchTab(5)"><span class="tb-emoji">🏆</span> Phase 8: Capstone</button>
+</div>
+
+<div id="app"></div>
+</div>
+
+<script>
+const tabs = [
+{ // 0: PHASE 1-4 THINK
+  name:'🧠 Phases 1-4: Think Before You Build', phases:'System Design → Data → Features → Baseline',
+  metrics:[
+    {val:'4 Phases',lbl:'System Design First',color:'var(--violet)'},
+    {val:'40 Steps',lbl:'Total Substeps',color:'var(--amber)'},
+    {val:'House Prices',lbl:'Running Example',color:'var(--cyan)'},
+    {val:'ZenML+MLflow',lbl:'Core Stack',color:'var(--green)'},
+  ],
+  banner:[
+    {val:'Phase 1',lbl:'System Design',color:'var(--violet)'},
+    {val:'Phase 2',lbl:'Data Strategy',color:'var(--cyan)'},
+    {val:'Phase 3',lbl:'Features',color:'var(--magenta)'},
+    {val:'Phase 4',lbl:'Baseline',color:'var(--blue)'},
+  ],
+  stages:[
+    {emoji:'📐',name:'SYSTEM DESIGN',desc:'Phase 1: Frame the problem',substeps:[
+      {n:1,title:'6-Word Test — Does this need ML?',tag:'design',code:'Learn, Complex, Patterns, Existing data, Predictions, Unseen data\n→ House Prices PASSES all 6. ML is justified.'},
+      {n:2,title:'Problem Framing — One precise sentence',tag:'design',code:'Given 82 property features → Predict SalePrice (USD)\n→ For real estate agents → At <500ms latency\n→ To reduce negotiation time by 30%'},
+      {n:3,title:'Metrics Ladder — Business → Model',tag:'design',code:'Business: Revenue from faster sales\nProduct: % predictions within 5% of actual\nModel: R² > 0.85\nData: <5% nulls, PSI < 0.1'},
+      {n:4,title:'North Star + Guardrails',tag:'design',code:'⭐ North Star: R² > 0.85\n🛡 Guardrail 1: RMSE < $25,000\n🛡 Guardrail 2: Overfit Δ < 0.05\n🛡 Guardrail 3: MAE < $18,000'},
+      {n:5,title:'Failure Mode Analysis',tag:'design',code:'5 ways it can fail:\n1. Outlier contamination\n2. Data drift (market shift)\n3. Missing value catastrophe\n4. Train/serve skew\n5. Unicorn listings (unusual properties)'},
+      {n:6,title:'ML Proposal — 1-page synthesis',tag:'design',code:'Problem → Solution → Value → Metrics → Risks\n→ Constraints → Rollback → Tech Stack → Next Steps'},
+    ]},
+    {emoji:'📊',name:'DATA STRATEGY',desc:'Phase 2: Source, sample, label',substeps:[
+      {n:1,title:'Data Source Inventory',tag:'data',code:'Ames Housing Dataset: 2,930 rows, 82 columns\nSource: Public property records (Kaggle)\nBiases: Geographic (only Ames, IA), Temporal (2006-2010)'},
+      {n:2,title:'Sampling Strategy',tag:'data',code:'Simple Random Split (80/20)\nHouses are independent — random is correct.\n(For time-series: use time-based. For users: entity-based.)'},
+      {n:3,title:'Label Strategy',tag:'data',code:'EXISTING RECORDS — ideal scenario.\nSalePrice is recorded in public records.\nFree, accurate, complete. No labeling needed.'},
+      {n:4,title:'Data Versioning — DVC',tag:'data',code:'dvc init → dvc add AmesHousing.csv\n→ git commit .dvc file → dvc push\nNow: anyone can dvc pull to get exact same data.'},
+    ]},
+    {emoji:'🔧',name:'FEATURES',desc:'Phase 3: Engineer & pipeline',substeps:[
+      {n:1,title:'Feature Profiling',tag:'features',code:'38 numerical + 43 categorical.\nSalePrice: right-skewed (1.88) → log transform.\nOverallQual: strongest predictor (corr=0.80).\nPoolQC: 99.7% null → DROP.'},
+      {n:2,title:'Handle Missing Values',tag:'features',code:'DROP: PoolQC(99.7%), Alley(93%), Fence(80%)\nIMPUTE median: LotFrontage(17%)\nFILL 0: GarageYrBlt(5%) — null means "no garage"'},
+      {n:3,title:'Scaling & Encoding',tag:'features',code:'StandardScaler on 38 numerical columns.\nOneHotEncode 37 categorical (all <50 unique).\nOrdinalEncode 6 quality-rating features.'},
+      {n:4,title:'Train/Serve Parity — THE RULE',tag:'features',code:'sklearn.Pipeline saves scaler+encoder+model TOGETHER.\nNEVER .fit() in production.\nServing uses .transform() with training-fitted stats.'},
+    ]},
+    {emoji:'🚀',name:'BASELINE',desc:'Phase 4: Ship simple first',substeps:[
+      {n:1,title:'v0: Rules Baseline',tag:'baseline',code:'Price = $150 × GrLivArea\nR² = 0.50 | Time to build: 5 minutes\nIf ML can\'t beat this, you don\'t need ML.'},
+      {n:2,title:'v1: Simple ML Model',tag:'baseline',code:'LinearRegression on 3 features:\nGrLivArea + OverallQual + GarageCars\nR² = 0.78 | +56% lift over v0'},
+      {n:3,title:'Compare v0 vs v1',tag:'baseline',code:'v0 (rules): R²=0.50, RMSE=$55K\nv1 (ML):    R²=0.78, RMSE=$37K\nLift: +56%. ML IS justified. Proceed to Phase 5.'},
+      {n:4,title:'Ship Gradually',tag:'baseline',code:'Week 1-2: SHADOW (0% traffic)\nWeek 3: 5% → Week 4: 25% → Week 5: 100%\nRollback trigger: R² < 0.75 on live data'},
+    ]},
+  ]
+},
+{ // 1: PHASE 5 BUILD
+  name:'🏠 Phase 5: House Prices Predictor', phases:'ZenML + MLflow + Design Patterns',
+  metrics:[
+    {val:'ZenML',lbl:'Pipeline Orchestrator',color:'var(--violet)'},
+    {val:'MLflow',lbl:'Experiment Tracking',color:'var(--cyan)'},
+    {val:'82→250',lbl:'Features After Encoding',color:'var(--amber)'},
+    {val:'R²>0.85',lbl:'Target Accuracy',color:'var(--green)'},
+  ],
+  banner:[
+    {val:'Factory',lbl:'Data Ingestion',color:'var(--violet)'},
+    {val:'Strategy',lbl:'Processing',color:'var(--cyan)'},
+    {val:'Template',lbl:'EDA Analysis',color:'var(--amber)'},
+    {val:'Pipeline',lbl:'ZenML Steps',color:'var(--green)'},
+  ],
+  stages:[
+    {emoji:'📥',name:'INGEST',desc:'Factory Pattern',substeps:[
+      {n:1,title:'DataIngestor (Abstract Class)',tag:'pipeline',code:'class DataIngestor(ABC):\n    @abstractmethod\n    def ingest(self, path) -> pd.DataFrame: ...'},
+      {n:2,title:'ZipDataIngestor (Concrete)',tag:'pipeline',code:'Verify ZIP → extract → find CSV → return DataFrame.\nError handling: wrong file type → clear error message.'},
+      {n:3,title:'DataIngestorFactory',tag:'pipeline',code:'Factory.get_ingestor(".zip") → ZipDataIngestor\nFactory.get_ingestor(".csv") → CSVIngestor\nAuto-detects file extension, routes to correct ingestor.'},
+    ]},
+    {emoji:'🔍',name:'EDA',desc:'Strategy + Template Pattern',substeps:[
+      {n:1,title:'Data Inspection (Strategy)',tag:'pipeline',code:'DataInspectionStrategy → DataTypes OR SummaryStats.\n82 columns, skewed SalePrice, outliers in LotArea.'},
+      {n:2,title:'Missing Values (Template)',tag:'pipeline',code:'MissingValuesAnalysisTemplate:\n1. identify_missing_values()\n2. visualize_missing_values() → heatmap'},
+      {n:3,title:'Univariate + Bivariate (Strategy)',tag:'pipeline',code:'Histograms, KDE for numerical. Count plots for categorical.\nScatter: GrLivArea vs SalePrice.\nBox plot: OverallQual vs SalePrice.'},
+      {n:4,title:'Multivariate (Template)',tag:'pipeline',code:'Correlation heatmap + pair plot.\nOverallQual(0.80), GrLivArea(0.71), TotalBsmtSF(0.63)\n→ strongest predictors identified.'},
+    ]},
+    {emoji:'⚙️',name:'PROCESS',desc:'Strategy Pattern × 4',substeps:[
+      {n:1,title:'MissingValueHandler',tag:'pipeline',code:'Strategy: DropMissingValues OR FillMissingValues.\nFill: mean / median / mode / constant.\nContext class delegates to chosen strategy.'},
+      {n:2,title:'FeatureEngineering',tag:'pipeline',code:'Strategies: LogTransformation, StandardScaling,\nMinMaxScaling, OneHotEncoding.\nApplied to SalePrice + GrLivArea (log), rest (scale).'},
+      {n:3,title:'OutlierDetector',tag:'pipeline',code:'Strategies: ZScoreDetection, IQRDetection.\nZ-score threshold=3 → remove extreme outliers.\nOption: capping instead of removal.'},
+      {n:4,title:'DataSplitter',tag:'pipeline',code:'SimpleTrainTestSplit (80/20).\nReturns X_train, X_test, y_train, y_test.\nHouses are independent → random split is correct.'},
+    ]},
+    {emoji:'🧠',name:'TRAIN',desc:'MLflow Tracking',substeps:[
+      {n:1,title:'ModelBuilding (Strategy)',tag:'mlops',code:'LinearRegressionStrategy (start simple).\nColumnTransformer: num(SimpleImputer mean) +\ncat(SimpleImputer mode + OneHotEncoder).'},
+      {n:2,title:'MLflow Autolog',tag:'mlops',code:'mlflow.sklearn.autolog()\nLogs: params, metrics (R², RMSE), model artifact.\nEvery run tracked. Compare experiments in UI.'},
+      {n:3,title:'ModelEvaluator (Strategy)',tag:'mlops',code:'RegressionModelEvaluationStrategy.\nPreprocesses X_test with SAME pipeline.\nReturns: MSE, R², RMSE, MAE.'},
+    ]},
+    {emoji:'🚀',name:'DEPLOY',desc:'Continuous Deployment',substeps:[
+      {n:1,title:'Deployment Pipeline',tag:'mlops',code:'continuous_deployment_pipeline():\nTraining pipeline + mlflow_model_deployer_step.\nAuto-deploys if model improves.'},
+      {n:2,title:'Inference Pipeline',tag:'mlops',code:'dynamic_importer → prediction_service_loader → predictor.\nLoads test data, finds deployed model, returns predictions.'},
+      {n:3,title:'Sample Predict',tag:'mlops',code:'POST http://127.0.0.1:8000/invocations\nBody: {"GrLivArea": 1650, ...}\nResponse: {"predicted_price": 247500}'},
+    ]},
+  ]
+},
+{ // 2: PHASE 6 ENTERPRISE
+  name:'🏗️ Phase 6: Enterprise Training Data Pipeline', phases:'Async + AI Generation + Quality + Export',
+  metrics:[
+    {val:'Async',lbl:'Document Loading',color:'var(--violet)'},
+    {val:'AI Gen',lbl:'QA + Classify + Summarize',color:'var(--cyan)'},
+    {val:'Quality',lbl:'Gate Before Export',color:'var(--amber)'},
+    {val:'Streamlit',lbl:'Dashboard',color:'var(--green)'},
+  ],
+  banner:[
+    {val:'Load',lbl:'PDF/TXT/URL',color:'var(--violet)'},
+    {val:'Chunk',lbl:'Smart Split',color:'var(--cyan)'},
+    {val:'Generate',lbl:'AI Creates',color:'var(--amber)'},
+    {val:'Export',lbl:'JSON/CSV/Parquet',color:'var(--green)'},
+  ],
+  stages:[
+    {emoji:'📥',name:'LOAD',desc:'Unified Loader (Factory)',substeps:[
+      {n:1,title:'BaseLoader (Abstract)',tag:'pipeline',code:'class BaseLoader(ABC):\n    load_single(), load_multiple(), load_stream()\nAll loaders follow this interface.'},
+      {n:2,title:'DocumentLoader (TXT, MD, CSV)',tag:'pipeline',code:'Handles TXT, Markdown, JSON, CSV, HTML.\nAuto-detect encoding. Returns Document objects.'},
+      {n:3,title:'PDFLoader (PyPDF2/pdfplumber)',tag:'pipeline',code:'Extracts text from PDFs.\nHandles multi-page, tables, metadata.\nReturns Document with page-level chunk info.'},
+      {n:4,title:'WebLoader (BeautifulSoup/Decodo)',tag:'pipeline',code:'Scrapes URLs. Decodo API for JS-rendered pages.\nFallback to BeautifulSoup. Respects robots.txt.'},
+      {n:5,title:'UnifiedLoader (Auto-detect)',tag:'pipeline',code:'UnifiedLoader.load("file.pdf") → PDFLoader\nUnifiedLoader.load("site.com") → WebLoader\nAuto-routes to correct specialist based on source.'},
+    ]},
+    {emoji:'✂️',name:'PROCESS',desc:'Clean + Smart Chunk',substeps:[
+      {n:1,title:'Text Preprocessor',tag:'pipeline',code:'Remove excessive whitespace, short lines, special chars.\nNormalize Unicode. Strip headers/footers.\nOutput: clean text ready for chunking.'},
+      {n:2,title:'Smart Chunking',tag:'pipeline',code:'Split into chunks of ~1000 tokens.\n200-token overlap preserves context.\nTrack: token count, chunk index, document ID.'},
+      {n:3,title:'TextChunk Objects',tag:'pipeline',code:'TextChunk: content, document_id, chunk_index,\nstart_index, end_index, token_count.\nStructured output ready for AI generation.'},
+    ]},
+    {emoji:'🤖',name:'GENERATE',desc:'AI Content Creation',substeps:[
+      {n:1,title:'QAGenerator',tag:'mlops',code:'Chunk → Q&A pairs via AI.\nPrompt: "Generate 5 Q&A from this text."\nOutput: TrainingExample objects with question + answer.'},
+      {n:2,title:'ClassificationGenerator',tag:'mlops',code:'Chunk → labeled examples.\nPrompt: "Classify this content into categories."\nOutput: TrainingExample with label + confidence.'},
+      {n:3,title:'SummarizationGenerator',tag:'mlops',code:'Chunk → summary pairs.\nPrompt: "Summarize this text in 3 sentences."\nOutput: TrainingExample with long + short text.'},
+    ]},
+    {emoji:'✅',name:'EVALUATE',desc:'Quality Gates',substeps:[
+      {n:1,title:'QualityEvaluator',tag:'mlops',code:'Checks: toxicity, bias, diversity, coherence, relevance.\nEach dimension scored 0-1.\nOverall = weighted average of all dimensions.'},
+      {n:2,title:'Quality Gate',tag:'mlops',code:'Overall score < 0.7 → REJECT.\nAuto-filter: too short, gibberish, off-topic.\nOnly high-quality examples enter the dataset.'},
+    ]},
+    {emoji:'📤',name:'EXPORT',desc:'Multi-Format Output',substeps:[
+      {n:1,title:'DatasetExporter',tag:'mlops',code:'Export to JSON, CSV, Parquet.\nIncludes metadata: source, quality, generation params.\nHuggingFace-compatible format.'},
+      {n:2,title:'Streamlit Dashboard',tag:'mlops',code:'4 tabs: Dashboard, Documents, Generate, Analytics.\nReal-time: docs loaded, examples generated, quality, cost.'},
+    ]},
+  ]
+},
+{ // 3: PHASE 6G TESTING
+  name:'🧪 Phase 6G: AI/ML Testing & QA', phases:'4 Layers + 10-Level Pyramid',
+  metrics:[
+    {val:'4 Layers',lbl:'Data→Model→Pipeline→Prod',color:'var(--violet)'},
+    {val:'10 Levels',lbl:'AI Testing Pyramid',color:'var(--cyan)'},
+    {val:'5 Files',lbl:'Runnable Practice Tests',color:'var(--amber)'},
+    {val:'3-Pass',lbl:'PR Review Method',color:'var(--green)'},
+  ],
+  banner:[
+    {val:'Data',lbl:'Layer 1',color:'var(--violet)'},
+    {val:'Model',lbl:'Layer 2',color:'var(--cyan)'},
+    {val:'Pipeline',lbl:'Layer 3',color:'var(--amber)'},
+    {val:'Production',lbl:'Layer 4',color:'var(--green)'},
+  ],
+  stages:[
+    {emoji:'🔍',name:'REVIEW',desc:'3-Pass PR Method',substeps:[
+      {n:1,title:'Pass 1: Does it work?',tag:'design',code:'Logic, edge cases, null handling, test coverage.\n"What if this list is empty?"\n"What if the input is negative?"'},
+      {n:2,title:'Pass 2: Can I read it?',tag:'design',code:'Naming, structure, duplication, comments.\n"Would someone new understand this in 6 months?"\n"This function does 3 things — split it."'},
+      {n:3,title:'Pass 3: Is it safe?',tag:'design',code:'Secrets, error handling, auth, data leaks.\n"API key is hardcoded — use env var."\n"What if this external call times out?"'},
+    ]},
+    {emoji:'📊',name:'DATA TESTS',desc:'Layer 1: Validate Before Training',substeps:[
+      {n:1,title:'Schema Validation',tag:'data',code:'Pandera: Check column types, ranges, valid values.\nGrLivArea: int between 300-6000.\nSalePrice: int between 12000-800000.\nIf fail → DON\'T train. Fix data first.'},
+      {n:2,title:'Leakage Detection',tag:'data',code:'Forbidden columns: PricePerSqft, SalePrice_Normalized.\nAny feature derived FROM the target = leakage.\nAblation test: drop each feature, check R² drop.'},
+      {n:3,title:'Null Rate Monitor',tag:'data',code:'Critical columns (GrLivArea, SalePrice): MUST be 0% null.\nIf suddenly 10% null → alert, investigate upstream.'},
+    ]},
+    {emoji:'🤖',name:'MODEL TESTS',desc:'Layer 2: Beyond Accuracy',substeps:[
+      {n:1,title:'Behavioral Tests',tag:'pipeline',code:'test_output_shape: 10 inputs → 10 outputs.\ntest_never_nan: predictions always valid numbers.\ntest_always_positive: price > 0 always.'},
+      {n:2,title:'Directional Test',tag:'pipeline',code:'test_bigger_house_higher_price:\nBig house (3000sqft, Qual=9, Cars=3)\nMUST predict higher than\nSmall house (800sqft, Qual=3, Cars=0).'},
+      {n:3,title:'Baseline Test',tag:'pipeline',code:'test_beats_baseline: R² > 0.50.\nIf ML can\'t beat $/sqft rule, don\'t deploy.'},
+    ]},
+    {emoji:'🔗',name:'PIPELINE',desc:'Layer 3: E2E + Error Paths',substeps:[
+      {n:1,title:'End-to-End Test',tag:'mlops',code:'test_full_pipeline_success:\nValid house JSON → status="success" → price in range.\nFull flow tested: ingest → process → predict.'},
+      {n:2,title:'Error Path Tests',tag:'mlops',code:'Malformed JSON → status="error", code=INVALID_JSON.\nMissing required field → specific error per field.\nNegative sqft → rejected with clear message.'},
+      {n:3,title:'Retry Logic',tag:'mlops',code:'Simulate API failure on first attempt.\nVerify retry succeeds on second attempt.\nMax retries exceeded → clear error, not infinite loop.'},
+    ]},
+    {emoji:'📈',name:'MONITOR',desc:'Layer 4: Production Drift',substeps:[
+      {n:1,title:'PSI Drift Detection',tag:'mlops',code:'Evidently AI: compare training vs live distributions.\nPSI < 0.1: stable. 0.1-0.2: investigate. > 0.2: retrain.\nRun weekly on top 10 features.'},
+      {n:2,title:'Null Rate Alert',tag:'mlops',code:'Monitor null % over time.\nAlert on CHANGE from baseline, not absolute value.\nPoolQC 99.7% null → normal. GrLivArea 3% null → CRISIS.'},
+    ]},
+  ]
+},
+{ // 4: PHASE 7 MONITOR
+  name:'📈 Phase 7: Monitoring & Production Ops', phases:'Drift → Retrain → Deploy → Repeat',
+  metrics:[
+    {val:'PSI',lbl:'Drift Metric',color:'var(--violet)'},
+    {val:'Weekly',lbl:'Retrain Cadence',color:'var(--cyan)'},
+    {val:'Canary',lbl:'Deployment Strategy',color:'var(--amber)'},
+    {val:'Evidently AI',lbl:'Monitoring Tool',color:'var(--green)'},
+  ],
+  banner:[
+    {val:'Detect',lbl:'Drift Alerts',color:'var(--violet)'},
+    {val:'Retrain',lbl:'Auto-Trigger',color:'var(--cyan)'},
+    {val:'Shadow',lbl:'Safe Deploy',color:'var(--amber)'},
+    {val:'Registry',lbl:'Model Versions',color:'var(--green)'},
+  ],
+  stages:[
+    {emoji:'📊',name:'MONITOR',desc:'Drift Detection',substeps:[
+      {n:1,title:'Data Drift (PSI)',tag:'mlops',code:'PSI on top 10 features every week.\nPSI > 0.1 → alert. PSI > 0.2 → retrain.\nGrLivArea shifted? Market may have changed.'},
+      {n:2,title:'Prediction Drift',tag:'mlops',code:'Is prediction distribution stable?\nMean shifted 20%? p95 spiked?\nSomething changed — investigate.'},
+      {n:3,title:'Null Rate Tracking',tag:'mlops',code:'Track null % per feature over time.\nAlert on CHANGE. Not on absolute value.\nGrLivArea should NEVER have nulls.'},
+    ]},
+    {emoji:'🔄',name:'RETRAIN',desc:'Auto-Trigger Pipeline',substeps:[
+      {n:1,title:'Scheduled Retrain',tag:'mlops',code:'Monthly retraining (housing market shifts slowly).\nAlso: after 500 new (prediction, actual) pairs.\nAlso: when PSI > 0.2 on any key feature.'},
+      {n:2,title:'Performance-Triggered',tag:'mlops',code:'R² on recent live data < 0.75 for 3 consecutive days\n→ auto-trigger retraining pipeline.\n→ compare new vs old before deploying.'},
+    ]},
+    {emoji:'🚀',name:'DEPLOY',desc:'Safe Rollout',substeps:[
+      {n:1,title:'Shadow Mode',tag:'mlops',code:'New model runs silently alongside old.\nPredictions logged and compared — NOT shown to users.\n2 weeks of healthy comparison → switch 5% traffic.'},
+      {n:2,title:'Canary Deployment',tag:'mlops',code:'5% traffic → monitor → 25% → monitor → 100%.\nRollback trigger: guardrail violation.\nMLflow registry: instant version switch.'},
+    ]},
+  ]
+},
+{ // 5: PHASE 8 CAPSTONE
+  name:'🏆 Phase 8: Capstone — Customer Churn', phases:'End-to-End From Design to Deployment',
+  metrics:[
+    {val:'All Phases',lbl:'Combined',color:'var(--violet)'},
+    {val:'Design→Deploy',lbl:'Full Cycle',color:'var(--cyan)'},
+    {val:'XGBoost',lbl:'Advanced Model',color:'var(--amber)'},
+    {val:'Portfolio',lbl:'Ready',color:'var(--green)'},
+  ],
+  banner:[
+    {val:'Design',lbl:'Problem → Metrics',color:'var(--violet)'},
+    {val:'Data',lbl:'SQL → DVC',color:'var(--cyan)'},
+    {val:'Features',lbl:'Pipeline',color:'var(--amber)'},
+    {val:'Model',lbl:'XGBoost',color:'var(--green)'},
+    {val:'Deploy',lbl:'MLflow+Streamlit',color:'var(--magenta)'},
+  ],
+  stages:[
+    {emoji:'📐',name:'DESIGN',desc:'System Design Doc',substeps:[
+      {n:1,title:'Problem: Customer Churn',tag:'design',code:'Given user behavior over 90 days.\nPredict: will they churn in next 30 days?\nFor: retention team. At: daily batch.\nTo: reduce churn by 15%.'},
+      {n:2,title:'Metrics Ladder',tag:'design',code:'Business: Churn rate ↓ 15%\nProduct: Retention campaign conversion\nModel: AUC-ROC > 0.85, Recall > 0.80\nData: Feature PSI < 0.1'},
+    ]},
+    {emoji:'📊',name:'DATA',desc:'SQL → DVC → Split',substeps:[
+      {n:1,title:'Data Pipeline',tag:'data',code:'Ingest from SQL (user_activity, subscriptions).\nLabel: churned = cancelled AND no reactivation in 30d.\nVersion with DVC. Time-based split (train on old, test on new).'},
+    ]},
+    {emoji:'🧠',name:'MODEL',desc:'XGBoost → MLflow',substeps:[
+      {n:1,title:'Baseline → Advanced',tag:'pipeline',code:'v0: "No login > 30 days → high risk" (rules).\nv1: Logistic Regression (simple ML).\nv2: XGBoost with hyperparameter tuning.'},
+    ]},
+    {emoji:'🚀',name:'DEPLOY',desc:'ZenML + Streamlit',substeps:[
+      {n:1,title:'Full MLOps Pipeline',tag:'mlops',code:'ZenML: ingest → clean → feature → train → evaluate → deploy.\nMLflow: track all experiments, register best model.\nStreamlit: dashboard for retention team.'},
+    ]},
+  ]
+},
+];
+
+let activeTab = 0, activeStage = 0;
+
+function switchTab(i) {
+  activeTab = i; activeStage = 0;
+  document.querySelectorAll('.tab').forEach((t,j) => t.classList.toggle('active', j===i));
+  render();
+}
+
+function setStage(i) { activeStage = i; render(); }
+
+function render() {
+  const t = tabs[activeTab];
+  let h = '';
+
+  // Metrics
+  h += '<div class="metrics">';
+  t.metrics.forEach(m => h += `<div class="metric"><div class="val" style="color:${m.color}">${m.val}</div><div class="lbl">${m.lbl}</div></div>`);
+  h += '</div>';
+
+  // Banner
+  h += '<div class="banner">';
+  t.banner.forEach((b,i) => {
+    if (i>0) h += '<div class="bd"></div>';
+    h += `<div class="bi"><div class="bv" style="color:${b.color}">${b.val}</div><div class="bl">${b.lbl}</div></div>`;
+  });
+  h += '</div>';
+
+  // Pipeline
+  h += '<div class="pipeline-card"><div class="pipeline">';
+  t.stages.forEach((s,i) => {
+    h += `<div class="pipe-stage ${i===activeStage?'active-stage':''}" onclick="setStage(${i})">`;
+    h += `<span class="st-emoji">${s.emoji}</span>`;
+    h += `<span class="st-name">${s.name}</span>`;
+    h += `<span class="st-desc">${s.desc}</span>`;
+    h += '</div>';
+    if (i < t.stages.length-1) h += '<span class="pipe-arrow">→</span>';
+  });
+  h += '</div>';
+
+  // Substeps
+  const stage = t.stages[activeStage];
+  h += `<div class="substeps show"><h4>📋 ${stage.name} — ${stage.desc}</h4><div class="substep-grid">`;
+  stage.substeps.forEach(ss => {
+    h += `<div class="substep">`;
+    h += `<div class="ss-num">STEP ${ss.n}</div>`;
+    h += `<div class="ss-title">${ss.title}</div>`;
+    h += `<span class="ss-tag ${ss.tag}">${ss.tag.toUpperCase()}</span>`;
+    h += `<div class="ss-code">${ss.code}</div>`;
+    h += '</div>';
+  });
+  h += '</div></div></div>';
+
+  document.getElementById('app').innerHTML = h;
+}
+
+render();
+</script>
+</body>
+</html>
