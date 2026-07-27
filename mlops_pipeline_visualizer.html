@@ -36,9 +36,23 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-
 .pipeline-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.2rem;margin:0.6rem 0}
 .pipeline-label{font-family:'Space Grotesk',sans-serif;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--tmut);text-align:center;margin-bottom:0.8rem}
 .pipeline{display:flex;align-items:flex-start;justify-content:center;gap:0;flex-wrap:wrap}
-.pipe-stage{text-align:center;padding:0.7rem 0.9rem;border-radius:12px;cursor:pointer;transition:0.2s;min-width:110px;max-width:145px;border:2px solid var(--border);background:rgba(255,255,255,0.5)}
-.pipe-stage:hover{border-color:var(--violet);transform:translateY(-3px);box-shadow:0 6px 20px rgba(91,58,168,0.08)}
-.pipe-stage.active-stage{border-color:var(--violet);background:var(--vbg);box-shadow:0 0 0 4px rgba(91,58,168,0.05)}
+.pipe-stage{text-align:center;padding:0.7rem 0.9rem;border-radius:12px;cursor:pointer;transition:0.2s;min-width:110px;max-width:145px;border:2px solid var(--border);background:var(--card)}
+.pipe-stage:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(91,58,168,0.08)}
+.pipe-stage.active-stage{box-shadow:0 0 0 4px rgba(91,58,168,0.05)}
+.pipe-stage.zone-pre{border-color:var(--amber);background:var(--amber-bg)}.pipe-stage.zone-pre:hover,.pipe-stage.zone-pre.active-stage{border-color:var(--amber);background:var(--amber-bg)}
+.pipe-stage.zone-train{border-color:var(--violet);background:var(--vbg)}.pipe-stage.zone-train:hover,.pipe-stage.zone-train.active-stage{border-color:var(--violet);background:var(--vbg)}
+.pipe-stage.zone-post{border-color:var(--green);background:var(--green-bg)}.pipe-stage.zone-post:hover,.pipe-stage.zone-post.active-stage{border-color:var(--green);background:var(--green-bg)}
+
+.zone-divider{display:flex;align-items:center;gap:0.4rem;margin:0.6rem 0;font-family:'Space Grotesk',sans-serif;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--tmut)}
+.zone-divider::before,.zone-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.zone-divider.z-amber{color:var(--amber)}.zone-divider.z-amber::before,.zone-divider.z-amber::after{background:var(--amber)}
+.zone-divider.z-violet{color:var(--violet)}.zone-divider.z-violet::before,.zone-divider.z-violet::after{background:var(--violet)}
+.zone-divider.z-green{color:var(--green)}.zone-divider.z-green::before,.zone-divider.z-green::after{background:var(--green)}
+
+.pipeline-group{display:flex;align-items:flex-start;justify-content:center;gap:0;flex-wrap:wrap;padding:0.5rem 0.8rem;border-radius:12px;margin:0.3rem 0}
+.pipeline-group.zone-pre-bg{border:1px dashed rgba(184,112,0,0.2);background:rgba(184,112,0,0.03)}
+.pipeline-group.zone-train-bg{border:1px dashed rgba(91,58,168,0.15);background:rgba(91,58,168,0.03)}
+.pipeline-group.zone-post-bg{border:1px dashed rgba(26,110,52,0.15);background:rgba(26,110,52,0.03)}
 .pipe-stage .st-emoji{font-size:1.5rem;display:block;margin-bottom:0.2rem}
 .pipe-stage .st-name{font-family:'Space Grotesk',sans-serif;font-size:0.58rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em}
 .pipe-stage .st-time{font-size:0.5rem;color:var(--tmut);margin-top:0.1rem}
@@ -334,14 +348,28 @@ function render() {
   });
   h += '</div>';
 
-  // Pipeline
-  h += '<div class="pipeline-card"><div class="pipeline-label">' + t.name + ' — ' + t.phases + '</div><div class="pipeline">';
-  t.stages.forEach((s,i) => {
-    h += `<div class="pipe-stage ${i===activeStage?'active-stage':''}" onclick="setStage(${i})">`;
-    h += `<span class="st-emoji">${s.emoji}</span><span class="st-name">${s.name}</span>`;
-    h += `<span class="st-time">${s.time}</span><span class="st-desc">${s.desc}</span>`;
+  // Pipeline — grouped into 3 zones
+  const zones = [0, 1, 2]; // PREPROCESS, TRAIN, POST-PROCESS
+  const zoneNames = ['PREPROCESS', 'TRAIN', 'POST-PROCESS'];
+  const zoneClasses = ['z-amber', 'z-violet', 'z-green'];
+  const zoneBgClasses = ['zone-pre-bg', 'zone-train-bg', 'zone-post-bg'];
+  const stageZoneClasses = ['zone-pre', 'zone-train', 'zone-post'];
+
+  h += '<div class="pipeline-card"><div class="pipeline-label">' + t.name + ' — ' + t.phases + '</div>';
+
+  zones.forEach(zi => {
+    h += `<div class="zone-divider ${zoneClasses[zi]}">━━ ${zoneNames[zi]} ━━</div>`;
+    h += `<div class="pipeline-group ${zoneBgClasses[zi]}">`;
+    const stageIdx = zi; // Each zone has 1 stage (3 stages total, 1 per zone)
+    if (t.stages[stageIdx]) {
+      const s = t.stages[stageIdx];
+      h += `<div class="pipe-stage ${stageZoneClasses[zi]} ${stageIdx===activeStage?'active-stage':''}" onclick="setStage(${stageIdx})">`;
+      h += `<span class="st-emoji">${s.emoji}</span><span class="st-name">${s.name}</span>`;
+      h += `<span class="st-time">${s.time}</span><span class="st-desc">${s.desc}</span>`;
+      h += '</div>';
+    }
     h += '</div>';
-    if (i < t.stages.length-1) h += '<span class="pipe-arrow">→</span>';
+    if (zi < 2) h += '<div style="text-align:center;font-size:1.3rem;color:var(--violet);margin:-0.2rem 0">⬇</div>';
   });
   h += '</div>';
 
