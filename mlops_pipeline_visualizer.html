@@ -348,30 +348,27 @@ function render() {
   });
   h += '</div>';
 
-  // Pipeline — grouped into 3 zones
-  const zones = [0, 1, 2]; // PREPROCESS, TRAIN, POST-PROCESS
-  const zoneNames = ['PREPROCESS', 'TRAIN', 'POST-PROCESS'];
-  const zoneClasses = ['z-amber', 'z-violet', 'z-green'];
-  const zoneBgClasses = ['zone-pre-bg', 'zone-train-bg', 'zone-post-bg'];
+  // Pipeline — LEFT TO RIGHT: PREPROCESS → TRAIN → POST-PROCESS
   const stageZoneClasses = ['zone-pre', 'zone-train', 'zone-post'];
-
+  const zoneLabels = ['📥 PREPROCESS', '🧠 TRAIN', '📤 POST-PROCESS'];
   h += '<div class="pipeline-card"><div class="pipeline-label">' + t.name + ' — ' + t.phases + '</div>';
-
-  zones.forEach(zi => {
-    h += `<div class="zone-divider ${zoneClasses[zi]}">━━ ${zoneNames[zi]} ━━</div>`;
-    h += `<div class="pipeline-group ${zoneBgClasses[zi]}">`;
-    const stageIdx = zi; // Each zone has 1 stage (3 stages total, 1 per zone)
-    if (t.stages[stageIdx]) {
-      const s = t.stages[stageIdx];
-      h += `<div class="pipe-stage ${stageZoneClasses[zi]} ${stageIdx===activeStage?'active-stage':''}" onclick="setStage(${stageIdx})">`;
-      h += `<span class="st-emoji">${s.emoji}</span><span class="st-name">${s.name}</span>`;
-      h += `<span class="st-time">${s.time}</span><span class="st-desc">${s.desc}</span>`;
-      h += '</div>';
-    }
-    h += '</div>';
-    if (zi < 2) h += '<div style="text-align:center;font-size:1.3rem;color:var(--violet);margin:-0.2rem 0">⬇</div>';
-  });
+  // Zone labels row
+  h += '<div style="display:flex;justify-content:center;gap:0;margin-bottom:0.4rem">';
+  h += '<span style="flex:1;max-width:145px;text-align:center;font-family:\'Space Grotesk\',sans-serif;font-size:0.55rem;font-weight:700;color:var(--amber);letter-spacing:0.06em;text-transform:uppercase">📥 PREPROCESS</span>';
+  h += '<span style="width:30px"></span>';
+  h += '<span style="flex:1;max-width:145px;text-align:center;font-family:\'Space Grotesk\',sans-serif;font-size:0.55rem;font-weight:700;color:var(--violet);letter-spacing:0.06em;text-transform:uppercase">🧠 TRAIN</span>';
+  h += '<span style="width:30px"></span>';
+  h += '<span style="flex:1;max-width:145px;text-align:center;font-family:\'Space Grotesk\',sans-serif;font-size:0.55rem;font-weight:700;color:var(--green);letter-spacing:0.06em;text-transform:uppercase">📤 POST-PROCESS</span>';
   h += '</div>';
+  h += '<div class="pipeline">';
+  t.stages.forEach((s,i) => {
+    h += `<div class="pipe-stage ${stageZoneClasses[i]} ${i===activeStage?'active-stage':''}" onclick="setStage(${i})">`;
+    h += `<span class="st-emoji">${s.emoji}</span><span class="st-name">${s.name}</span>`;
+    h += `<span class="st-time">${s.time}</span><span class="st-desc">${s.desc}</span>`;
+    h += '</div>';
+    if (i < t.stages.length-1) h += '<span class="pipe-arrow">→</span>';
+  });
+  h += '</div></div>';
 
   // Substeps
   h += `<div class="substeps show"><h4>📋 ${stage.name} — ${stage.desc}</h4><div class="substep-grid">`;
