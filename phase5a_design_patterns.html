@@ -94,56 +94,62 @@ function showPattern(p){
 
   if(p==='factory'){
     c.innerHTML=`
-      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1rem;color:var(--amber);margin-bottom:0.5rem">🏭 Factory Pattern — "I need a coffee" = "I need a DataIngestor"</h3>
-      <p style="color:var(--tdim);font-size:0.8rem;margin-bottom:1rem">You don't need to know WHICH class to create. You just say what you want, and the Factory handles it.</p>
+      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--amber);margin-bottom:0.3rem">🏭 Factory Pattern — The "Auto-Detect" Pattern</h3>
+      <p style="color:var(--tdim);font-size:0.85rem;margin-bottom:1rem"><strong>What problem does it solve?</strong> Your data arrives in different formats — ZIP files, CSV files, Parquet files. You don't want to remember which class handles which format. The Factory remembers for you.</p>
 
-      <div class="split">
-        <div class="analogy-box">
-          <h3>☕ Analogy: Coffee Machine</h3>
-          <div class="flow">
-            <div class="step">You say<br><strong>"Espresso"</strong></div>
-            <span style="font-size:1.2rem;color:var(--amber)">→</span>
-            <div class="step hl">CoffeeMachine<br><strong>makes it</strong></div>
-            <span style="font-size:1.2rem;color:var(--amber)">→</span>
-            <div class="step">You get<br><strong>☕ Espresso</strong></div>
+      <div style="background:var(--amber-bg);border:1px solid var(--amber);border-radius:12px;padding:1.2rem;margin:1rem 0">
+        <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--amber);margin-bottom:0.8rem;text-align:center">🧠 BUILD YOUR INTUITION — Before vs After</h4>
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:0.6rem;align-items:center">
+          <div style="background:var(--red-bg, #ffebe9);border:1px solid var(--red);border-radius:8px;padding:0.8rem;text-align:center">
+            <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--red);font-weight:700;margin-bottom:0.4rem">❌ WITHOUT Factory</div>
+            <div style="font-size:0.65rem;color:var(--tdim);line-height:1.8">
+              if file is ZIP:<br>→ <strong>YOU</strong> must remember<br>→ to call ZipDataIngestor()<br><br>
+              if file is CSV:<br>→ <strong>YOU</strong> must remember<br>→ to call CsvDataIngestor()<br><br>
+              <span style="color:var(--red)">Every new format =<br>YOU update ALL the code</span>
+            </div>
           </div>
-          <p style="font-size:0.68rem;color:var(--tmut);text-align:center;margin-top:0.5rem">You never write <code>new Espresso()</code>. The machine decides.</p>
-        </div>
-        <div class="analogy-box">
-          <h3>📦 In Our Pipeline: DataIngestorFactory</h3>
-          <div class="flow">
-            <div class="step">You give<br><strong>"data.zip"</strong></div>
-            <span style="font-size:1.2rem;color:var(--amber)">→</span>
-            <div class="step hl">Factory<br><strong>auto-detects</strong></div>
-            <span style="font-size:1.2rem;color:var(--amber)">→</span>
-            <div class="step">You get<br><strong>📊 DataFrame</strong></div>
+          <div style="font-size:1.5rem;font-weight:700;color:var(--green)">→</div>
+          <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.8rem;text-align:center">
+            <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--green);font-weight:700;margin-bottom:0.4rem">✅ WITH Factory</div>
+            <div style="font-size:0.65rem;color:var(--tdim);line-height:1.8">
+              Just say:<br><strong>"data.zip"</strong><br><br>
+              Factory auto-detects<br><strong>".zip"</strong> extension<br><br>
+              <span style="color:var(--green)">Routes to ZipDataIngestor<br>YOU write ZERO if-else!</span>
+            </div>
           </div>
-          <p style="font-size:0.68rem;color:var(--tmut);text-align:center;margin-top:0.5rem">You never write <code>new ZipDataIngestor()</code>. The factory decides.</p>
         </div>
       </div>
 
-      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--violet);margin:0.8rem 0 0.4rem">Pipeline Code (src/ingest_data.py)</h4>
-      <div class="code-box"><span class="cm"># Step 1: Define the Product interface</span>
-<span class="kw">class</span> DataIngestor(ABC):
-    <span class="kw">def</span> ingest(self, file_path) -> pd.DataFrame: ...
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1rem 0 0.4rem">📦 WHERE exactly does this happen?</h4>
+      <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;justify-content:center;margin:0.8rem 0;font-size:0.72rem">
+        <div style="background:var(--card);border:2px solid var(--border);border-radius:10px;padding:0.7rem;text-align:center"><strong>Step 1<br>of Pipeline</strong><br><span style="color:var(--tmut);font-size:0.6rem">Data Ingestion</span></div>
+        <span style="font-size:1.5rem;color:var(--violet)">→</span>
+        <div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:10px;padding:0.7rem;text-align:center"><strong>Factory</strong><br><span style="color:var(--tmut);font-size:0.6rem">src/ingest_data.py</span></div>
+        <span style="font-size:1.5rem;color:var(--violet)">→</span>
+        <div style="background:var(--card);border:2px solid var(--border);border-radius:10px;padding:0.7rem;text-align:center"><strong>DataFrame</strong><br><span style="color:var(--tmut);font-size:0.6rem">2930 rows × 82 cols</span></div>
+        <span style="font-size:1.5rem;color:var(--violet)">→</span>
+        <div style="background:var(--card);border:2px solid var(--border);border-radius:10px;padding:0.7rem;text-align:center"><strong>Rest of<br>Pipeline</strong><br><span style="color:var(--tmut);font-size:0.6rem">6 more steps</span></div>
+      </div>
 
-<span class="cm"># Step 2: Implement Concrete Products</span>
-<span class="kw">class</span> ZipDataIngestor(DataIngestor):
-    <span class="kw">def</span> ingest(self, file_path):
-        <span class="cm"># Extract ZIP → find CSV → return DataFrame</span>
-        <span class="kw">return</span> pd.read_csv(extracted_csv)
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1rem 0 0.4rem">👤 WHO writes this code?</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin:0.8rem 0">
+        <div style="background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--green);font-weight:700;margin-bottom:0.3rem">✅ WE write ONCE (setup)</div>
+          <div style="font-size:0.65rem;color:var(--tdim);line-height:1.7">The 3 classes: <strong>DataIngestor (ABC)</strong>, <strong>ZipDataIngestor</strong>, and <strong>DataIngestorFactory</strong>. Written ONCE at project setup. ~50 lines of code total.</div>
+        </div>
+        <div style="background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--amber);font-weight:700;margin-bottom:0.3rem">🤖 Factory auto-handles (every time)</div>
+          <div style="font-size:0.65rem;color:var(--tdim);line-height:1.7">Every time you run the pipeline: Factory auto-detects file type → creates correct ingestor → returns DataFrame. <strong>ONE line of code.</strong> No if-else. No manual checks.</div>
+        </div>
+      </div>
 
-<span class="cm"># Step 3: The Factory — decides WHICH class to create</span>
-<span class="kw">class</span> DataIngestorFactory:
-    <span class="kw">def</span> get_data_ingestor(file_extension):
-        <span class="kw">if</span> file_extension == <span class="str">".zip"</span>:  <span class="kw">return</span> ZipDataIngestor()
-        <span class="kw">if</span> file_extension == <span class="str">".csv"</span>:  <span class="kw">return</span> CsvDataIngestor()
-        <span class="kw">raise</span> ValueError(<span class="str">"Unknown type"</span>)
+      <div class="code-box"><span class="cm"># This is ALL you write to use the Factory (every time):</span>
+df = DataIngestorFactory.get_data_ingestor(<span class="str">".zip"</span>).ingest(<span class="str">"data.zip"</span>)
 
-<span class="cm"># Step 4: Use it — ONE line</span>
-df = DataIngestorFactory.get_data_ingestor(<span class="str">".zip"</span>).ingest(<span class="str">"data.zip"</span>)</div>
+<span class="cm"># That's it. One line. Factory does the rest.</span>
+<span class="cm"># If tomorrow the file is .parquet, same line — just change the extension.</span></div>
 
-      <div class="callout"><strong>Why Factory?</strong> If we add Parquet support tomorrow, we add ONE class + ONE if-branch. Everything else stays the same. <strong>Open for extension, closed for modification.</strong></div>`;
+      <div class="callout"><strong>🧠 Remember:</strong> Factory = "I don't want to think about WHICH class to create." <strong>You wrote it once. It runs automatically forever.</strong></div>`;
 
   }else if(p==='strategy'){
     c.innerHTML=`
