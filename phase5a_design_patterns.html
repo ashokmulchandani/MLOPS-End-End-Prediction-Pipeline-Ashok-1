@@ -73,11 +73,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-
 </header>
 
 <div class="tabs">
-  <button class="tab active" onclick="showPattern('factory')">🏭 Factory</button>
-  <button class="tab" onclick="showPattern('strategy')">🎯 Strategy</button>
-  <button class="tab" onclick="showPattern('template')">📋 Template</button>
-  <button class="tab" onclick="showPattern('overview')">🗺️ Pipeline Map</button>
-  <button class="tab" onclick="showPattern('structure')">📁 Project Setup</button>
+  <button class="tab active" onclick="showPattern('factory', event)">🏭 Factory</button>
+  <button class="tab" onclick="showPattern('strategy', event)">🎯 Strategy</button>
+  <button class="tab" onclick="showPattern('template', event)">📋 Template</button>
+  <button class="tab" onclick="showPattern('overview', event)">🗺️ Pipeline Map</button>
+  <button class="tab" onclick="showPattern('structure', event)">📁 Project Setup</button>
 </div>
 
 <div class="content" id="content"></div>
@@ -87,9 +87,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-
 function toggleTheme(){document.body.classList.toggle('dark');document.querySelector('.theme-btn').textContent=document.body.classList.contains('dark')?'☀️ Light':'🌙 Dark';localStorage.setItem('p5a-theme',document.body.classList.contains('dark')?'dark':'light')}
 if(localStorage.getItem('p5a-theme')==='dark'){document.body.classList.add('dark');document.querySelector('.theme-btn').textContent='☀️ Light'}
 
-function showPattern(p){
+function showPattern(p, evt){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  event.target.classList.add('active');
+  if (evt && evt.target) { evt.target.classList.add('active'); }
+  else { document.querySelector('.tab') && document.querySelector('.tab').classList.add('active'); }
   const c=document.getElementById('content');
 
   if(p==='factory'){
