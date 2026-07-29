@@ -183,64 +183,106 @@ function showTab(p,evt){
 
   }else if(p==='zenml'){
     c.innerHTML=`
-      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--violet);margin-bottom:0.3rem">🔗 The ZenML Step Wrapper</h3>
-      <p style="color:var(--tdim);font-size:0.85rem;margin-bottom:1rem">The <code>src/ingest_data.py</code> code does the REAL work. The ZenML step is a <strong>thin wrapper</strong> — it just calls the Factory and returns the result.</p>
+      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--violet);margin-bottom:0.3rem">🔗 ZenML — What It Is and How It Wraps Your Code</h3>
+      <p style="color:var(--tdim);font-size:0.85rem;margin-bottom:0.8rem"><strong>ZenML = a tracker for your ML pipeline.</strong> It watches every step, records inputs/outputs, and shows you exactly where things break.</p>
 
-      <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:10px;padding:0.8rem 1rem;margin:0.8rem 0;text-align:center">
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--green);font-weight:700;margin-bottom:0.3rem">📍 WHERE: steps/data_ingestion_step.py</div>
-        <div style="font-size:0.75rem;color:var(--tdim);line-height:1.7">
-          The ZenML step is in <code>steps/</code>. It delegates ALL the real work to <code>src/ingest_data.py</code>.<br>
-          <strong>Separating steps/ from src/ is the standard MLOps pattern.</strong>
+      <div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:12px;padding:1.2rem;margin:1rem 0">
+        <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--amber);margin-bottom:0.6rem;text-align:center">🧠 What Happens When You Run <code>python run_pipeline.py</code></h4>
+        <div style="display:flex;flex-direction:column;gap:0.5rem;align-items:center;font-size:0.65rem">
+          <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;justify-content:center">
+            <div style="background:var(--card);border:2px solid var(--border);border-radius:8px;padding:0.5rem 0.7rem;text-align:center"><strong>1. ZenML starts</strong><br><span style="color:var(--tmut)">Reads config.yaml<br>Loads the stack</span></div>
+            <span style="font-size:1rem;color:var(--violet)">→</span>
+            <div style="background:var(--card);border:2px solid var(--violet);border-radius:8px;padding:0.5rem 0.7rem;text-align:center"><strong>2. Runs Step 1</strong><br><span style="color:var(--tmut)">data_ingestion_step<br>runsp</span></div>
+            <span style="font-size:1rem;color:var(--violet)">→</span>
+            <div style="background:var(--card);border:2px solid var(--violet);border-radius:8px;padding:0.5rem 0.7rem;text-align:center"><strong>3. Records Result</strong><br><span style="color:var(--tmut)">Saves DataFrame<br>as an artifact</span></div>
+            <span style="font-size:1rem;color:var(--violet)">→</span>
+            <div style="background:var(--card);border:2px solid var(--violet);border-radius:8px;padding:0.5rem 0.7rem;text-align:center"><strong>4. Next Step</strong><br><span style="color:var(--tmut)">Passes DataFrame<br>to Step 2</span></div>
+          </div>
+          <div style="font-size:0.6rem;color:var(--tmut)">This repeats for ALL 7 steps. ZenML tracks every input, output, and any errors.</div>
         </div>
       </div>
 
-      <div class="split">
-        <div style="background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:0.8rem">
-          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">📝 The Step (steps/data_ingestion_step.py)</div>
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1rem 0 0.4rem">🔍 Visualizing <code>@step</code> — The Decorator That Makes It Work</h4>
+      <div style="background:var(--vbg);border:2px solid var(--violet);border-radius:12px;padding:1rem;margin:0.6rem 0">
+        <div style="font-size:0.68rem;color:var(--tdim);line-height:2;text-align:center">
+          <strong>Without @step:</strong> Just a normal Python function. ZenML ignores it.<br>
+          <code>def data_ingestion_step(file_path):</code><br><br>
+          <strong>With @step:</strong> ZenML NOW tracks this function.<br>
+          <code>@step</code> ← This ONE line registers it with ZenML<br>
+          <code>def data_ingestion_step(file_path):</code><br><br>
+          <span style="color:var(--violet)">@step = "ZenML, please watch this function. Track what goes in, what comes out, and if it fails."</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;margin:0.6rem 0">
+        <div style="background:var(--card);border:2px solid var(--amber);border-radius:8px;padding:0.7rem;text-align:center">
+          <div style="font-size:1.5rem">📥</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;font-weight:700;color:var(--amber);margin-top:0.2rem">TRACKS INPUT</div>
+          <div style="font-size:0.55rem;color:var(--tmut)">ZenML records<br>what file_path was</div>
+        </div>
+        <div style="background:var(--card);border:2px solid var(--violet);border-radius:8px;padding:0.7rem;text-align:center">
+          <div style="font-size:1.5rem">📤</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;font-weight:700;color:var(--violet);margin-top:0.2rem">TRACKS OUTPUT</div>
+          <div style="font-size:0.55rem;color:var(--tmut)">ZenML saves<br>the DataFrame</div>
+        </div>
+        <div style="background:var(--card);border:2px solid var(--red);border-radius:8px;padding:0.7rem;text-align:center">
+          <div style="font-size:1.5rem">💥</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;font-weight:700;color:var(--red);margin-top:0.2rem">CATCHES ERRORS</div>
+          <div style="font-size:0.55rem;color:var(--tmut)">If step fails,<br>ZenML shows where</div>
+        </div>
+      </div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1rem 0 0.4rem">📁 The 2-File Architecture: src/ vs steps/</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:0.6rem 0">
+        <div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:8px;padding:0.8rem;text-align:center">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--amber);font-weight:700;margin-bottom:0.3rem">src/ingest_data.py</div>
           <div style="font-size:0.62rem;color:var(--tdim);line-height:1.7">
-            <strong>What it does:</strong><br>
-            1. Receives file_path from ZenML<br>
-            2. Extracts ".zip" extension<br>
-            3. Calls Factory → gets ingestor<br>
-            4. Calls ingestor.ingest() → gets DataFrame<br>
-            5. Returns DataFrame to next step<br><br>
-            <strong>That's it. 10 lines.</strong>
+            <strong>The REAL code.</strong><br>
+            Pure Python. No ZenML.<br>
+            You can test this file alone.<br>
+            You can reuse it WITHOUT ZenML.<br><br>
+            <span style="color:var(--amber)">Business logic lives here.</span>
           </div>
         </div>
-        <div style="background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:0.8rem">
-          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--amber);font-weight:700;margin-bottom:0.3rem">💡 Why a Separate Step?</div>
+        <div style="background:var(--vbg);border:2px solid var(--violet);border-radius:8px;padding:0.8rem;text-align:center">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">steps/data_ingestion_step.py</div>
           <div style="font-size:0.62rem;color:var(--tdim);line-height:1.7">
-            ZenML tracks every <code>@step</code> as a separate artifact.<br>
-            If ingestion fails → ZenML shows exactly WHERE.<br>
-            If ingestion succeeds → result is cached, not re-run.<br><br>
-            <strong>Steps = observability + caching.</strong>
+            <strong>The WRAPPER.</strong><br>
+            Has @step decorator.<br>
+            Delegates to src/ingest_data.py.<br>
+            Only job: make ZenML aware.<br><br>
+            <span style="color:var(--violet)">Orchestration lives here.</span>
           </div>
         </div>
       </div>
 
-      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin:0.8rem 0 0.3rem">📝 The Step Code</h4>
+      <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.8rem;margin:0.6rem 0;text-align:center">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--green);font-weight:700;margin-bottom:0.3rem">🧠 WHY separate them?</div>
+        <div style="font-size:0.68rem;color:var(--tdim);line-height:1.8">
+          Tomorrow you switch from ZenML to Airflow → you ONLY rewrite <code>steps/</code>.<br>
+          <code>src/</code> code stays exactly the same.<br><br>
+          <strong>Business logic in src/. Orchestration in steps/. Never mix them.</strong>
+        </div>
+      </div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin:0.8rem 0 0.3rem">📝 The Full Step Code</h4>
       <div class="code-box"><span class="kw">from</span> zenml <span class="kw">import</span> step
 <span class="kw">from</span> src.ingest_data <span class="kw">import</span> DataIngestorFactory
 <span class="kw">import</span> pandas <span class="kw">as</span> pd
 <span class="kw">import</span> os
 
-<span class="kw">@step</span>  <span class="cm">← ZenML decorator: "this is a pipeline step"</span>
+<span class="kw">@step</span>  <span class="cm">← THIS is the only ZenML-specific line!</span>
 <span class="kw">def</span> <span class="fn">data_ingestion_step</span>(file_path: str) -> pd.DataFrame:
     <span class="cm">"""ZenML step: ingest data from a ZIP file."""</span>
-
-    <span class="cm"># 1. Extract the file extension (.zip)</span>
     file_extension = os.path.splitext(file_path)[1]
-
-    <span class="cm"># 2. Factory creates the correct ingestor</span>
     data_ingestor = DataIngestorFactory.get_data_ingestor(file_extension)
-
-    <span class="cm"># 3. Ingest the data</span>
     df = data_ingestor.ingest(file_path)
+    <span class="kw">return</span> df
 
-    <span class="cm"># 4. Return to the next step in the pipeline</span>
-    <span class="kw">return</span> df</div>
+<span class="cm"># That's it. The @step is the ONLY ZenML code.
+# Everything else is plain Python calling src/.</span></div>
 
-      <div class="callout"><strong>🔑 The thin wrapper pattern:</strong> <code>steps/</code> = ZenML orchestration. <code>src/</code> = actual logic. <strong>You can change orchestration tools without rewriting the logic.</strong></div>`;
+      <div class="callout"><strong>🔑 ONE LINE TO REMEMBER:</strong> <code>@step</code> = "ZenML, track this function." <strong>Without it:</strong> normal Python. <strong>With it:</strong> ZenML watches inputs, outputs, caching, and errors.</div>`;
 
   }else if(p==='errors'){
     c.innerHTML=`
