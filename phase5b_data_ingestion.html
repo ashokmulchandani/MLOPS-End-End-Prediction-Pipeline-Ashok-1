@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 5B: Data Ingestion — Interactive Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f8f9fc;--card:#fff;--raised:#eef0f5;--border:#dde0e6;--text:#1a1d23;--tdim:#4a4f5b;--tmut:#8b909b;--violet:#5b3aa8;--vbg:#f3effc;--cyan:#007a99;--cyan-bg:#e6f4f7;--amber:#b87000;--amber-bg:#fff6e5;--green:#1a6e34;--green-bg:#e6f4ea;--red:#c62828;--magenta:#9e2a6b}
+body.dark{--bg:#06090f;--card:#0d1117;--raised:#161b22;--border:#21262d;--text:#e6edf3;--tdim:#8b949e;--tmut:#484f58;--violet:#a371f7;--vbg:#a371f710;--cyan:#39d2ff;--cyan-bg:#39d2ff10;--amber:#ffb347;--amber-bg:#ffb34710;--green:#3fb950;--green-bg:#3fb95010;--red:#f85149;--magenta:#ff6ec7}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.65;min-height:100vh;transition:background 0.3s,color 0.3s}
+.theme-btn{position:fixed;top:1rem;right:1rem;z-index:10;background:var(--raised);border:1px solid var(--border);color:var(--text);padding:0.5rem 0.9rem;border-radius:8px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-size:0.75rem;font-weight:600}
+.theme-btn:hover{border-color:var(--violet);color:var(--violet)}
+.app{max-width:950px;margin:0 auto;padding:1.5rem}
+.header{text-align:center;padding:1rem 0 0.3rem}
+.header h1{font-family:'Space Grotesk',sans-serif;font-size:1.4rem;font-weight:700;color:var(--violet)}
+.header p{color:var(--tdim);font-size:0.85rem;margin-top:0.2rem}
+
+.tabs{display:flex;gap:0.35rem;justify-content:center;margin:0.8rem 0;flex-wrap:wrap}
+.tab{font-family:'Space Grotesk',sans-serif;font-size:0.62rem;font-weight:600;padding:0.5em 1em;border-radius:100px;border:1.5px solid var(--border);background:var(--card);color:var(--tdim);cursor:pointer;transition:0.15s}
+.tab:hover{border-color:var(--violet);color:var(--violet)}
+.tab.active{background:var(--violet);border-color:var(--violet);color:#fff}
+
+.content{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin:0.6rem 0}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:0.8rem 0}
+@media(max-width:700px){.split{grid-template-columns:1fr}}
+
+.code-box{background:var(--raised);border-left:4px solid var(--violet);border-radius:8px;padding:0.8rem 1rem;font-family:'JetBrains Mono',monospace;font-size:0.68rem;line-height:1.7;color:var(--text);white-space:pre-wrap;overflow-x:auto;margin:0.6rem 0}
+.code-box .kw{color:var(--violet)}.code-box .str{color:var(--green)}.code-box .cm{color:var(--tmut)}.code-box .fn{color:var(--amber)}
+.callout{background:var(--vbg);border:1px solid rgba(91,58,168,0.15);border-radius:8px;padding:0.6rem 1rem;margin:0.6rem 0;font-size:0.78rem;text-align:center}
+.flow{display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;justify-content:center;margin:0.8rem 0;font-size:0.72rem}
+.flow .step{background:var(--card);border:2px solid var(--border);border-radius:8px;padding:0.5rem 0.7rem;text-align:center;min-width:80px}
+.flow .step.hl{border-color:var(--amber);background:var(--amber-bg)}
+.flow .step.done{border-color:var(--green);background:var(--green-bg)}
+.flow-arrow{font-size:1.2rem;color:var(--violet)}
+</style>
+</head>
+<body>
+<button class="theme-btn" onclick="toggleTheme()">🌙 Dark</button>
+<div class="app">
+<header class="header">
+  <h1>Phase 5B: Data Ingestion (Factory Pattern)</h1>
+  <p>How a ZIP file becomes a DataFrame — the VERY first step of the MLOps pipeline</p>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('journey',event)">🗺️ The Journey</button>
+  <button class="tab" onclick="showTab('code',event)">📝 Full Code</button>
+  <button class="tab" onclick="showTab('zenml',event)">🔗 ZenML Step</button>
+  <button class="tab" onclick="showTab('errors',event)">⚠️ Error Handling</button>
+  <button class="tab" onclick="showTab('pipeline',event)">🔗 In Pipeline</button>
+</div>
+
+<div class="content" id="content"></div>
+</div>
+
+<script>
+function toggleTheme(){document.body.classList.toggle('dark');document.querySelector('.theme-btn').textContent=document.body.classList.contains('dark')?'☀️ Light':'🌙 Dark';localStorage.setItem('p5b-theme',document.body.classList.contains('dark')?'dark':'light')}
+if(localStorage.getItem('p5b-theme')==='dark'){document.body.classList.add('dark');document.querySelector('.theme-btn').textContent='☀️ Light'}
+
+function showTab(p,evt){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  if(evt&&evt.target)evt.target.classList.add('active');
+  else document.querySelector('.tab').classList.add('active');
+  const c=document.getElementById('content');
+
+  if(p==='journey'){
+    c.innerHTML=`
+      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--amber);margin-bottom:0.3rem">🗺️ The Journey: ZIP File → DataFrame</h3>
+      <p style="color:var(--tdim);font-size:0.85rem;margin-bottom:1rem">This is Step 1 of 7 in the pipeline. Everything downstream depends on this step getting the data RIGHT.</p>
+
+      <div style="background:var(--amber-bg);border:1px solid var(--amber);border-radius:12px;padding:1.2rem;margin:1rem 0">
+        <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--amber);margin-bottom:0.8rem;text-align:center">📦 What Actually Happens When You Run the Pipeline</h4>
+        <div class="flow" style="font-size:0.65rem">
+          <div class="step"><strong>You run</strong><br><code>python run_pipeline.py</code></div>
+          <span class="flow-arrow">→</span>
+          <div class="step hl"><strong>ZenML calls</strong><br><code>data_ingestion_step("data/archive.zip")</code></div>
+          <span class="flow-arrow">→</span>
+          <div class="step hl"><strong>Factory creates</strong><br><code>ZipDataIngestor()</code></div>
+          <span class="flow-arrow">→</span>
+          <div class="step"><strong>Extracts ZIP</strong><br>→ extracted_data/</div>
+          <span class="flow-arrow">→</span>
+          <div class="step"><strong>Finds CSV</strong><br>AmesHousing.csv</div>
+          <span class="flow-arrow">→</span>
+          <div class="step done"><strong>Returns</strong><br>2930 rows × 82 cols</div>
+        </div>
+      </div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1rem 0 0.4rem">📂 What's Inside data/archive.zip?</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin:0.8rem 0">
+        <div style="background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">📦 archive.zip</div>
+          <div style="font-size:0.65rem;color:var(--tdim);line-height:1.8">
+            └── AmesHousing.csv<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;├── 2,930 rows<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;├── 82 columns<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;├── 38 numerical<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;├── 43 categorical<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;└── 1 target: SalePrice
+          </div>
+        </div>
+        <div style="background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">📊 After Extraction</div>
+          <div style="font-size:0.65rem;color:var(--tdim);line-height:1.8">
+            extracted_data/<br>
+            └── AmesHousing.csv<br><br>
+            <span style="color:var(--amber)">pandas reads it →</span><br>
+            <code>pd.read_csv("extracted_data/AmesHousing.csv")</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout"><strong>🧠 KEY:</strong> The Factory pattern auto-detects ".zip" and creates ZipDataIngestor. You never write <code>if file is zip: use ZipClass</code> — the Factory handles it. <strong>Tomorrow if data is .parquet → add ONE class, change nothing else.</strong></div>`;
+
+  }else if(p==='code'){
+    c.innerHTML=`
+      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--amber);margin-bottom:0.3rem">📝 The Full Code — src/ingest_data.py</h3>
+      <p style="color:var(--tdim);font-size:0.85rem;margin-bottom:0.5rem">This file has <strong>3 classes</strong>. Each one has a specific job. Together they form the Factory Pattern.</p>
+
+      <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:10px;padding:0.8rem 1rem;margin:0.8rem 0;text-align:center">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--green);font-weight:700;margin-bottom:0.3rem">❓ WHO WROTE THIS?</div>
+        <div style="font-size:0.75rem;color:var(--tdim);line-height:1.7">
+          <strong>Already in your project</strong> at <code style="background:var(--raised);padding:0.1em 0.4em;border-radius:3px">prices-predictor-system/src/ingest_data.py</code><br>
+          Your job: <strong>UNDERSTAND the 3 classes and how they work together.</strong>
+        </div>
+      </div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin:0.8rem 0 0.3rem">CLASS 1: The Contract (ABC)</h4>
+      <div style="font-size:0.7rem;color:var(--tdim);margin-bottom:0.4rem">"Every data ingestor MUST have an <code>ingest()</code> method. I don't care HOW — just that it exists."</div>
+      <div class="code-box"><span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod
+<span class="kw">import</span> pandas <span class="kw">as</span> pd
+
+<span class="kw">class</span> <span class="fn">DataIngestor</span>(ABC):
+    <span class="cm">"""Abstract base class — the CONTRACT.
+    Every ingestor must implement ingest(file_path) → DataFrame"""</span>
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> <span class="fn">ingest</span>(self, file_path: str) -> pd.DataFrame:
+        <span class="kw">pass</span></div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin:0.8rem 0 0.3rem">CLASS 2: The Worker (Concrete Implementation)</h4>
+      <div style="font-size:0.7rem;color:var(--tdim);margin-bottom:0.4rem">"I handle ZIP files. Extract → find CSV → load with pandas → return DataFrame."</div>
+      <div class="code-box"><span class="kw">import</span> zipfile, os
+<span class="kw">import</span> logging
+
+<span class="kw">class</span> <span class="fn">ZipDataIngestor</span>(DataIngestor):
+    <span class="cm">"""Handles ZIP files. Extracts, finds CSV, returns DataFrame."""</span>
+    <span class="kw">def</span> <span class="fn">ingest</span>(self, file_path: str) -> pd.DataFrame:
+        <span class="cm"># Step 1: Verify it's actually a ZIP file</span>
+        <span class="kw">if not</span> file_path.endswith(<span class="str">".zip"</span>):
+            <span class="kw">raise</span> ValueError(<span class="str">"Not a ZIP file!"</span>)
+
+        <span class="cm"># Step 2: Extract the ZIP to extracted_data/ folder</span>
+        extract_path = <span class="str">"./extracted_data"</span>
+        <span class="kw">with</span> zipfile.ZipFile(file_path, <span class="str">"r"</span>) <span class="kw">as</span> zip_ref:
+            zip_ref.extractall(extract_path)
+
+        <span class="cm"># Step 3: Find the CSV file inside extracted_data/</span>
+        csv_files = [f <span class="kw">for</span> f <span class="kw">in</span> os.listdir(extract_path)
+                     <span class="kw">if</span> f.endswith(<span class="str">".csv"</span>)]
+
+        <span class="kw">if not</span> csv_files:
+            <span class="kw">raise</span> FileNotFoundError(<span class="str">"No CSV found inside ZIP!"</span>)
+
+        <span class="cm"># Step 4: Load the first CSV into a DataFrame</span>
+        csv_path = os.path.join(extract_path, csv_files[0])
+        df = pd.read_csv(csv_path)
+        logging.info(<span class="str">f"Ingested {len(df)} rows, {len(df.columns)} cols"</span>)
+        <span class="kw">return</span> df</div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin:0.8rem 0 0.3rem">CLASS 3: The Factory (Decision Maker)</h4>
+      <div style="font-size:0.7rem;color:var(--tdim);margin-bottom:0.4rem">"Tell me the file extension. I'll give you the right ingestor."</div>
+      <div class="code-box"><span class="kw">class</span> <span class="fn">DataIngestorFactory</span>:
+    <span class="cm">"""Returns the correct DataIngestor based on file extension."""</span>
+    <span class="kw">@staticmethod</span>
+    <span class="kw">def</span> <span class="fn">get_data_ingestor</span>(file_extension: str) -> DataIngestor:
+        <span class="kw">if</span> file_extension == <span class="str">".zip"</span>:
+            <span class="kw">return</span> ZipDataIngestor()
+        <span class="cm"># Tomorrow: add .parquet, .csv handlers here</span>
+        <span class="kw">raise</span> ValueError(<span class="str">f"No ingestor for: {file_extension}"</span>)</div>
+
+      <div class="callout"><strong>🧠 3 classes, 3 jobs:</strong> ABC = "the promise", Worker = "does the work", Factory = "chooses the worker". <strong>Open src/ingest_data.py and find all 3.</strong></div>`;
+
+  }else if(p==='zenml'){
+    c.innerHTML=`
+      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--violet);margin-bottom:0.3rem">🔗 The ZenML Step Wrapper</h3>
+      <p style="color:var(--tdim);font-size:0.85rem;margin-bottom:1rem">The <code>src/ingest_data.py</code> code does the REAL work. The ZenML step is a <strong>thin wrapper</strong> — it just calls the Factory and returns the result.</p>
+
+      <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:10px;padding:0.8rem 1rem;margin:0.8rem 0;text-align:center">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--green);font-weight:700;margin-bottom:0.3rem">📍 WHERE: steps/data_ingestion_step.py</div>
+        <div style="font-size:0.75rem;color:var(--tdim);line-height:1.7">
+          The ZenML step is in <code>steps/</code>. It delegates ALL the real work to <code>src/ingest_data.py</code>.<br>
+          <strong>Separating steps/ from src/ is the standard MLOps pattern.</strong>
+        </div>
+      </div>
+
+      <div class="split">
+        <div style="background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">📝 The Step (steps/data_ingestion_step.py)</div>
+          <div style="font-size:0.62rem;color:var(--tdim);line-height:1.7">
+            <strong>What it does:</strong><br>
+            1. Receives file_path from ZenML<br>
+            2. Extracts ".zip" extension<br>
+            3. Calls Factory → gets ingestor<br>
+            4. Calls ingestor.ingest() → gets DataFrame<br>
+            5. Returns DataFrame to next step<br><br>
+            <strong>That's it. 10 lines.</strong>
+          </div>
+        </div>
+        <div style="background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--amber);font-weight:700;margin-bottom:0.3rem">💡 Why a Separate Step?</div>
+          <div style="font-size:0.62rem;color:var(--tdim);line-height:1.7">
+            ZenML tracks every <code>@step</code> as a separate artifact.<br>
+            If ingestion fails → ZenML shows exactly WHERE.<br>
+            If ingestion succeeds → result is cached, not re-run.<br><br>
+            <strong>Steps = observability + caching.</strong>
+          </div>
+        </div>
+      </div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin:0.8rem 0 0.3rem">📝 The Step Code</h4>
+      <div class="code-box"><span class="kw">from</span> zenml <span class="kw">import</span> step
+<span class="kw">from</span> src.ingest_data <span class="kw">import</span> DataIngestorFactory
+<span class="kw">import</span> pandas <span class="kw">as</span> pd
+<span class="kw">import</span> os
+
+<span class="kw">@step</span>  <span class="cm">← ZenML decorator: "this is a pipeline step"</span>
+<span class="kw">def</span> <span class="fn">data_ingestion_step</span>(file_path: str) -> pd.DataFrame:
+    <span class="cm">"""ZenML step: ingest data from a ZIP file."""</span>
+
+    <span class="cm"># 1. Extract the file extension (.zip)</span>
+    file_extension = os.path.splitext(file_path)[1]
+
+    <span class="cm"># 2. Factory creates the correct ingestor</span>
+    data_ingestor = DataIngestorFactory.get_data_ingestor(file_extension)
+
+    <span class="cm"># 3. Ingest the data</span>
+    df = data_ingestor.ingest(file_path)
+
+    <span class="cm"># 4. Return to the next step in the pipeline</span>
+    <span class="kw">return</span> df</div>
+
+      <div class="callout"><strong>🔑 The thin wrapper pattern:</strong> <code>steps/</code> = ZenML orchestration. <code>src/</code> = actual logic. <strong>You can change orchestration tools without rewriting the logic.</strong></div>`;
+
+  }else if(p==='errors'){
+    c.innerHTML=`
+      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--red);margin-bottom:0.3rem">⚠️ Error Handling — What Can Go Wrong?</h3>
+      <p style="color:var(--tdim);font-size:0.85rem;margin-bottom:1rem">Data ingestion is the <strong>most likely place for pipeline failure</strong>. The file might be missing, corrupt, empty, or the wrong format. Good error handling catches these BEFORE they poison downstream steps.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:0.8rem 0">
+        <div style="background:var(--red-bg, #ffebe9);border:2px solid var(--red);border-radius:8px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--red);font-weight:700;margin-bottom:0.3rem">❌ ERROR 1: File Not Found</div>
+          <div style="font-size:0.65rem;color:var(--tdim);line-height:1.7">
+            <strong>What happens:</strong> You type the path wrong or the file was moved.<br><br>
+            <strong>Python error:</strong> <code>FileNotFoundError</code><br><br>
+            <strong>Fix:</strong> Check path exists before calling ingest.<br>
+            <code>if not os.path.exists(file_path): raise...</code>
+          </div>
+        </div>
+        <div style="background:var(--red-bg, #ffebe9);border:2px solid var(--red);border-radius:8px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--red);font-weight:700;margin-bottom:0.3rem">❌ ERROR 2: Not a ZIP File</div>
+          <div style="font-size:0.65rem;color:var(--tdim);line-height:1.7">
+            <strong>What happens:</strong> Someone passes a .csv or .parquet to the ZIP ingestor.<br><br>
+            <strong>Our code catches this:</strong> <code>if not file_path.endswith(".zip"): raise ValueError</code><br><br>
+            <strong>Fix:</strong> Verify file extension BEFORE extraction.
+          </div>
+        </div>
+        <div style="background:var(--red-bg, #ffebe9);border:2px solid var(--red);border-radius:8px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--red);font-weight:700;margin-bottom:0.3rem">❌ ERROR 3: No CSV Inside ZIP</div>
+          <div style="font-size:0.65rem;color:var(--tdim);line-height:1.7">
+            <strong>What happens:</strong> ZIP extracts but contains .xlsx or .json instead of .csv.<br><br>
+            <strong>Our code catches this:</strong> <code>if not csv_files: raise FileNotFoundError</code><br><br>
+            <strong>Fix:</strong> List files after extraction, verify .csv exists.
+          </div>
+        </div>
+        <div style="background:var(--red-bg, #ffebe9);border:2px solid var(--red);border-radius:8px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--red);font-weight:700;margin-bottom:0.3rem">❌ ERROR 4: Corrupt ZIP File</div>
+          <div style="font-size:0.65rem;color:var(--tdim);line-height:1.7">
+            <strong>What happens:</strong> ZIP is partially downloaded or damaged.<br><br>
+            <strong>Python error:</strong> <code>zipfile.BadZipFile</code><br><br>
+            <strong>Fix:</strong> Wrap extraction in try/except with clear error message.
+          </div>
+        </div>
+      </div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin:0.8rem 0 0.3rem">🛡️ The Professional Way: Add Validation</h4>
+      <div class="code-box"><span class="kw">class</span> <span class="fn">ZipDataIngestor</span>(DataIngestor):
+    <span class="kw">def</span> <span class="fn">ingest</span>(self, file_path: str) -> pd.DataFrame:
+        <span class="cm"># Guard 1: File exists?</span>
+        <span class="kw">if not</span> os.path.exists(file_path):
+            <span class="kw">raise</span> FileNotFoundError(<span class="str">f"No file at: {file_path}"</span>)
+
+        <span class="cm"># Guard 2: Is it a ZIP?</span>
+        <span class="kw">if not</span> file_path.endswith(<span class="str">".zip"</span>):
+            <span class="kw">raise</span> ValueError(<span class="str">f"Expected .zip, got: {file_path}"</span>)
+
+        <span class="cm"># Guard 3: Try extraction</span>
+        <span class="kw">try</span>:
+            <span class="kw">with</span> zipfile.ZipFile(file_path, <span class="str">"r"</span>) <span class="kw">as</span> zip_ref:
+                zip_ref.extractall(extract_path)
+        <span class="kw">except</span> zipfile.BadZipFile:
+            <span class="kw">raise</span> ValueError(<span class="str">f"Corrupt ZIP: {file_path}"</span>)
+
+        <span class="cm"># Guard 4: CSV inside?</span>
+        csv_files = [f <span class="kw">for</span> f <span class="kw">in</span> os.listdir(extract_path)
+                     <span class="kw">if</span> f.endswith(<span class="str">".csv"</span>)]
+        <span class="kw">if not</span> csv_files:
+            <span class="kw">raise</span> FileNotFoundError(<span class="str">"No CSV found in ZIP"</span>)
+
+        <span class="kw">return</span> pd.read_csv(os.path.join(extract_path, csv_files[0]))</div>
+
+      <div class="callout"><strong>🧠 Professional code = guards at every step.</strong> The pipeline shouldn't crash with a cryptic traceback — it should fail with a <strong>clear, actionable error message.</strong></div>`;
+
+  }else if(p==='pipeline'){
+    c.innerHTML=`
+      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--green);margin-bottom:0.3rem">🔗 Where Data Ingestion Sits in the Full Pipeline</h3>
+      <p style="color:var(--tdim);font-size:0.85rem;margin-bottom:1rem">Data ingestion is <strong>Step 1 of 7</strong>. Every step after depends on the DataFrame it returns.</p>
+
+      <div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:12px;padding:1rem;margin:1rem 0">
+        <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--amber);margin-bottom:0.6rem;text-align:center">📊 THE FULL 7-STEP PIPELINE</h4>
+        <div class="flow" style="flex-direction:column;gap:0.4rem">
+          <div style="display:flex;align-items:center;gap:0.3rem;flex-wrap:wrap;justify-content:center">
+            <div class="step hl"><strong>1. DATA INGESTION</strong><br><span style="font-size:0.55rem;color:var(--tmut)">← YOU ARE HERE</span><br><span style="font-size:0.55rem">Factory Pattern</span></div>
+            <span class="flow-arrow">→</span>
+            <div class="step"><strong>2. MISSING VALUES</strong><br><span style="font-size:0.55rem;color:var(--tmut)">Strategy Pattern</span></div>
+            <span class="flow-arrow">→</span>
+            <div class="step"><strong>3. FEATURE ENG</strong><br><span style="font-size:0.55rem;color:var(--tmut)">Strategy Pattern</span></div>
+            <span class="flow-arrow">→</span>
+            <div class="step"><strong>4. OUTLIERS</strong><br><span style="font-size:0.55rem;color:var(--tmut)">Strategy Pattern</span></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.3rem;flex-wrap:wrap;justify-content:center">
+            <div class="step"><strong>5. DATA SPLIT</strong><br><span style="font-size:0.55rem;color:var(--tmut)">Strategy Pattern</span></div>
+            <span class="flow-arrow">→</span>
+            <div class="step"><strong>6. MODEL BUILD</strong><br><span style="font-size:0.55rem;color:var(--tmut)">MLflow Tracking</span></div>
+            <span class="flow-arrow">→</span>
+            <div class="step done"><strong>7. MODEL EVAL</strong><br><span style="font-size:0.55rem;color:var(--tmut)">R², RMSE</span></div>
+          </div>
+        </div>
+      </div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin:0.8rem 0 0.3rem">📋 Phase 5B Checklist</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin:0.6rem 0">
+        <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.6rem;font-size:0.65rem">
+          <strong style="color:var(--green)">✅ 5B.1</strong> DataIngestor (ABC) — the contract<br>
+          <strong style="color:var(--green)">✅ 5B.2</strong> ZipDataIngestor — extracts ZIP, finds CSV<br>
+          <strong style="color:var(--green)">✅ 5B.3</strong> DataIngestorFactory — auto-detects .zip<br>
+          <strong style="color:var(--green)">✅ 5B.4</strong> data_ingestion_step — ZenML wrapper<br>
+          <strong style="color:var(--green)">✅ 5B.5</strong> Type hints, docstrings, error handling
+        </div>
+        <div style="background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:0.6rem;font-size:0.65rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">📁 Files Involved</div>
+          <div style="color:var(--tdim);line-height:1.8">
+            <code>src/ingest_data.py</code> — core logic<br>
+            <code>steps/data_ingestion_step.py</code> — ZenML<br>
+            <code>pipelines/training_pipeline.py</code> — DAG<br>
+            <code>data/archive.zip</code> — raw data
+          </div>
+        </div>
+      </div>
+
+      <div class="callout"><strong>🔑 KEY INSIGHT:</strong> Step 1 (data ingestion) is the FOUNDATION. If this step returns bad data, all 6 downstream steps produce wrong results. <strong>Garbage in → garbage out. That's why error handling here matters so much.</strong></div>`;
+  }
+}
+showTab('journey');
+</script>
+</body>
+</html>
