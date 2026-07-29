@@ -194,64 +194,109 @@ df = ingestor.ingest(<span class="str">"data/archive.zip"</span>)  <span class="
 
   }else if(p==='strategy'){
     c.innerHTML=`
-      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1rem;color:var(--violet);margin-bottom:0.5rem">🎯 Strategy Pattern — "Pay however you want" = "Fill missing values however you want"</h3>
-      <p style="color:var(--tdim);font-size:0.8rem;margin-bottom:1rem">The handler doesn't care HOW you fill missing values. It just calls <code>strategy.handle()</code>. Swap strategies without changing code.</p>
+      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--violet);margin-bottom:0.3rem">🎯 Strategy Pattern — The "Swappable Algorithm" Pattern</h3>
+      <p style="color:var(--tdim);font-size:0.85rem;margin-bottom:1rem"><strong>What problem does it solve?</strong> You have multiple ways to do the same task — fill missing values with median OR mean OR drop them. You don't want to rewrite the pipeline every time you switch. Strategy lets you swap algorithms like changing batteries.</p>
 
-      <div class="split">
-        <div class="analogy-box">
-          <h3>💳 Analogy: Payment Methods</h3>
-          <div class="flow">
-            <div class="step">🛒 ShoppingCart<br><strong>.checkout()</strong></div>
-            <span style="font-size:1.2rem;color:var(--violet)">→</span>
-            <div class="step hl">💳 CreditCard<br><strong>.pay(100)</strong></div>
+      <div style="background:var(--vbg);border:1px solid var(--violet);border-radius:12px;padding:1.2rem;margin:1rem 0">
+        <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin-bottom:0.8rem;text-align:center">🧠 BUILD YOUR INTUITION — Before vs After</h4>
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:0.6rem;align-items:center">
+          <div style="background:var(--red-bg, #ffebe9);border:1px solid var(--red);border-radius:8px;padding:0.8rem;text-align:center">
+            <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--red);font-weight:700;margin-bottom:0.4rem">❌ WITHOUT Strategy</div>
+            <div style="font-size:0.65rem;color:var(--tdim);line-height:1.8">
+              To try median fill:<br>→ <strong>Rewrite</strong> the pipeline code<br><br>
+              To try dropping nulls:<br>→ <strong>Rewrite</strong> the pipeline AGAIN<br><br>
+              <span style="color:var(--red)">Every experiment =<br>rewrite code. Risky.</span>
+            </div>
           </div>
-          <div class="flow" style="margin-top:0.3rem">
-            <div class="step">🛒 ShoppingCart<br><strong>.checkout()</strong></div>
-            <span style="font-size:1.2rem;color:var(--violet)">→</span>
-            <div class="step hl">🅿️ PayPal<br><strong>.pay(100)</strong></div>
+          <div style="font-size:1.5rem;font-weight:700;color:var(--green)">→</div>
+          <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.8rem;text-align:center">
+            <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--green);font-weight:700;margin-bottom:0.4rem">✅ WITH Strategy</div>
+            <div style="font-size:0.65rem;color:var(--tdim);line-height:1.8">
+              <strong>1 line change:</strong><br>
+              <code>handler.set_strategy(</code><br><code>  FillMedianStrategy())</code><br><br>
+              <span style="color:var(--green)">Swap to DropStrategy<br>in 1 second. Zero risk.</span>
+            </div>
           </div>
-          <p style="font-size:0.68rem;color:var(--tmut);text-align:center;margin-top:0.5rem">Same cart. Different payment. Cart code NEVER changes.</p>
-        </div>
-        <div class="analogy-box">
-          <h3>🕳️ In Our Pipeline: MissingValueHandler</h3>
-          <div class="flow">
-            <div class="step">📊 MissingValue<br>Handler</div>
-            <span style="font-size:1.2rem;color:var(--violet)">→</span>
-            <div class="step hl">📐 FillMedian<br><strong>.handle(df)</strong></div>
-          </div>
-          <div class="flow" style="margin-top:0.3rem">
-            <div class="step">📊 MissingValue<br>Handler</div>
-            <span style="font-size:1.2rem;color:var(--violet)">→</span>
-            <div class="step hl">🗑️ DropMissing<br><strong>.handle(df)</strong></div>
-          </div>
-          <p style="font-size:0.68rem;color:var(--tmut);text-align:center;margin-top:0.5rem">Same handler. Different strategy. Handler code NEVER changes.</p>
         </div>
       </div>
 
-      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--violet);margin:0.8rem 0 0.4rem">Pipeline Code (src/handle_missing_values.py)</h4>
-      <div class="code-box"><span class="cm"># Strategy Interface</span>
-<span class="kw">class</span> MissingValueHandlingStrategy(ABC):
-    <span class="kw">def</span> handle(self, df) -> pd.DataFrame: ...
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1rem 0 0.4rem">📦 WHERE exactly does this happen? (6 places in the pipeline!)</h4>
+      <div style="display:flex;align-items:center;gap:0.3rem;flex-wrap:wrap;justify-content:center;margin:0.8rem 0;font-size:0.62rem">
+        <div style="background:var(--vbg);border:2px solid var(--violet);border-radius:8px;padding:0.5rem;text-align:center"><strong>Step 2</strong><br>Missing<br>Values</div>
+        <span style="color:var(--violet)">+</span>
+        <div style="background:var(--vbg);border:2px solid var(--violet);border-radius:8px;padding:0.5rem;text-align:center"><strong>Step 3</strong><br>Feature<br>Engineering</div>
+        <span style="color:var(--violet)">+</span>
+        <div style="background:var(--vbg);border:2px solid var(--violet);border-radius:8px;padding:0.5rem;text-align:center"><strong>Step 4</strong><br>Outlier<br>Detection</div>
+        <span style="color:var(--violet)">+</span>
+        <div style="background:var(--vbg);border:2px solid var(--violet);border-radius:8px;padding:0.5rem;text-align:center"><strong>Step 5</strong><br>Data<br>Split</div>
+        <span style="color:var(--violet)">+</span>
+        <div style="background:var(--vbg);border:2px solid var(--violet);border-radius:8px;padding:0.5rem;text-align:center"><strong>Step 6</strong><br>Model<br>Build</div>
+        <span style="color:var(--violet)">+</span>
+        <div style="background:var(--vbg);border:2px solid var(--violet);border-radius:8px;padding:0.5rem;text-align:center"><strong>Step 7</strong><br>Model<br>Eval</div>
+        <span style="color:var(--violet);font-size:1rem">=</span>
+        <div style="background:var(--card);border:2px solid var(--violet);border-radius:8px;padding:0.5rem;text-align:center"><strong>ALL use<br>STRATEGY<br>Pattern</strong></div>
+      </div>
 
-<span class="cm"># Concrete Strategies</span>
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1rem 0 0.4rem">👤 WHO writes this code?</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin:0.8rem 0">
+        <div style="background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--green);font-weight:700;margin-bottom:0.3rem">✅ WE write ONCE (setup)</div>
+          <div style="font-size:0.65rem;color:var(--tdim);line-height:1.7">The ABC class + concrete strategies + context handler. <strong>~40 lines per module.</strong> Written ONCE at project setup. Same pattern repeated across 6 modules — you write the first one, copy the structure for the rest.</div>
+        </div>
+        <div style="background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--amber);font-weight:700;margin-bottom:0.3rem">🤖 Strategy auto-swaps (experiment time)</div>
+          <div style="font-size:0.65rem;color:var(--tdim);line-height:1.7">During experiments: <strong>ONE line</strong> changes the strategy. "I want to try dropping instead of filling" → <code>set_strategy(DropStrategy())</code>. The handler, pipeline, and rest of code <strong>never change.</strong></div>
+        </div>
+      </div>
+
+      <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:10px;padding:0.8rem 1rem;margin:1rem 0;text-align:center">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--green);font-weight:700;margin-bottom:0.3rem">❓ WHO WROTE THIS CODE?</div>
+        <div style="font-size:0.75rem;color:var(--tdim);line-height:1.7">
+          <strong>Already written</strong> in 6 files under <code style="background:var(--raised);padding:0.1em 0.4em;border-radius:3px">prices-predictor-system/src/</code><br>
+          Open <code>handle_missing_values.py</code>, <code>feature_engineering.py</code>, <code>outlier_detection.py</code>, etc.<br>
+          Your job: <strong>UNDERSTAND the pattern</strong> — see how all 6 modules follow the same structure.
+        </div>
+      </div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1rem 0 0.4rem">📝 The Code (src/handle_missing_values.py — 1 of 6 Strategy modules)</h4>
+      <div class="code-box"><span class="cm"># Step 1: Strategy INTERFACE (the contract)</span>
+<span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod
+<span class="kw">class</span> MissingValueHandlingStrategy(ABC):
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> handle(self, df: pd.DataFrame) -> pd.DataFrame:
+        <span class="kw">pass</span>
+
+<span class="cm"># Step 2: CONCRETE strategies (the options you can swap between)</span>
 <span class="kw">class</span> DropMissingValuesStrategy(MissingValueHandlingStrategy):
-    <span class="kw">def</span> handle(self, df): <span class="kw">return</span> df.dropna()
+    <span class="kw">def</span> handle(self, df):
+        <span class="kw">return</span> df.dropna()  <span class="cm"># Just delete rows with nulls</span>
 
 <span class="kw">class</span> FillMissingValuesStrategy(MissingValueHandlingStrategy):
-    <span class="kw">def</span> __init__(self, method=<span class="str">"median"</span>): self.method = method
-    <span class="kw">def</span> handle(self, df): <span class="kw">return</span> df.fillna(df.median())
+    <span class="kw">def</span> __init__(self, method=<span class="str">"median"</span>):
+        self.method = method  <span class="cm"># "mean", "median", "mode", or "constant"</span>
+    <span class="kw">def</span> handle(self, df):
+        <span class="kw">if</span> self.method == <span class="str">"median"</span>: <span class="kw">return</span> df.fillna(df.median())
+        <span class="kw">if</span> self.method == <span class="str">"mean"</span>:   <span class="kw">return</span> df.fillna(df.mean())
+        <span class="kw">if</span> self.method == <span class="str">"mode"</span>:   <span class="kw">return</span> df.fillna(df.mode().iloc[0])
+        <span class="kw">return</span> df.fillna(self.method)  <span class="cm"># constant value</span>
 
-<span class="cm"># Context — delegates to the chosen strategy</span>
+<span class="cm"># Step 3: CONTEXT — the handler that DELEGATES to the strategy</span>
 <span class="kw">class</span> MissingValueHandler:
-    <span class="kw">def</span> set_strategy(self, strategy): self.strategy = strategy
+    <span class="kw">def</span> set_strategy(self, strategy: MissingValueHandlingStrategy):
+        self.strategy = strategy
     <span class="kw">def</span> handle_missing_values(self, df):
-        <span class="kw">return</span> self.strategy.handle(df)  <span class="cm"># ← delegates!</span>
+        <span class="kw">return</span> self.strategy.handle(df)  <span class="cm"># ← THIS is the delegation!</span>
 
-<span class="cm"># Usage: Swap strategy in ONE line</span>
-handler = MissingValueHandler(FillMissingValuesStrategy(<span class="str">"median"</span>))
-<span class="cm"># handler.set_strategy(DropMissingValuesStrategy())  ← swap anytime!</span></div>
+<span class="cm"># Step 4: USE it — swap strategies in ONE line</span>
+handler = MissingValueHandler()
+handler.set_strategy(FillMissingValuesStrategy(<span class="str">"median"</span>))
+clean_df = handler.handle_missing_values(raw_df)
 
-      <div class="callout"><strong>Used in 6 pipeline modules:</strong> MissingValueHandler, FeatureEngineer, OutlierDetector, DataSplitter, ModelBuilder, ModelEvaluator. <strong>Same pattern, different strategies.</strong></div>`;
+<span class="cm"># Want to try dropping instead? ONE line change:</span>
+handler.set_strategy(DropMissingValuesStrategy())
+<span class="cm"># The handler, pipeline, and rest of code — ZERO changes.</span></div>
+
+      <div class="callout"><strong>🧠 Remember:</strong> Strategy = "I want to swap algorithms without rewriting code." <strong>6 modules in this pipeline use Strategy. You learn it ONCE, you know all 6.</strong></div>`;
 
   }else if(p==='template'){
     c.innerHTML=`
