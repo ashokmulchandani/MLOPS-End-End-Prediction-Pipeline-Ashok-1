@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 5C: Exploratory Data Analysis — Interactive Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f8f9fc;--card:#fff;--raised:#eef0f5;--border:#dde0e6;--text:#1a1d23;--tdim:#4a4f5b;--tmut:#8b909b;--violet:#5b3aa8;--vbg:#f3effc;--cyan:#007a99;--cyan-bg:#e6f4f7;--amber:#b87000;--amber-bg:#fff6e5;--green:#1a6e34;--green-bg:#e6f4ea;--red:#c62828;--magenta:#9e2a6b}
+body.dark{--bg:#06090f;--card:#0d1117;--raised:#161b22;--border:#21262d;--text:#e6edf3;--tdim:#8b949e;--tmut:#484f58;--violet:#a371f7;--vbg:#a371f710;--cyan:#39d2ff;--cyan-bg:#39d2ff10;--amber:#ffb347;--amber-bg:#ffb34710;--green:#3fb950;--green-bg:#3fb95010;--red:#f85149;--magenta:#ff6ec7}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.65;min-height:100vh;transition:background 0.3s,color 0.3s}
+.theme-btn{position:fixed;top:1rem;right:1rem;z-index:10;background:var(--raised);border:1px solid var(--border);color:var(--text);padding:0.5rem 0.9rem;border-radius:8px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-size:0.75rem;font-weight:600}
+.theme-btn:hover{border-color:var(--violet);color:var(--violet)}
+.app{max-width:950px;margin:0 auto;padding:1.5rem}
+.header{text-align:center;padding:1rem 0 0.3rem}
+.header h1{font-family:'Space Grotesk',sans-serif;font-size:1.4rem;font-weight:700;color:var(--violet)}
+.header p{color:var(--tdim);font-size:0.85rem;margin-top:0.2rem}
+.tabs{display:flex;gap:0.35rem;justify-content:center;margin:0.8rem 0;flex-wrap:wrap}
+.tab{font-family:'Space Grotesk',sans-serif;font-size:0.6rem;font-weight:600;padding:0.5em 1em;border-radius:100px;border:1.5px solid var(--border);background:var(--card);color:var(--tdim);cursor:pointer;transition:0.15s}
+.tab:hover{border-color:var(--violet);color:var(--violet)}
+.tab.active{background:var(--violet);border-color:var(--violet);color:#fff}
+.content{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin:0.6rem 0}
+.code-box{background:var(--raised);border-left:4px solid var(--violet);border-radius:8px;padding:0.8rem 1rem;font-family:'JetBrains Mono',monospace;font-size:0.68rem;line-height:1.7;color:var(--text);white-space:pre-wrap;overflow-x:auto;margin:0.6rem 0}
+.code-box .kw{color:var(--violet)}.code-box .str{color:var(--green)}.code-box .cm{color:var(--tmut)}.code-box .fn{color:var(--amber)}
+.callout{background:var(--vbg);border:1px solid rgba(91,58,168,0.15);border-radius:8px;padding:0.6rem 1rem;margin:0.6rem 0;font-size:0.78rem;text-align:center}
+.tag{font-family:'Space Grotesk',sans-serif;font-size:0.5rem;font-weight:600;padding:0.15em 0.5em;border-radius:100px;display:inline-block}
+.tag-s{background:var(--vbg);color:var(--violet)}.tag-t{background:var(--green-bg);color:var(--green)}
+</style>
+</head>
+<body>
+<button class="theme-btn" onclick="toggleTheme()">🌙 Dark</button>
+<div class="app">
+<header class="header">
+  <h1>Phase 5C: Exploratory Data Analysis</h1>
+  <p>EDA is not just plots — it's a STORYLINE that drives every modeling decision</p>
+</header>
+<div class="tabs">
+  <button class="tab active" onclick="showTab('journey',event)">🗺️ EDA Journey</button>
+  <button class="tab" onclick="showTab('inspect',event)">🔍 Data Inspection</button>
+  <button class="tab" onclick="showTab('missing',event)">🕳️ Missing Values</button>
+  <button class="tab" onclick="showTab('uni',event)">📊 Univariate</button>
+  <button class="tab" onclick="showTab('bi',event)">📈 Bivariate</button>
+  <button class="tab" onclick="showTab('multi',event)">🔗 Multivariate</button>
+  <button class="tab" onclick="showTab('decisions',event)">✅ Decisions</button>
+</div>
+<div class="content" id="content"></div>
+</div>
+<script>
+function toggleTheme(){document.body.classList.toggle('dark');document.querySelector('.theme-btn').textContent=document.body.classList.contains('dark')?'☀️ Light':'🌙 Dark';localStorage.setItem('p5c-theme',document.body.classList.contains('dark')?'dark':'light')}
+if(localStorage.getItem('p5c-theme')==='dark'){document.body.classList.add('dark');document.querySelector('.theme-btn').textContent='☀️ Light'}
+
+function showTab(p,evt){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  if(evt&&evt.target)evt.target.classList.add('active');else document.querySelector('.tab').classList.add('active');
+  const c=document.getElementById('content');
+
+if(p==='journey'){c.innerHTML=`
+<h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--violet);margin-bottom:0.3rem">🗺️ The EDA Journey — 4 Phases, 13 Decision Points</h3>
+<p style="color:var(--tdim);font-size:0.85rem;margin-bottom:1rem">EDA is the bridge between <strong>raw data</strong> and <strong>modeling decisions</strong>. Every plot answers a question. Every answer drives a choice.</p>
+
+<div style="background:var(--vbg);border:2px solid var(--violet);border-radius:12px;padding:1.2rem;margin:1rem 0">
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin-bottom:0.8rem;text-align:center">📋 The 4-Phase EDA Process (Ames Housing: 2,930 rows × 82 cols)</h4>
+<div style="display:flex;flex-direction:column;gap:0.5rem;font-size:0.68rem">
+<div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;justify-content:center">
+<div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:8px;padding:0.5rem 0.7rem;text-align:center;min-width:130px"><strong>PHASE 1<br>Data Inspection</strong><br><span style="color:var(--tmut);font-size:0.55rem">Strategy Pattern</span><br><span style="color:var(--tmut);font-size:0.55rem">What's in here?</span></div>
+<span style="font-size:1.2rem;color:var(--violet)">→</span>
+<div style="background:var(--vbg);border:2px solid var(--violet);border-radius:8px;padding:0.5rem 0.7rem;text-align:center;min-width:130px"><strong>PHASE 2<br>Missing Values</strong><br><span style="color:var(--tmut);font-size:0.55rem">Template Pattern</span><br><span style="color:var(--tmut);font-size:0.55rem">What's broken?</span></div>
+<span style="font-size:1.2rem;color:var(--violet)">→</span>
+<div style="background:var(--cyan-bg);border:2px solid var(--cyan);border-radius:8px;padding:0.5rem 0.7rem;text-align:center;min-width:130px"><strong>PHASE 3<br>Uni/Bi/Multivariate</strong><br><span style="color:var(--tmut);font-size:0.55rem">Strategy + Template</span><br><span style="color:var(--tmut);font-size:0.55rem">What matters?</span></div>
+<span style="font-size:1.2rem;color:var(--violet)">→</span>
+<div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.5rem 0.7rem;text-align:center;min-width:130px"><strong>PHASE 4<br>Decisions</strong><br><span style="color:var(--tmut);font-size:0.55rem">Documentation</span><br><span style="color:var(--tmut);font-size:0.55rem">What to do?</span></div>
+</div>
+</div>
+</div>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1rem 0 0.4rem">📁 Where Is the EDA Code?</h4>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:0.6rem 0">
+<div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:8px;padding:0.8rem;text-align:center">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--amber);font-weight:700;margin-bottom:0.3rem">📓 EDA.ipynb</div>
+<div style="font-size:0.62rem;color:var(--tdim);line-height:1.7">The Jupyter notebook where you RUN the EDA.<br>Imports from <code>analysis/analyze_src/</code><br>Shows plots inline. You interact with it.</div>
+</div>
+<div style="background:var(--vbg);border:2px solid var(--violet);border-radius:8px;padding:0.8rem;text-align:center">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">📂 analysis/analyze_src/</div>
+<div style="font-size:0.62rem;color:var(--tdim);line-height:1.7">5 analysis modules with Strategy + Template patterns.<br>Called BY the notebook. Notebook = runner, src/ = logic.</div>
+</div>
+</div>
+
+<div class="callout"><strong>🧠 KEY INSIGHT:</strong> EDA is not random clicking. Every plot has a purpose. Every purpose leads to a decision. The Strategy and Template patterns make the analysis code <strong>reusable and organized</strong> — not a messy notebook with 50 cells.</div>`;}
+
+else if(p==='inspect'){c.innerHTML=`
+<h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--amber);margin-bottom:0.3rem">🔍 Phase 1: Data Inspection (Strategy Pattern)</h3>
+<p style="color:var(--tdim);font-size:0.85rem;margin-bottom:0.8rem">Before any visualization — <strong>understand the RAW DATA</strong>. How many rows? Columns? Types? The Strategy pattern lets you swap inspection methods without changing the inspector.</p>
+
+<div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:12px;padding:1rem;margin:1rem 0">
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--amber);margin-bottom:0.5rem;text-align:center">🧠 Strategy Pattern for Data Inspection</h4>
+<div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;justify-content:center;font-size:0.65rem">
+<div style="background:var(--card);border:2px solid var(--amber);border-radius:8px;padding:0.5rem 0.7rem;text-align:center"><strong>DataInspector</strong><br><span style="color:var(--tmut)">Context Class</span></div>
+<span style="color:var(--amber);font-size:1rem">→</span>
+<div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:8px;padding:0.5rem 0.7rem;text-align:center"><strong>DataTypesInspection</strong><br><span style="color:var(--tmut)">dtypes, nulls, cardinality</span></div>
+<span style="color:var(--amber);font-size:1rem">OR</span>
+<div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:8px;padding:0.5rem 0.7rem;text-align:center"><strong>SummaryStatistics</strong><br><span style="color:var(--tmut)">mean, std, min, max, quartiles</span></div>
+</div>
+</div>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin:0.8rem 0 0.3rem">📊 What We Found (Ames Housing — 2,930 rows)</h4>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;margin:0.6rem 0">
+<div style="background:var(--card);border:2px solid var(--cyan);border-radius:8px;padding:0.7rem;text-align:center">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--cyan);font-weight:700">📐 38 Numerical</div>
+<div style="font-size:0.6rem;color:var(--tdim);line-height:1.7;margin-top:0.3rem">GrLivArea: 334-5642<br>SalePrice: $12K-$755K<br>LotArea: 1300-215K<br>YearBuilt: 1872-2010</div>
+</div>
+<div style="background:var(--card);border:2px solid var(--magenta);border-radius:8px;padding:0.7rem;text-align:center">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--magenta);font-weight:700">🔤 43 Categorical</div>
+<div style="font-size:0.6rem;color:var(--tdim);line-height:1.7;margin-top:0.3rem">MSZoning: 5 unique<br>Neighborhood: 25 unique<br>HouseStyle: 8 unique<br>PoolQC: 99.7% null</div>
+</div>
+<div style="background:var(--card);border:2px solid var(--green);border-radius:8px;padding:0.7rem;text-align:center">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--green);font-weight:700">🎯 1 Target</div>
+<div style="font-size:0.6rem;color:var(--tdim);line-height:1.7;margin-top:0.3rem">SalePrice<br>Mean: $182K<br>Std: $79K<br>Skew: 1.88 (right!)</div>
+</div>
+</div>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin:0.8rem 0 0.3rem">📝 The Pattern Code (analysis/analyze_src/basic_data_inspection.py)</h4>
+<div class="code-box"><span class="cm"># Strategy Interface</span>
+<span class="kw">class</span> <span class="fn">DataInspectionStrategy</span>(ABC):
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> inspect(self, df) -> pd.DataFrame: <span class="kw">pass</span>
+
+<span class="cm"># Concrete Strategy 1: Data Types + Nulls + Cardinality</span>
+<span class="kw">class</span> <span class="fn">DataTypesInspectionStrategy</span>(DataInspectionStrategy):
+    <span class="kw">def</span> inspect(self, df):
+        <span class="kw">return</span> pd.DataFrame({
+            <span class="str">'dtype'</span>: df.dtypes,
+            <span class="str">'null_count'</span>: df.isnull().sum(),
+            <span class="str">'null_pct'</span>: (df.isnull().sum()/len(df)*100).round(2),
+            <span class="str">'unique_values'</span>: df.nunique()
+        })
+
+<span class="cm"># Concrete Strategy 2: Statistical Summary</span>
+<span class="kw">class</span> <span class="fn">SummaryStatisticsStrategy</span>(DataInspectionStrategy):
+    <span class="kw">def</span> inspect(self, df):
+        <span class="kw">return</span> df.describe().T  <span class="cm"># mean, std, min, max, quartiles</span>
+
+<span class="cm"># Context — delegates to whichever strategy you choose</span>
+<span class="kw">class</span> <span class="fn">DataInspector</span>:
+    <span class="kw">def</span> set_strategy(self, s): self.strategy = s
+    <span class="kw">def</span> execute(self, df): <span class="kw">return</span> self.strategy.inspect(df)</div>
+
+<div class="callout"><strong>🔑 KEY FINDING:</strong> SalePrice is <strong>right-skewed (1.88)</strong>. Most homes $100K-$250K, but a tail stretches to $755K. <strong>Decision: Log-transform SalePrice before training.</strong></div>`;}
+
+else if(p==='missing'){c.innerHTML=`
+<h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--green);margin-bottom:0.3rem">🕳️ Phase 2: Missing Values Analysis (Template Pattern)</h3>
+<p style="color:var(--tdim);font-size:0.85rem;margin-bottom:0.8rem">Missing data tells a STORY. The Template pattern ensures the analysis follows a fixed sequence: <strong>Identify → Visualize</strong>. Always.</p>
+
+<div style="background:var(--green-bg);border:2px solid var(--green);border-radius:12px;padding:1rem;margin:1rem 0">
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--green);margin-bottom:0.5rem;text-align:center">📊 What We Found — Missing Value Heatmap</h4>
+
+<div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;font-size:0.62rem">
+<div style="text-align:center;min-width:180px">
+<div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:0.5rem;margin-bottom:0.3rem">
+<div style="display:flex;justify-content:space-between;margin:2px 0"><span>PoolQC</span><span style="color:var(--red);font-weight:700">██████████ 99.7%</span></div>
+<div style="display:flex;justify-content:space-between;margin:2px 0"><span>MiscFeature</span><span style="color:var(--red);font-weight:700">█████████░ 96%</span></div>
+<div style="display:flex;justify-content:space-between;margin:2px 0"><span>Alley</span><span style="color:var(--red);font-weight:700">█████████░ 93%</span></div>
+<div style="display:flex;justify-content:space-between;margin:2px 0"><span>Fence</span><span style="color:var(--red);font-weight:700">████████░░ 80%</span></div>
+<div style="display:flex;justify-content:space-between;margin:2px 0"><span>FireplaceQu</span><span style="color:var(--amber);font-weight:700">█████░░░░░ 47%</span></div>
+<div style="display:flex;justify-content:space-between;margin:2px 0"><span>LotFrontage</span><span style="color:var(--amber);font-weight:700">██░░░░░░░░ 17%</span></div>
+<div style="display:flex;justify-content:space-between;margin:2px 0"><span>GarageYrBlt</span><span style="color:var(--green);font-weight:700">█░░░░░░░░░ 5%</span></div>
+<div style="display:flex;justify-content:space-between;margin:2px 0"><span>Electrical</span><span style="color:var(--green);font-weight:700">░░░░░░░░░░ <1%</span></div>
+</div>
+</div>
+
+<div style="min-width:200px">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">🧠 The Missing Value Story</div>
+<div style="font-size:0.6rem;color:var(--tdim);line-height:1.8">
+<span style="color:var(--red)">🔴 >80% null</span> → <strong>DROP column</strong><br>
+&nbsp;&nbsp;PoolQC, Alley, Fence = "almost no homes have pools/alleys"<br><br>
+<span style="color:var(--amber)">🟡 10-80% null</span> → <strong>FILL with meaning</strong><br>
+&nbsp;&nbsp;FireplaceQu null = "No fireplace"<br>
+&nbsp;&nbsp;LotFrontage null = random, fill median<br><br>
+<span style="color:var(--green)">🟢 <10% null</span> → <strong>FILL and move on</strong><br>
+&nbsp;&nbsp;GarageYrBlt null = "No garage" → fill 0<br>
+&nbsp;&nbsp;Electrical null = 1 house → fill mode
+</div>
+</div>
+</div>
+</div>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin:0.8rem 0 0.3rem">📝 The Pattern Code (analysis/analyze_src/missing_values_analysis.py)</h4>
+<div class="code-box"><span class="cm"># TEMPLATE — defines the SKELETON (fixed sequence)</span>
+<span class="kw">class</span> <span class="fn">MissingValuesAnalysisTemplate</span>(ABC):
+    <span class="kw">def</span> analyze(self, df):
+        missing = self.identify_missing_values(df)    <span class="cm"># Step 1: ALWAYS FIRST</span>
+        self.visualize_missing_values(df, missing)    <span class="cm"># Step 2: ALWAYS SECOND</span>
+
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> identify_missing_values(self, df): <span class="kw">pass</span>
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> visualize_missing_values(self, df, missing): <span class="kw">pass</span>
+
+<span class="cm"># CONCRETE — fills in the blanks</span>
+<span class="kw">class</span> <span class="fn">SimpleMissingValuesAnalysis</span>(MissingValuesAnalysisTemplate):
+    <span class="kw">def</span> identify_missing_values(self, df):
+        <span class="kw">return</span> df.isnull().sum()
+    <span class="kw">def</span> visualize_missing_values(self, df, missing):
+        <span class="kw">import</span> seaborn <span class="kw">as</span> sns
+        sns.heatmap(df.isnull(), cbar=<span class="kw">True</span>)</div>
+
+<div class="callout"><strong>🧠 KEY INSIGHT:</strong> The Template guarantees you never skip a step. First identify, THEN visualize. <strong>PoolQC (99.7% null) → DROP. FireplaceQu (47% null) → "None" is a meaningful category.</strong></div>`;}
+
+else if(p==='uni'){c.innerHTML=`
+<h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--cyan);margin-bottom:0.3rem">📊 Phase 3a: Univariate Analysis (Strategy Pattern)</h3>
+<p style="color:var(--tdim);font-size:0.85rem;margin-bottom:0.8rem"><strong>One feature at a time.</strong> Understand each column's distribution BEFORE looking at relationships. The Strategy pattern lets you swap between numerical and categorical analysis.</p>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin:1rem 0">
+<div style="background:var(--cyan-bg);border:2px solid var(--cyan);border-radius:10px;padding:1rem;text-align:center">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--cyan);font-weight:700;margin-bottom:0.5rem">📐 Numerical Analysis — SalePrice Distribution</div>
+<div style="font-size:0.62rem;color:var(--tdim);line-height:1.8;text-align:left">
+<strong>What we see:</strong><br>
+&nbsp;&nbsp;█ Mean: $182,000<br>
+&nbsp;&nbsp;█ Median: $163,000<br>
+&nbsp;&nbsp;█ Std Dev: $79,000<br>
+&nbsp;&nbsp;█ Skew: <span style="color:var(--red)">1.88 (RIGHT-SKEWED!)</span><br><br>
+<strong>The shape:</strong><br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;████████</code><br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;████████████</code><br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;████████████████</code><br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;██████████████████████</code> ← peak at $150K<br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;██</code><br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;█</code> → tail to $755K<br><br>
+<span style="color:var(--red)">Long right tail → needs log transform!</span>
+</div>
+</div>
+
+<div style="background:var(--vbg);border:2px solid var(--violet);border-radius:10px;padding:1rem;text-align:center">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--violet);font-weight:700;margin-bottom:0.5rem">📊 After Log Transform</div>
+<div style="font-size:0.62rem;color:var(--tdim);line-height:1.8;text-align:left">
+<strong>What log transform does:</strong><br>
+&nbsp;&nbsp;█ Compresses the long tail<br>
+&nbsp;&nbsp;█ Makes distribution ≈ normal<br>
+&nbsp;&nbsp;█ Linear Regression works better<br><br>
+<strong>New shape:</strong><br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;██</code><br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;██████</code><br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;██████████</code> ← bell curve!<br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;████████████</code><br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;██████</code><br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;██</code><br><br>
+<span style="color:var(--green)">Linear Regression LOVES this shape!</span>
+</div>
+</div>
+</div>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin:0.8rem 0 0.3rem">🔤 Categorical Analysis — What Did We Learn?</h4>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;margin:0.6rem 0">
+<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:0.7rem;text-align:center">
+<div style="font-size:0.7rem;font-weight:700">MSZoning</div>
+<div style="font-size:0.58rem;color:var(--tdim);margin-top:0.2rem">RL (Residential Low): <strong>79%</strong><br>One category dominates.<br>Low variance → may not help model.</div>
+</div>
+<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:0.7rem;text-align:center">
+<div style="font-size:0.7rem;font-weight:700">Neighborhood</div>
+<div style="font-size:0.58rem;color:var(--tdim);margin-top:0.2rem"><strong>25 unique values</strong><br>Well distributed.<br>Important for pricing → keep!</div>
+</div>
+<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:0.7rem;text-align:center">
+<div style="font-size:0.7rem;font-weight:700">OverallQual</div>
+<div style="font-size:0.58rem;color:var(--tdim);margin-top:0.2rem">1-10 rating.<br>Mean: <strong>6.1</strong>. Normal-ish.<br>This will be the #1 predictor!</div>
+</div>
+</div>
+
+<div class="code-box"><span class="cm"># Strategy Pattern for Univariate</span>
+<span class="kw">class</span> <span class="fn">UnivariateAnalysisStrategy</span>(ABC):
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> analyze(self, df, feature): <span class="kw">pass</span>
+
+<span class="kw">class</span> <span class="fn">NumericalUnivariateAnalysis</span>:  <span class="cm"># Histogram + KDE</span>
+<span class="kw">class</span> <span class="fn">CategoricalUnivariateAnalysis</span>: <span class="cm"># Count plot</span></div>
+
+<div class="callout"><strong>🔑 DECISION:</strong> SalePrice is right-skewed → <strong>log transform before training.</strong> This one decision can improve R² by 5-10% because Linear Regression assumes normally distributed targets.</div>`;}
+
+else if(p==='bi'){c.innerHTML=`
+<h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--amber);margin-bottom:0.3rem">📈 Phase 3b: Bivariate Analysis (Strategy Pattern)</h3>
+<p style="color:var(--tdim);font-size:0.85rem;margin-bottom:0.8rem"><strong>How does each feature relate to SalePrice?</strong> This is where you find your strongest predictors. Strategy pattern lets you analyze num-vs-num and cat-vs-num the same way.</p>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin:1rem 0">
+<div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:10px;padding:1rem;text-align:center">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--amber);font-weight:700;margin-bottom:0.4rem">📈 GrLivArea vs SalePrice (r=0.71)</div>
+<div style="font-size:0.62rem;color:var(--tdim);line-height:1.8">
+<strong>Pattern:</strong> CLEAR positive linear relationship.<br>
+Bigger house → higher price. Obvious but powerful.<br><br>
+<span style="color:var(--red)">⚠ Two outliers at bottom-right:</span><br>
+Large houses (>4000 sqft) with low prices.<br>
+Probably commercial properties mislabeled.<br><br>
+<strong>Decision:</strong> Remove GrLivArea > 4000 outliers.<br>
+<strong>Also:</strong> Log-transform GrLivArea (mild skew).
+</div>
+</div>
+
+<div style="background:var(--vbg);border:2px solid var(--violet);border-radius:10px;padding:1rem;text-align:center">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--violet);font-weight:700;margin-bottom:0.4rem">📊 OverallQual vs SalePrice (r=0.80)</div>
+<div style="font-size:0.62rem;color:var(--tdim);line-height:1.8">
+<strong>Pattern:</strong> STRONGEST predictor!<br>
+Box plot shows clear monotonic increase.<br>
+Quality 1-2: ~$80K. Quality 9-10: ~$450K.<br><br>
+<span style="color:var(--green)">Each quality step adds ~$40K on average.</span><br><br>
+<strong>Decision:</strong> OverallQual is the #1 feature.<br>
+Keep as-is. StandardScaler before training.
+</div>
+</div>
+</div>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin:0.8rem 0 0.3rem">📊 Top 5 Feature Correlations with SalePrice</h4>
+<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:0.8rem;margin:0.6rem 0">
+<div style="font-size:0.65rem;color:var(--tdim);line-height:2.2">
+<div>OverallQual &nbsp;&nbsp;<span style="display:inline-block;width:250px;height:18px;background:linear-gradient(90deg,#5b3aa8,#5b3aa8 80%,#dde0e6 80%);border-radius:3px;vertical-align:middle"></span> <strong style="color:var(--violet)">0.80</strong> ← THE KING</div>
+<div>GrLivArea &nbsp;&nbsp;&nbsp;<span style="display:inline-block;width:250px;height:18px;background:linear-gradient(90deg,#007a99,#007a99 71%,#dde0e6 71%);border-radius:3px;vertical-align:middle"></span> <strong style="color:var(--cyan)">0.71</strong></div>
+<div>GarageCars &nbsp;&nbsp;<span style="display:inline-block;width:250px;height:18px;background:linear-gradient(90deg,#1a6e34,#1a6e34 64%,#dde0e6 64%);border-radius:3px;vertical-align:middle"></span> <strong style="color:var(--green)">0.64</strong></div>
+<div>TotalBsmtSF &nbsp;<span style="display:inline-block;width:250px;height:18px;background:linear-gradient(90deg,#b87000,#b87000 63%,#dde0e6 63%);border-radius:3px;vertical-align:middle"></span> <strong style="color:var(--amber)">0.63</strong></div>
+<div>YearBuilt &nbsp;&nbsp;&nbsp;<span style="display:inline-block;width:250px;height:18px;background:linear-gradient(90deg,#9e2a6b,#9e2a6b 56%,#dde0e6 56%);border-radius:3px;vertical-align:middle"></span> <strong style="color:var(--magenta)">0.56</strong></div>
+</div>
+</div>
+
+<div class="code-box"><span class="cm"># Strategy Pattern for Bivariate</span>
+<span class="kw">class</span> <span class="fn">BivariateAnalysisStrategy</span>(ABC):
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> analyze(self, df, feat1, feat2): <span class="kw">pass</span>
+
+<span class="kw">class</span> <span class="fn">NumericalVsNumericalAnalysis</span>:  <span class="cm"># Scatter plot + regression line</span>
+<span class="kw">class</span> <span class="fn">CategoricalVsNumericalAnalysis</span>: <span class="cm"># Box plot</span></div>
+
+<div class="callout"><strong>🔑 DECISION:</strong> Top 3 predictors are <strong>OverallQual (0.80), GrLivArea (0.71), GarageCars (0.64)</strong>. These 3 alone can build a model with R² > 0.75. Also: remove 2 outlier houses with GrLivArea > 4000.</div>`;}
+
+else if(p==='multi'){c.innerHTML=`
+<h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--magenta);margin-bottom:0.3rem">🔗 Phase 3c: Multivariate Analysis (Template Pattern)</h3>
+<p style="color:var(--tdim);font-size:0.85rem;margin-bottom:0.8rem"><strong>How do ALL features relate to each other?</strong> The correlation heatmap and pairplot show which features move together — and which might cause multicollinearity.</p>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin:1rem 0">
+<div style="background:var(--vbg);border:1px solid var(--violet);border-radius:10px;padding:1rem">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--violet);font-weight:700;margin-bottom:0.4rem;text-align:center">🔥 Correlation Heatmap</div>
+<div style="font-size:0.62rem;color:var(--tdim);line-height:1.8">
+<strong>Strong relationships found:</strong><br>
+&nbsp;&nbsp;GrLivArea ↔ TotRmsAbvGrd: 0.83<br>
+&nbsp;&nbsp;GarageCars ↔ GarageArea: 0.88<br>
+&nbsp;&nbsp;TotalBsmtSF ↔ 1stFlrSF: 0.82<br><br>
+<strong>What this means:</strong> Some features are highly correlated WITH EACH OTHER. This is <strong>multicollinearity</strong> — it inflates coefficient variance but for pure prediction (not causal inference), it's usually fine.<br><br>
+<strong>Decision:</strong> No action needed for prediction. Keep all features.
+</div>
+</div>
+<div style="background:var(--green-bg);border:1px solid var(--green);border-radius:10px;padding:1rem">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--green);font-weight:700;margin-bottom:0.4rem;text-align:center">👥 Pair Plot — Top 5 Features</div>
+<div style="font-size:0.62rem;color:var(--tdim);line-height:1.8">
+<strong>Pairwise relationships with SalePrice:</strong><br>
+&nbsp;&nbsp;OverallQual → near-linear ↑<br>
+&nbsp;&nbsp;GrLivArea → linear with 2 outliers<br>
+&nbsp;&nbsp;GarageCars → step-like (discrete)<br>
+&nbsp;&nbsp;TotalBsmtSF → linear, mild scatter<br>
+&nbsp;&nbsp;YearBuilt → weak positive trend<br><br>
+<strong>Confirms:</strong> OverallQual + GrLivArea are the heavy lifters. The rest add nuance but won't dramatically change predictions.<br><br>
+<strong>Decision:</strong> Start with all features. Consider feature crosses only if needed.
+</div>
+</div>
+</div>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin:0.8rem 0 0.3rem">📝 The Pattern Code (Template Pattern)</h4>
+<div class="code-box"><span class="cm"># TEMPLATE — same skeleton, different analysis</span>
+<span class="kw">class</span> <span class="fn">MultivariateAnalysisTemplate</span>(ABC):
+    <span class="kw">def</span> analyze(self, df):
+        self.generate_correlation_heatmap(df)   <span class="cm"># Step 1</span>
+        self.generate_pairplot(df)              <span class="cm"># Step 2</span>
+
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> generate_correlation_heatmap(self, df): <span class="kw">pass</span>
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> generate_pairplot(self, df): <span class="kw">pass</span>
+
+<span class="kw">class</span> <span class="fn">SimpleMultivariateAnalysis</span>(MultivariateAnalysisTemplate):
+    <span class="kw">def</span> generate_correlation_heatmap(self, df):
+        <span class="kw">import</span> seaborn <span class="kw">as</span> sns
+        sns.heatmap(df.corr(), annot=<span class="kw">True</span>, cmap=<span class="str">'coolwarm'</span>)
+    <span class="kw">def</span> generate_pairplot(self, df):
+        sns.pairplot(df, vars=top_features)</div>
+
+<div class="callout"><strong>🧠 KEY INSIGHT:</strong> Multicollinearity exists (GrLivArea↔TotRms, GarageCars↔GarageArea) but it <strong>doesn't hurt prediction accuracy</strong> — only coefficient interpretability. For house price prediction, we keep all features. For causal analysis, we'd remove one of each correlated pair.</div>`;}
+
+else if(p==='decisions'){c.innerHTML=`
+<h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--green);margin-bottom:0.3rem">✅ Phase 4: EDA Decisions — What We Learned</h3>
+<p style="color:var(--tdim);font-size:0.85rem;margin-bottom:0.8rem">EDA is only valuable if it leads to <strong>concrete modeling decisions</strong>. Here's every decision the Ames Housing EDA produced.</p>
+
+<div style="background:var(--green-bg);border:2px solid var(--green);border-radius:12px;padding:1rem;margin:1rem 0">
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--green);margin-bottom:0.6rem;text-align:center">📋 The 10 EDA Decisions (What We'll Do in Phase 5D+)</h4>
+<table style="width:100%;border-collapse:collapse;font-size:0.65rem;font-family:Inter,sans-serif">
+<tr style="border-bottom:2px solid var(--violet)"><th style="text-align:left;padding:0.4rem;color:var(--violet)">#</th><th style="text-align:left;padding:0.4rem;color:var(--violet)">Finding</th><th style="text-align:left;padding:0.4rem;color:var(--violet)">Decision</th><th style="text-align:left;padding:0.4rem;color:var(--violet)">Pattern</th></tr>
+<tr><td style="padding:0.35rem;color:var(--amber);font-weight:700">1</td><td style="padding:0.35rem">SalePrice right-skewed (1.88)</td><td style="padding:0.35rem"><strong>Log-transform</strong> target</td><td style="padding:0.35rem"><span class="tag tag-s">STRATEGY</span></td></tr>
+<tr style="background:var(--raised)"><td style="padding:0.35rem;color:var(--amber);font-weight:700">2</td><td style="padding:0.35rem">GrLivArea has 2 outliers (>4000 sqft)</td><td style="padding:0.35rem"><strong>Remove</strong> those 2 rows</td><td style="padding:0.35rem"><span class="tag tag-s">STRATEGY</span></td></tr>
+<tr><td style="padding:0.35rem;color:var(--red);font-weight:700">3</td><td style="padding:0.35rem">PoolQC 99.7% null, Alley 93% null</td><td style="padding:0.35rem"><strong>DROP</strong> columns</td><td style="padding:0.35rem"><span class="tag tag-s">STRATEGY</span></td></tr>
+<tr style="background:var(--raised)"><td style="padding:0.35rem;color:var(--amber);font-weight:700">4</td><td style="padding:0.35rem">FireplaceQu 47% null = "No fireplace"</td><td style="padding:0.35rem"><strong>Fill "None"</strong> — it's a category</td><td style="padding:0.35rem"><span class="tag tag-s">STRATEGY</span></td></tr>
+<tr><td style="padding:0.35rem;color:var(--green);font-weight:700">5</td><td style="padding:0.35rem">GarageYrBlt 5% null = "No garage"</td><td style="padding:0.35rem"><strong>Fill 0</strong></td><td style="padding:0.35rem"><span class="tag tag-s">STRATEGY</span></td></tr>
+<tr style="background:var(--raised)"><td style="padding:0.35rem;color:var(--cyan);font-weight:700">6</td><td style="padding:0.35rem">OverallQual = #1 predictor (r=0.80)</td><td style="padding:0.35rem"><strong>Keep as-is</strong>, StandardScaler</td><td style="padding:0.35rem"><span class="tag tag-s">STRATEGY</span></td></tr>
+<tr><td style="padding:0.35rem;color:var(--violet);font-weight:700">7</td><td style="padding:0.35rem">43 categorical columns, all <50 unique</td><td style="padding:0.35rem"><strong>OneHotEncode</strong> all</td><td style="padding:0.35rem"><span class="tag tag-s">STRATEGY</span></td></tr>
+<tr style="background:var(--raised)"><td style="padding:0.35rem;color:var(--magenta);font-weight:700">8</td><td style="padding:0.35rem">38 numerical columns</td><td style="padding:0.35rem"><strong>StandardScaler</strong> after log transforms</td><td style="padding:0.35rem"><span class="tag tag-s">STRATEGY</span></td></tr>
+<tr><td style="padding:0.35rem;color:var(--amber);font-weight:700">9</td><td style="padding:0.35rem">Some multicollinearity (r>0.8 between features)</td><td style="padding:0.35rem"><strong>Keep all</strong> — prediction, not causal</td><td style="padding:0.35rem"><span class="tag tag-t">TEMPLATE</span></td></tr>
+<tr style="background:var(--raised)"><td style="padding:0.35rem;color:var(--green);font-weight:700">10</td><td style="padding:0.35rem">Missing values follow patterns, not random</td><td style="padding:0.35rem"><strong>Smart fill</strong> based on WHY it's missing</td><td style="padding:0.35rem"><span class="tag tag-t">TEMPLATE</span></td></tr>
+</table>
+</div>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin:0.8rem 0 0.3rem">🎯 EDA → Phase 5D Pipeline (Next Steps)</h4>
+<div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;justify-content:center;font-size:0.62rem;margin:0.6rem 0">
+<div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.5rem;text-align:center"><strong>Phase 5C<br>EDA</strong><br><span style="color:var(--tmut)">13 decisions</span></div>
+<span style="color:var(--violet);font-size:1rem">→</span>
+<div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:8px;padding:0.5rem;text-align:center"><strong>Phase 5D<br>Processing</strong><br><span style="color:var(--tmut)">Apply decisions</span></div>
+<span style="color:var(--violet);font-size:1rem">→</span>
+<div style="background:var(--vbg);border:2px solid var(--violet);border-radius:8px;padding:0.5rem;text-align:center"><strong>Phase 5E<br>Model + MLflow</strong><br><span style="color:var(--tmut)">Train + track</span></div>
+<span style="color:var(--violet);font-size:1rem">→</span>
+<div style="background:var(--cyan-bg);border:2px solid var(--cyan);border-radius:8px;padding:0.5rem;text-align:center"><strong>Phase 5F<br>Deploy</strong><br><span style="color:var(--tmut)">Serve + predict</span></div>
+</div>
+
+<div class="code-box"><span class="cm"># The EDA notebook ends with a markdown cell:</span>
+<span class="cm"># "EDA Decisions Document"</span>
+<span class="cm"># </span>
+<span class="cm"># 1. Log-transform SalePrice (skew=1.88)</span>
+<span class="cm"># 2. Remove 2 GrLivArea outliers (>4000 sqft)</span>
+<span class="cm"># 3. Drop: PoolQC, Alley, Fence, MiscFeature (>80% null)</span>
+<span class="cm"># 4. Fill FireplaceQu nulls with "None" (meaningful category)</span>
+<span class="cm"># 5. Fill GarageYrBlt nulls with 0 (means "no garage")</span>
+<span class="cm"># 6. StandardScaler on all numerical features</span>
+<span class="cm"># 7. OneHotEncode all categorical features</span>
+<span class="cm"># 8. Start with LinearRegression (baseline first!)</span>
+<span class="cm"># 9. Add complexity only if R² < 0.85</span>
+<span class="cm"># </span>
+<span class="cm"># These 9 decisions → implemented in Phase 5D steps.</span></div>
+
+<div class="callout"><strong>✅ Phase 5C Complete!</strong> EDA produced 10 data-driven decisions. Every decision has a WHY from the data — not guesswork. <strong>Strategy Pattern</strong> used in DataInspection, Univariate, Bivariate. <strong>Template Pattern</strong> used in MissingValues, Multivariate. <strong>Next: Phase 5D — apply these decisions in the processing pipeline.</strong></div>`;}
+}
+showTab('journey');
+</script>
+</body>
+</html>
