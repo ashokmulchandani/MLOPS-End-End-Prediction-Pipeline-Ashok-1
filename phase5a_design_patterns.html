@@ -150,7 +150,16 @@ df = DataIngestorFactory.get_data_ingestor(<span class="str">".zip"</span>).inge
 <span class="cm"># That's it. One line. Factory does the rest.</span>
 <span class="cm"># If tomorrow the file is .parquet, same line — just change the extension.</span></div>
 
-      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1rem 0 0.4rem">📝 FULL Code — What WE Wrote (src/ingest_data.py)</h4>
+      <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:10px;padding:0.8rem 1rem;margin:1rem 0;text-align:center">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--green);font-weight:700;margin-bottom:0.3rem">❓ WHO WROTE THIS CODE?</div>
+        <div style="font-size:0.75rem;color:var(--tdim);line-height:1.7">
+          <strong>It's ALREADY written for you</strong> in <code style="background:var(--raised);padding:0.1em 0.4em;border-radius:3px">prices-predictor-system/src/ingest_data.py</code><br>
+          Your job: <strong>UNDERSTAND it</strong>, not rewrite it. Open the file, read it, see the pattern.<br>
+          When you build your OWN project later → you write similar code following this template.
+        </div>
+      </div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1rem 0 0.4rem">📝 The Code (already in your project at src/ingest_data.py)</h4>
       <div class="code-box"><span class="cm"># Step 1: Define the PRODUCT interface (the contract)</span>
 <span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod
 <span class="kw">class</span> DataIngestor(ABC):
