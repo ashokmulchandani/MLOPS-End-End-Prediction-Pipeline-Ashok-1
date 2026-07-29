@@ -387,6 +387,17 @@ df = ingestor.ingest(<span class="str">"data/archive.zip"</span>)  <span class="
           &nbsp;&nbsp;&nbsp;↳ <code>CsvDataIngestor</code> ← SUBCLASS (future) — handles CSV<br><br>
           <code>DataIngestorFactory</code> ← STANDALONE — NOT a subclass. Its only job: CHOOSE.
         </div>
+      </div>
+
+      <div style="background:var(--cyan-bg);border:1px solid var(--cyan);border-radius:10px;padding:1rem;margin:0.6rem 0">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--cyan);font-weight:700;margin-bottom:0.5rem">🔙 -> DataIngestor = "I return ANY DataIngestor"</div>
+        <div style="font-size:0.68rem;color:var(--tdim);line-height:1.8">
+          <code>def get_data_ingestor(file_extension: str) <strong>-> DataIngestor</strong>:</code><br><br>
+          This means: <strong>"I promise to return SOMETHING that follows the DataIngestor contract."</strong><br>
+          NOT specifically a ZipDataIngestor — ANY subclass of DataIngestor qualifies.<br><br>
+          <strong>Why not <code>-> ZipDataIngestor</code>?</strong> Because tomorrow the factory might return a <code>CsvDataIngestor</code> or <code>ParquetDataIngestor</code>. The parent type <code>DataIngestor</code> covers ALL of them.<br><br>
+          <strong>Analogy:</strong> "I return a Vehicle" — could be Car, Truck, Motorcycle. All are Vehicles. Same idea: "I return a DataIngestor" — could be Zip, Csv, Parquet. All are DataIngestors.
+        </div>
       </div>`;
 
   }else if(p==='strategy'){
