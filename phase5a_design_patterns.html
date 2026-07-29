@@ -228,9 +228,31 @@ handler.handle_missing_values(df)              <span class="cm">← HANDLER dele
         <span style="font-size:0.8rem">That's the ENTIRE point of object-oriented programming.</span>
       </div>
 
-      <div class="callout"><strong>🧠 BOTTOM LINE:</strong> You don't need to be a Python expert. You need to recognize these 5 words when you see them. <strong>class = blueprint, object = thing, method = action, handler = manager, ABC = contract.</strong> That's it.</div>`;
+      <div class="callout"><strong>🧠 BOTTOM LINE:</strong> You don't need to be a Python expert. You need to recognize these 5 words when you see them. <strong>class = blueprint, object = thing, method = action, handler = manager, ABC = contract.</strong> That's it.</div>
 
-  }else if(p==='factory'){
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--amber);margin:1rem 0 0.4rem">❓ "Where is <code>set_strategy</code> defined? Is it a Python keyword?"</h4>
+      <div style="background:var(--amber-bg);border:1px solid var(--amber);border-radius:8px;padding:0.8rem;font-size:0.72rem;color:var(--tdim);line-height:2">
+        <strong style="color:var(--amber)">NO — it's NOT a Python keyword.</strong> WE defined it ourselves inside the <code>MissingValueHandler</code> class.<br><br>
+        <strong>Python keywords</strong> are words like <code>def</code>, <code>class</code>, <code>if</code>, <code>return</code>, <code>import</code> — built into the language.<br>
+        <strong><code>set_strategy</code></strong> is just a name WE chose. We could have named it <code>change_strategy()</code> or <code>use_this_one()</code>. The name is arbitrary.
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:0.8rem;margin-top:0.5rem">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">🔍 Where exactly is it defined?</div>
+        <div class="code-box" style="margin:0"><span class="kw">class</span> MissingValueHandler:                    <span class="cm">← OUR class (we wrote it)</span>
+    <span class="kw">def</span> set_strategy(self, strategy):        <span class="cm">← WE defined this method HERE</span>
+        self.strategy = strategy           <span class="cm">← Stores it for later use</span>
+
+<span class="cm"># WE call the method WE defined:</span>
+handler = MissingValueHandler()
+handler.set_strategy(FillMissingValuesStrategy(<span class="str">"median"</span>))</div>
+      </div>
+      <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.8rem;margin-top:0.5rem;text-align:center;font-size:0.72rem;color:var(--tdim);line-height:1.8">
+        <strong style="color:var(--green)">🧠 THE RULE:</strong><br>
+        Python keywords → <code>def</code>, <code>class</code>, <code>if</code>, <code>return</code>, <code>import</code> (cannot be used as names)<br>
+        Everything else → names WE invent: <code>set_strategy</code>, <code>handle</code>, <code>ingest</code>, <code>split</code><br>
+        If you see a word you don't recognize — it's a name the developer chose.
+      </div>`;
+  }else if(p=='factory'){
     c.innerHTML=`
       <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--amber);margin-bottom:0.3rem">🏭 Factory Pattern — The "Auto-Detect" Pattern</h3>
       <p style="color:var(--tdim);font-size:0.85rem;margin-bottom:1rem"><strong>What problem does it solve?</strong> Your data arrives in different formats — ZIP files, CSV files, Parquet files. You don't want to remember which class handles which format. The Factory remembers for you.</p>
