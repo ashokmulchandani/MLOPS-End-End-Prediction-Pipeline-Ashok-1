@@ -617,7 +617,30 @@ Without <code>self.</code> → stays forever.
       </div>
 
       <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1.2rem 0 0.4rem">Why NO @staticmethod in Strategy? (Factory HAS it!)</h4>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:0.6rem 0"><div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:8px;padding:0.8rem"><div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--amber);font-weight:700;margin-bottom:0.3rem">Factory USES @staticmethod</div><div style="font-size:0.62rem;color:var(--tdim);line-height:1.8">get_data_ingestor just returns a new object. Does not store. Does not need self. <strong>→ @staticmethod is fine!</strong></div></div><div style="background:var(--vbg);border:2px solid var(--violet);border-radius:8px;padding:0.8rem"><div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">Strategy CANNOT be static</div><div style="font-size:0.62rem;color:var(--tdim);line-height:1.8">set_strategy writes self.strategy = strategy. MUST remember. <strong>→ Needs self!</strong></div></div></div><div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.8rem;margin:0.6rem 0;text-align:center;font-size:0.68rem;color:var(--tdim);line-height:1.8"><strong style="color:var(--green)">THE RULE:</strong> If writes self.xxx = something → NEEDS self. If just input→output → can be static.</div>`;
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:0.6rem 0"><div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:8px;padding:0.8rem"><div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--amber);font-weight:700;margin-bottom:0.3rem">Factory USES @staticmethod</div><div style="font-size:0.62rem;color:var(--tdim);line-height:1.8">get_data_ingestor just returns a new object. Does not store. Does not need self. <strong>→ @staticmethod is fine!</strong></div></div><div style="background:var(--vbg);border:2px solid var(--violet);border-radius:8px;padding:0.8rem"><div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">Strategy CANNOT be static</div><div style="font-size:0.62rem;color:var(--tdim);line-height:1.8">set_strategy writes self.strategy = strategy. MUST remember. <strong>→ Needs self!</strong></div></div></div><div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.8rem;margin:0.6rem 0;text-align:center;font-size:0.68rem;color:var(--tdim);line-height:1.8"><strong style="color:var(--green)">THE RULE:</strong> If writes self.xxx = something → NEEDS self. If just input→output → can be static.</div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1.2rem 0 0.4rem">❓ <code>: MissingValueHandlingStrategy</code> = Type Hint, NOT default!</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:0.6rem 0">
+        <div style="background:var(--red-bg,#ffebe9);border:2px solid var(--red);border-radius:8px;padding:0.8rem;text-align:center">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--red);font-weight:700;margin-bottom:0.3rem">DEFAULT VALUE (has =)</div>
+          <div style="font-size:0.62rem;color:var(--tdim);line-height:1.8">
+            <code>def __init__(self, method<strong>="median"</strong>):</code><br>
+            ← = means "use this if nothing passed"<br>
+            Calling <code>Strategy()</code> → method = "median"
+          </div>
+        </div>
+        <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.8rem;text-align:center">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--green);font-weight:700;margin-bottom:0.3rem">TYPE HINT (has : colon)</div>
+          <div style="font-size:0.62rem;color:var(--tdim);line-height:1.8">
+            <code>def set_strategy(self, strategy<strong>: MissingValueHandlingStrategy</strong>):</code><br>
+            ← : means "expect this type" (NOT a default!)<br>
+            You MUST pass something. No default.
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--card);border:2px solid var(--violet);border-radius:8px;padding:0.8rem;margin:0.6rem 0;text-align:center;font-size:0.65rem;color:var(--tdim);line-height:1.8">
+        <strong>Quick test:</strong> Does it have <code>=</code>? → default value. Does it have <code>:</code> without <code>=</code>? → type hint only. <strong>set_strategy has NO default — you must pass a strategy.</strong>
+      </div>`;
     c.innerHTML=`
       <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--green);margin-bottom:0.3rem">📋 Template Pattern — The "Fill-in-the-Blanks" Pattern</h3>
       <p style="color:var(--tdim);font-size:0.85rem;margin-bottom:1rem"><strong>What problem does it solve?</strong> You have a process with fixed steps — but each step can be done differently depending on the situation. Template defines the SEQUENCE, subclasses fill in the DETAILS.</p>
