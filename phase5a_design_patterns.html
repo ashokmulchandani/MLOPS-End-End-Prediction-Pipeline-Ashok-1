@@ -388,7 +388,73 @@ handler = MissingValueHandler(FillMissingValuesStrategy(<span class="str">"media
         <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:6px;padding:0.4rem 0.6rem;text-align:center"><strong>run_pipeline.py</strong><br><span style="color:var(--green)">Execute!</span></div>
       </div>
 
-      <div class="callout"><strong>🔑 KEY INSIGHT:</strong> You don't write this structure from scratch. It's the <strong>standard MLOps project layout</strong>. For every new ML project, you create the same folders: <code>src/</code> (logic), <code>steps/</code> (orchestration wrappers), <code>pipelines/</code> (DAG definition). <strong>Same structure, different models.</strong></div>`;
+      <div class="callout"><strong>🔑 KEY INSIGHT:</strong> You don't write this structure from scratch. It's the <strong>standard MLOps project layout</strong>. For every new ML project, you create the same folders: <code>src/</code> (logic), <code>steps/</code> (orchestration wrappers), <code>pipelines/</code> (DAG definition). <strong>Same structure, different models.</strong></div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.85rem;color:var(--violet);margin:1.2rem 0 0.5rem">📋 ALL 6 Steps of Phase 5A — What We Actually Did</h4>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:0.8rem 0">
+        <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:10px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--green);font-weight:700">✅ 5A.1 — Project Scaffold</div>
+          <div style="font-size:0.65rem;color:var(--tdim);line-height:1.7;margin-top:0.3rem">
+            <strong>Already exists</strong> in <code>prices-predictor-system/</code><br>
+            Folders: <code>src/</code>, <code>steps/</code>, <code>pipelines/</code>, <code>analysis/</code>, <code>data/</code>, <code>explanations/</code><br>
+            <span style="color:var(--green)">→ You just open and explore it</span>
+          </div>
+        </div>
+        <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:10px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--green);font-weight:700">✅ 5A.2 — Virtual Environment</div>
+          <div style="font-size:0.65rem;color:var(--tdim);line-height:1.7;margin-top:0.3rem">
+            <code>python -m venv .venv</code><br>
+            <code>pip install numpy pandas scikit-learn matplotlib seaborn mlflow zenml</code><br>
+            <span style="color:var(--green)">→ .venv created, all packages installed</span>
+          </div>
+        </div>
+        <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:10px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--green);font-weight:700">✅ 5A.3 — ZenML + MLflow Init</div>
+          <div style="font-size:0.65rem;color:var(--tdim);line-height:1.7;margin-top:0.3rem">
+            <code>zenml init</code><br>
+            <code>zenml experiment-tracker register mlflow_tracker --flavor=mlflow</code><br>
+            <code>zenml model-deployer register mlflow_deployer --flavor=mlflow</code><br>
+            <code>zenml stack register mlops_stack ... --set</code><br>
+            <span style="color:var(--green)">→ Stack active: mlops_stack</span>
+          </div>
+        </div>
+        <div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:10px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--amber);font-weight:700">📖 5A.4 — Factory Pattern</div>
+          <div style="font-size:0.65rem;color:var(--tdim);line-height:1.7;margin-top:0.3rem">
+            See <strong>🏭 Factory tab</strong> above<br>
+            File: <code>src/ingest_data.py</code><br>
+            <span style="color:var(--amber)">→ DataIngestorFactory auto-creates correct ingestor</span>
+          </div>
+        </div>
+        <div style="background:var(--vbg);border:2px solid var(--violet);border-radius:10px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--violet);font-weight:700">📖 5A.5 — Strategy Pattern</div>
+          <div style="font-size:0.65rem;color:var(--tdim);line-height:1.7;margin-top:0.3rem">
+            See <strong>🎯 Strategy tab</strong> above<br>
+            Used in 6 files: <code>handle_missing_values.py</code>, <code>feature_engineering.py</code>, <code>outlier_detection.py</code>, <code>data_splitter.py</code>, <code>model_building.py</code>, <code>model_evaluator.py</code><br>
+            <span style="color:var(--violet)">→ Swap algorithms without changing code</span>
+          </div>
+        </div>
+        <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:10px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--green);font-weight:700">📖 5A.6 — Template Pattern</div>
+          <div style="font-size:0.65rem;color:var(--tdim);line-height:1.7;margin-top:0.3rem">
+            See <strong>📋 Template tab</strong> above<br>
+            Used in: <code>analysis/analyze_src/missing_values_analysis.py</code>, <code>multivariate_analysis.py</code><br>
+            <span style="color:var(--green)">→ Fixed skeleton, flexible steps</span>
+          </div>
+        </div>
+      </div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin:1rem 0 0.4rem">⚡ Quick Start — The 3 Commands You'll Run Every Time</h4>
+      <div class="code-box"><span class="cm"># 1. Activate the environment (always do this first)</span>
+<span class="kw">cd</span> prices-predictor-system/prices-predictor-system
+<span class="kw">source</span> .venv/Scripts/activate   <span class="cm"># Windows: .venv\Scripts\activate</span>
+
+<span class="cm"># 2. Run the full training pipeline (6 steps in sequence)</span>
+<span class="kw">python</span> run_pipeline.py
+
+<span class="cm"># 3. View results in MLflow</span>
+<span class="kw">mlflow</span> ui   <span class="cm"># → opens http://localhost:5000</span></div>`;
   }
 }
 showPattern('factory');
