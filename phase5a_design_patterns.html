@@ -164,6 +164,8 @@ handler.set_strategy(strategy)                 <span class="cm">← "Use this st
 handler.handle_missing_values(df)              <span class="cm">← HANDLER delegates → strategy.handle(df)</span></div>
 
       <div class="callout"><strong>🧠 BOTTOM LINE:</strong> You don't need to be a Python expert. You need to recognize these 5 words when you see them. <strong>class = blueprint, object = thing, method = action, handler = manager, ABC = contract.</strong> That's it.</div>`;
+
+  }else if(p==='factory'){
     c.innerHTML=`
       <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--amber);margin-bottom:0.3rem">🏭 Factory Pattern — The "Auto-Detect" Pattern</h3>
       <p style="color:var(--tdim);font-size:0.85rem;margin-bottom:1rem"><strong>What problem does it solve?</strong> Your data arrives in different formats — ZIP files, CSV files, Parquet files. You don't want to remember which class handles which format. The Factory remembers for you.</p>
