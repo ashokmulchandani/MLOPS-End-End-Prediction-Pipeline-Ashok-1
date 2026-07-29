@@ -641,26 +641,30 @@ Without <code>self.</code> → stays forever.
       <div style="background:var(--card);border:2px solid var(--violet);border-radius:8px;padding:0.8rem;margin:0.6rem 0;text-align:center;font-size:0.65rem;color:var(--tdim);line-height:1.8">
         <strong>Quick test:</strong> Does it have <code>=</code>? → default value. Does it have <code>:</code> without <code>=</code>? → type hint only. <strong>set_strategy has NO default — you must pass a strategy.</strong>
       </div>`;
-    c.innerHTML=`
-      <h3 style=
-      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1.2rem 0 0.4rem">How to WRITE Strategy Pattern From Memory (3-Step Recipe)</h4>
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1.2rem 0 0.4rem">✍️ How to WRITE Strategy Pattern From Memory (3-Step Recipe)</h4>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;margin:0.6rem 0">
         <div style="background:var(--vbg);border:2px solid var(--violet);border-radius:10px;padding:0.8rem;text-align:center">
-          <div style="font-family:Space Grotesk,sans-serif;font-size:0.7rem;color:var(--violet);font-weight:700;margin-bottom:0.4rem">STEP 1<br>The Contract (ABC)</div>
-          <div style="font-size:0.6rem;color:var(--tdim);line-height:1.8;text-align:left"><b>Pattern:</b><br>class XxxStrategy(ABC):<br>  @abstractmethod<br>  def handle(self, df):<br>    pass<br><br><b>Only 4 lines!</b></div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">STEP 1: The Contract</div>
+          <div style="font-size:0.58rem;color:var(--tdim);line-height:1.7;text-align:left"><code>class XxxStrategy(ABC):</code><br><code>&nbsp;&nbsp;@abstractmethod</code><br><code>&nbsp;&nbsp;def handle(self, df):</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;pass</code><br><br>"Every strategy MUST have handle()"<br><strong>4 lines. Always the same.</strong></div>
         </div>
         <div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:10px;padding:0.8rem;text-align:center">
-          <div style="font-family:Space Grotesk,sans-serif;font-size:0.7rem;color:var(--amber);font-weight:700;margin-bottom:0.4rem">STEP 2<br>The Strategies</div>
-          <div style="font-size:0.6rem;color:var(--tdim);line-height:1.8;text-align:left"><b>Write 2+ implementations:</b><br>class FillMedian(XxxStrategy):<br>  def handle(self, df):<br>    return df.fillna(df.median())<br><br>class DropRows(XxxStrategy):<br>  def handle(self, df):<br>    return df.dropna()</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--amber);font-weight:700;margin-bottom:0.3rem">STEP 2: The Implementations</div>
+          <div style="font-size:0.58rem;color:var(--tdim);line-height:1.7;text-align:left"><code>class FillMedian(XxxStrategy):</code><br><code>&nbsp;&nbsp;def handle(self, df):</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;return df.fillna(df.median())</code><br><br><code>class DropRows(XxxStrategy):</code><br><code>&nbsp;&nbsp;def handle(self, df):</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;return df.dropna()</code><br><br><strong>Write 2+. Same contract, different logic.</strong></div>
         </div>
         <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:10px;padding:0.8rem;text-align:center">
-          <div style="font-family:Space Grotesk,sans-serif;font-size:0.7rem;color:var(--green);font-weight:700;margin-bottom:0.4rem">STEP 3<br>The Handler</div>
-          <div style="font-size:0.6rem;color:var(--tdim);line-height:1.8;text-align:left"><b>DELEGATES:</b><br>class XxxHandler:<br>  def set_strategy(self, s):<br>    self.strategy = s<br>  def handle(self, df):<br>    return self.strategy.handle(df)</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--green);font-weight:700;margin-bottom:0.3rem">STEP 3: The Handler</div>
+          <div style="font-size:0.58rem;color:var(--tdim);line-height:1.7;text-align:left"><code>class XxxHandler:</code><br><code>&nbsp;&nbsp;def set_strategy(self, s):</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;self.strategy = s</code><br><code>&nbsp;&nbsp;def handle(self, df):</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;return self.strategy.handle(df)</code><br><br><strong>Delegates. Never does work itself.</strong></div>
         </div>
       </div>
       <div style="background:var(--card);border:2px solid var(--violet);border-radius:10px;padding:1rem;margin:0.8rem 0;text-align:center">
-        <div style="font-family:Space Grotesk,sans-serif;font-size:0.7rem;color:var(--violet);font-weight:700;margin-bottom:0.4rem">The Strategy Family Tree</div>
-        <div style="font-size:0.72rem;color:var(--tdim);line-height:2.2">MissingValueHandlingStrategy (ABC) <- PARENT<br>  DropMissingValuesStrategy <- "I DELETE"<br>  FillMissingValuesStrategy <- "I FILL"<br>MissingValueHandler <- STANDALONE. Delegates to whichever strategy is set.</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--violet);font-weight:700;margin-bottom:0.4rem">🧠 The Strategy Family Tree (Real Class Names)</div>
+        <div style="font-size:0.68rem;color:var(--tdim);line-height:2.2">
+          <code style="background:var(--vbg);padding:0.1em 0.4em;border-radius:3px">MissingValueHandlingStrategy (ABC)</code> ← PARENT: "every strategy MUST have handle()"<br>
+          &nbsp;&nbsp;↳ <code style="background:var(--amber-bg);padding:0.1em 0.4em;border-radius:3px">DropMissingValuesStrategy</code> ← "I DELETE rows with nulls"<br>
+          &nbsp;&nbsp;↳ <code style="background:var(--amber-bg);padding:0.1em 0.4em;border-radius:3px">FillMissingValuesStrategy</code> ← "I FILL with median/mean/mode"<br><br>
+          <code style="background:var(--green-bg);padding:0.1em 0.4em;border-radius:3px">MissingValueHandler</code> ← STANDALONE. Delegates to whichever strategy. Never does the work itself.<br><br>
+          <span style="color:var(--violet);font-size:0.6rem">Family of 4 classes. 1 ABC + 2 siblings + 1 handler. Every. Single. Time.</span>
+        </div>
       </div>`;
 
   }else if(p==='template'){
