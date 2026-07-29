@@ -661,7 +661,11 @@ Without <code>self.</code> → stays forever.
       <div style="background:var(--card);border:2px solid var(--violet);border-radius:10px;padding:1rem;margin:0.8rem 0;text-align:center">
         <div style="font-family:Space Grotesk,sans-serif;font-size:0.7rem;color:var(--violet);font-weight:700;margin-bottom:0.4rem">The Strategy Family Tree</div>
         <div style="font-size:0.72rem;color:var(--tdim);line-height:2.2">MissingValueHandlingStrategy (ABC) <- PARENT<br>  DropMissingValuesStrategy <- "I DELETE"<br>  FillMissingValuesStrategy <- "I FILL"<br>MissingValueHandler <- STANDALONE. Delegates to whichever strategy is set.</div>
-      </div>"font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--green);margin-bottom:0.3rem">📋 Template Pattern — The "Fill-in-the-Blanks" Pattern</h3>
+      </div>`;
+
+  }else if(p==='template'){
+    c.innerHTML=`
+      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--green);margin-bottom:0.3rem">📋 Template Pattern — The "Fill-in-the-Blanks" Pattern</h3>
       <p style="color:var(--tdim);font-size:0.85rem;margin-bottom:1rem"><strong>What problem does it solve?</strong> You have a process with fixed steps — but each step can be done differently depending on the situation. Template defines the SEQUENCE, subclasses fill in the DETAILS.</p>
 
       <div style="background:var(--green-bg);border:1px solid var(--green);border-radius:12px;padding:1.2rem;margin:1rem 0">
