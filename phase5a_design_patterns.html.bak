@@ -642,26 +642,7 @@ Without <code>self.</code> → stays forever.
         <strong>Quick test:</strong> Does it have <code>=</code>? → default value. Does it have <code>:</code> without <code>=</code>? → type hint only. <strong>set_strategy has NO default — you must pass a strategy.</strong>
       </div>`;
     c.innerHTML=`
-      <h3 style=
-      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1.2rem 0 0.4rem">How to WRITE Strategy Pattern From Memory (3-Step Recipe)</h4>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;margin:0.6rem 0">
-        <div style="background:var(--vbg);border:2px solid var(--violet);border-radius:10px;padding:0.8rem;text-align:center">
-          <div style="font-family:Space Grotesk,sans-serif;font-size:0.7rem;color:var(--violet);font-weight:700;margin-bottom:0.4rem">STEP 1<br>The Contract (ABC)</div>
-          <div style="font-size:0.6rem;color:var(--tdim);line-height:1.8;text-align:left"><b>Pattern:</b><br>class XxxStrategy(ABC):<br>  @abstractmethod<br>  def handle(self, df):<br>    pass<br><br><b>Only 4 lines!</b></div>
-        </div>
-        <div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:10px;padding:0.8rem;text-align:center">
-          <div style="font-family:Space Grotesk,sans-serif;font-size:0.7rem;color:var(--amber);font-weight:700;margin-bottom:0.4rem">STEP 2<br>The Strategies</div>
-          <div style="font-size:0.6rem;color:var(--tdim);line-height:1.8;text-align:left"><b>Write 2+ implementations:</b><br>class FillMedian(XxxStrategy):<br>  def handle(self, df):<br>    return df.fillna(df.median())<br><br>class DropRows(XxxStrategy):<br>  def handle(self, df):<br>    return df.dropna()</div>
-        </div>
-        <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:10px;padding:0.8rem;text-align:center">
-          <div style="font-family:Space Grotesk,sans-serif;font-size:0.7rem;color:var(--green);font-weight:700;margin-bottom:0.4rem">STEP 3<br>The Handler</div>
-          <div style="font-size:0.6rem;color:var(--tdim);line-height:1.8;text-align:left"><b>DELEGATES:</b><br>class XxxHandler:<br>  def set_strategy(self, s):<br>    self.strategy = s<br>  def handle(self, df):<br>    return self.strategy.handle(df)</div>
-        </div>
-      </div>
-      <div style="background:var(--card);border:2px solid var(--violet);border-radius:10px;padding:1rem;margin:0.8rem 0;text-align:center">
-        <div style="font-family:Space Grotesk,sans-serif;font-size:0.7rem;color:var(--violet);font-weight:700;margin-bottom:0.4rem">The Strategy Family Tree</div>
-        <div style="font-size:0.72rem;color:var(--tdim);line-height:2.2">MissingValueHandlingStrategy (ABC) <- PARENT<br>  DropMissingValuesStrategy <- "I DELETE"<br>  FillMissingValuesStrategy <- "I FILL"<br>MissingValueHandler <- STANDALONE. Delegates to whichever strategy is set.</div>
-      </div>"font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--green);margin-bottom:0.3rem">📋 Template Pattern — The "Fill-in-the-Blanks" Pattern</h3>
+      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--green);margin-bottom:0.3rem">📋 Template Pattern — The "Fill-in-the-Blanks" Pattern</h3>
       <p style="color:var(--tdim);font-size:0.85rem;margin-bottom:1rem"><strong>What problem does it solve?</strong> You have a process with fixed steps — but each step can be done differently depending on the situation. Template defines the SEQUENCE, subclasses fill in the DETAILS.</p>
 
       <div style="background:var(--green-bg);border:1px solid var(--green);border-radius:12px;padding:1.2rem;margin:1rem 0">
