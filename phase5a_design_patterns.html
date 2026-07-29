@@ -568,9 +568,56 @@ clean_df = handler.handle_missing_values(raw_df)
 handler.set_strategy(DropMissingValuesStrategy())
 <span class="cm"># The handler, pipeline, and rest of code — ZERO changes.</span></div>
 
-      <div class="callout"><strong>🧠 Remember:</strong> Strategy = "I want to swap algorithms without rewriting code." <strong>6 modules in this pipeline use Strategy. You learn it ONCE, you know all 6.</strong></div>`;
+      <div class="callout"><strong>🧠 Remember:</strong> Strategy = "I want to swap algorithms without rewriting code." <strong>6 modules in this pipeline use Strategy. You learn it ONCE, you know all 6.</strong></div>
 
-  }else if(p==='template'){
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1.2rem 0 0.4rem">📖 Understanding: <code>__init__</code> and <code>self.method = method</code></h4>
+
+      <div style="background:var(--card);border:2px solid var(--violet);border-radius:10px;padding:1rem;margin:0.6rem 0">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--violet);font-weight:700;margin-bottom:0.4rem">🏗️ __init__ = "The setup that runs when you CREATE an object"</div>
+        <div style="font-size:0.68rem;color:var(--tdim);line-height:2">
+          <code>__init__</code> (pronounced "dunder init") fires THE MOMENT you write <code>ClassName()</code>.<br>
+          <strong>Analogy:</strong> New phone → setup wizard auto-runs on first boot. <code>__init__</code> is that setup wizard for objects.
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:0.6rem 0">
+        <div style="background:var(--amber-bg);border:1px solid var(--amber);border-radius:8px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--amber);font-weight:700;margin-bottom:0.3rem">📝 What you WRITE</div>
+          <div style="font-size:0.62rem;color:var(--tdim);line-height:1.8">
+            <code>class FillMissingValuesStrategy:</code><br>
+            <code>&nbsp;&nbsp;def __init__(self, method="median"):</code><br>
+            <code>&nbsp;&nbsp;&nbsp;&nbsp;self.method = method</code>
+          </div>
+        </div>
+        <div style="background:var(--green-bg);border:1px solid var(--green);border-radius:8px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--green);font-weight:700;margin-bottom:0.3rem">✅ What HAPPENS</div>
+          <div style="font-size:0.62rem;color:var(--tdim);line-height:1.8">
+            <strong>method="median"</strong> = default value if none given.<br>
+            <strong>self.method = method</strong> = store it ON the object.<br>
+            Left = pocket name. Right = value going in.
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:0.8rem;margin:0.6rem 0;font-size:0.65rem;color:var(--tdim);line-height:2;text-align:center">
+        <code>s = FillMissingValuesStrategy(<strong>"mean"</strong>)</code><br>
+        &nbsp;&nbsp;↓ Python calls <code>__init__</code> automatically<br>
+        &nbsp;&nbsp;<code>self = s</code>&nbsp;&nbsp;|&nbsp;&nbsp;<code>method = "mean"</code><br>
+        &nbsp;&nbsp;→ <code>s.method = "mean"</code> ← STORED<br><br>
+        <code>s2 = FillMissingValuesStrategy()</code> ← no argument<br>
+        &nbsp;&nbsp;→ <code>method = "median"</code> (the default!)<br><br>
+        Later: <code>s.handle(df)</code> → <code>self.method</code> = <code>"mean"</code> → fills with mean ✅
+      </div>
+
+      <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.8rem;margin:0.6rem 0;text-align:center;font-size:0.68rem;color:var(--tdim);line-height:1.8">
+        <strong style="color:var(--green)">🧠 ONE SENTENCE:</strong><br>
+        <code>self.xxx = yyy</code> = "store <code>yyy</code> in a pocket called <code>xxx</code> on myself."<br>
+        Without <code>self.</code> → value disappears. With <code>self.</code> → stays forever.
+Without <code>self.</code> → stays forever.
+      </div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1.2rem 0 0.4rem">Why NO @staticmethod in Strategy? (Factory HAS it!)</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:0.6rem 0"><div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:8px;padding:0.8rem"><div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--amber);font-weight:700;margin-bottom:0.3rem">Factory USES @staticmethod</div><div style="font-size:0.62rem;color:var(--tdim);line-height:1.8">get_data_ingestor just returns a new object. Does not store. Does not need self. <strong>→ @staticmethod is fine!</strong></div></div><div style="background:var(--vbg);border:2px solid var(--violet);border-radius:8px;padding:0.8rem"><div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">Strategy CANNOT be static</div><div style="font-size:0.62rem;color:var(--tdim);line-height:1.8">set_strategy writes self.strategy = strategy. MUST remember. <strong>→ Needs self!</strong></div></div></div><div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.8rem;margin:0.6rem 0;text-align:center;font-size:0.68rem;color:var(--tdim);line-height:1.8"><strong style="color:var(--green)">THE RULE:</strong> If writes self.xxx = something → NEEDS self. If just input→output → can be static.</div>`;
     c.innerHTML=`
       <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--green);margin-bottom:0.3rem">📋 Template Pattern — The "Fill-in-the-Blanks" Pattern</h3>
       <p style="color:var(--tdim);font-size:0.85rem;margin-bottom:1rem"><strong>What problem does it solve?</strong> You have a process with fixed steps — but each step can be done differently depending on the situation. Template defines the SEQUENCE, subclasses fill in the DETAILS.</p>
