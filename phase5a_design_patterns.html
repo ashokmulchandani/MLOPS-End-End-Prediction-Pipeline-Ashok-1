@@ -349,7 +349,45 @@ file_ext = os.path.splitext(<span class="str">"data/archive.zip"</span>)[1]  <sp
 ingestor = DataIngestorFactory.get_data_ingestor(file_ext)
 df = ingestor.ingest(<span class="str">"data/archive.zip"</span>)  <span class="cm"># → 2930 rows × 82 cols</span></div>
 
-      <div class="callout"><strong>🧠 Remember:</strong> Factory = "I don't want to think about WHICH class to create." <strong>You wrote these ~50 lines ONCE. They run automatically forever. To add .parquet support → add ONE class + ONE if-branch.</strong></div>`;
+      <div class="callout"><strong>🧠 Remember:</strong> Factory = "I don't want to think about WHICH class to create." <strong>You wrote these ~50 lines ONCE. They run automatically forever. To add .parquet support → add ONE class + ONE if-branch.</strong></div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--amber);margin:1.2rem 0 0.4rem">📖 Understanding the Code: ABC, Subclass, pass, @abstractmethod, @staticmethod</h4>
+      <p style="color:var(--tdim);font-size:0.78rem;margin-bottom:0.6rem">Every line in <code>src/ingest_data.py</code> explained in plain English.</p>
+
+      <div style="background:var(--amber-bg);border:1px solid var(--amber);border-radius:10px;padding:1rem;margin:0.6rem 0">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--amber);font-weight:700;margin-bottom:0.5rem">🧬 ABC = Abstract Base Class = "A job description"</div>
+        <div style="font-size:0.68rem;color:var(--tdim);line-height:1.8">
+          <code>class DataIngestor(ABC):</code> ← "I am a job posting. Anyone who wants to be a DataIngestor MUST write an <code>ingest()</code> method."<br>
+          <code>@abstractmethod</code> ← "This method is REQUIRED. If a subclass forgets it → Python CRASHES immediately. Catches bugs before production."<br>
+          <code>pass</code> ← "I'm leaving this empty on purpose. Subclasses fill it in. Python needs at least one line here or it crashes."
+        </div>
+      </div>
+
+      <div style="background:var(--vbg);border:1px solid var(--violet);border-radius:10px;padding:1rem;margin:0.6rem 0">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--violet);font-weight:700;margin-bottom:0.5rem">👶 Subclass = Child class = "I inherit the contract"</div>
+        <div style="font-size:0.68rem;color:var(--tdim);line-height:1.8">
+          <code>class ZipDataIngestor(DataIngestor):</code> ← SUBCLASS of DataIngestor. Inherits the contract. MUST write <code>ingest()</code>.<br>
+          <code>class DataIngestorFactory:</code> ← NOT a subclass! No <code>(DataIngestor)</code>. Standalone class. Its job: CHOOSE which subclass to create.
+        </div>
+      </div>
+
+      <div style="background:var(--green-bg);border:1px solid var(--green);border-radius:10px;padding:1rem;margin:0.6rem 0">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--green);font-weight:700;margin-bottom:0.5rem">⚡ @staticmethod = "I don't need self"</div>
+        <div style="font-size:0.68rem;color:var(--tdim);line-height:1.8">
+          Without @staticmethod: Python always injects <code>self</code> → method MUST have <code>self</code> parameter → if you forget → crash.<br>
+          With @staticmethod: Python turns self off → method is a plain function inside a class. <code>get_data_ingestor(".zip")</code> doesn't need object data.
+        </div>
+      </div>
+
+      <div style="background:var(--card);border:2px solid var(--amber);border-radius:10px;padding:1rem;margin:0.8rem 0;text-align:center">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--amber);font-weight:700;margin-bottom:0.3rem">🧠 The Family Tree of src/ingest_data.py</div>
+        <div style="font-size:0.72rem;color:var(--tdim);line-height:2.2">
+          <code>DataIngestor (ABC)</code> ← PARENT — the contract<br>
+          &nbsp;&nbsp;&nbsp;↳ <code>ZipDataIngestor</code> ← SUBCLASS — handles ZIP files<br>
+          &nbsp;&nbsp;&nbsp;↳ <code>CsvDataIngestor</code> ← SUBCLASS (future) — handles CSV<br><br>
+          <code>DataIngestorFactory</code> ← STANDALONE — NOT a subclass. Its only job: CHOOSE.
+        </div>
+      </div>`;
 
   }else if(p==='strategy'){
     c.innerHTML=`
