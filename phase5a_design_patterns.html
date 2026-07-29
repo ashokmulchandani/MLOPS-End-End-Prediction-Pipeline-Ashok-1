@@ -150,7 +150,38 @@ df = DataIngestorFactory.get_data_ingestor(<span class="str">".zip"</span>).inge
 <span class="cm"># That's it. One line. Factory does the rest.</span>
 <span class="cm"># If tomorrow the file is .parquet, same line — just change the extension.</span></div>
 
-      <div class="callout"><strong>🧠 Remember:</strong> Factory = "I don't want to think about WHICH class to create." <strong>You wrote it once. It runs automatically forever.</strong></div>`;
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1rem 0 0.4rem">📝 FULL Code — What WE Wrote (src/ingest_data.py)</h4>
+      <div class="code-box"><span class="cm"># Step 1: Define the PRODUCT interface (the contract)</span>
+<span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod
+<span class="kw">class</span> DataIngestor(ABC):
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> ingest(self, file_path: str) -> pd.DataFrame:
+        <span class="kw">pass</span>
+
+<span class="cm"># Step 2: Implement CONCRETE products for each file type</span>
+<span class="kw">class</span> ZipDataIngestor(DataIngestor):
+    <span class="kw">def</span> ingest(self, file_path: str):
+        <span class="kw">import</span> zipfile, os
+        extract_path = <span class="str">"extracted_data"</span>
+        <span class="kw">with</span> zipfile.ZipFile(file_path, <span class="str">"r"</span>) <span class="kw">as</span> zip_ref:
+            zip_ref.extractall(extract_path)
+        csv_files = [f <span class="kw">for</span> f <span class="kw">in</span> os.listdir(extract_path) <span class="kw">if</span> f.endswith(<span class="str">".csv"</span>)]
+        <span class="kw">return</span> pd.read_csv(os.path.join(extract_path, csv_files[0]))
+
+<span class="cm"># Step 3: The FACTORY — decides WHICH class to create</span>
+<span class="kw">class</span> DataIngestorFactory:
+    <span class="kw">@staticmethod</span>
+    <span class="kw">def</span> get_data_ingestor(file_extension: str) -> DataIngestor:
+        <span class="kw">if</span> file_extension == <span class="str">".zip"</span>:
+            <span class="kw">return</span> ZipDataIngestor()
+        <span class="kw">raise</span> ValueError(<span class="str">f"No ingestor for: {file_extension}"</span>)
+
+<span class="cm"># Step 4: USE it — everywhere in the pipeline, just ONE line</span>
+file_ext = os.path.splitext(<span class="str">"data/archive.zip"</span>)[1]  <span class="cm"># → ".zip"</span>
+ingestor = DataIngestorFactory.get_data_ingestor(file_ext)
+df = ingestor.ingest(<span class="str">"data/archive.zip"</span>)  <span class="cm"># → 2930 rows × 82 cols</span></div>
+
+      <div class="callout"><strong>🧠 Remember:</strong> Factory = "I don't want to think about WHICH class to create." <strong>You wrote these ~50 lines ONCE. They run automatically forever. To add .parquet support → add ONE class + ONE if-branch.</strong></div>`;
 
   }else if(p==='strategy'){
     c.innerHTML=`
