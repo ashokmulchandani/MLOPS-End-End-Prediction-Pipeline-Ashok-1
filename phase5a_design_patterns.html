@@ -184,6 +184,50 @@ handler.handle_missing_values(df)              <span class="cm">← HANDLER dele
         </div>
       </div>
 
+      <div class="callout"><h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--amber);margin:1rem 0 0.4rem">🔍 Visualizing <code>self</code> — What Does It Actually Look Like?</h4>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem;margin:0.6rem 0">
+        <div style="text-align:center;font-size:0.72rem;color:var(--tdim);line-height:2.2">
+          <strong>Imagine you create TWO strategies:</strong><br><br>
+          <code style="background:var(--amber-bg);padding:0.2em 0.5em;border-radius:4px">strategy1 = FillMissingValuesStrategy("median")</code><br>
+          <code style="background:var(--violet-bg);padding:0.2em 0.5em;border-radius:4px">strategy2 = DropMissingValuesStrategy()</code><br><br>
+          <strong>Now call the SAME method on both:</strong><br><br>
+          <code>strategy1<b>.handle(df)</b></code><br>
+          <span style="color:var(--amber)">→ self = strategy1 → "I fill missing values with median"</span><br><br>
+          <code>strategy2<b>.handle(df)</b></code><br>
+          <span style="color:var(--violet)">→ self = strategy2 → "I drop rows with missing values"</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:0.6rem 0">
+        <div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:8px;padding:0.8rem;text-align:center">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--amber);font-weight:700">When strategy1.handle(df) runs:</div>
+          <div style="font-size:0.65rem;color:var(--tdim);line-height:1.8;margin-top:0.3rem">
+            <code>self = <span style="color:var(--amber)">strategy1</span></code><br>
+            <code>self.method = <span style="color:var(--amber)">"median"</span></code><br>
+            <code>strategy1.method = <span style="color:var(--amber)">"median"</span></code><br><br>
+            → Fills with median ✅
+          </div>
+        </div>
+        <div style="background:var(--vbg);border:2px solid var(--violet);border-radius:8px;padding:0.8rem;text-align:center">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--violet);font-weight:700">When strategy2.handle(df) runs:</div>
+          <div style="font-size:0.65rem;color:var(--tdim);line-height:1.8;margin-top:0.3rem">
+            <code>self = <span style="color:var(--violet)">strategy2</span></code><br>
+            <code>self has no "method"</code><br>
+            <code>strategy2 has no "method"</code><br><br>
+            → Drops rows with nulls ✅
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.8rem;margin-top:0.5rem;text-align:center;font-size:0.72rem;color:var(--tdim);line-height:1.8">
+        <strong style="color:var(--green)">🧠 THE KEY INSIGHT:</strong><br>
+        <code>self</code> is just <strong>the object before the dot</strong>.<br><br>
+        <code><b>strategy1</b>.handle(df)</code> → inside the method, <code>self = strategy1</code><br>
+        <code><b>strategy2</b>.handle(df)</code> → inside the method, <code>self = strategy2</code><br><br>
+        <span style="font-size:0.8rem">Same method <code>handle(df)</code> → different behavior → because <code>self</code> is different.</span><br>
+        <span style="font-size:0.8rem">That's the ENTIRE point of object-oriented programming.</span>
+      </div>
+
       <div class="callout"><strong>🧠 BOTTOM LINE:</strong> You don't need to be a Python expert. You need to recognize these 5 words when you see them. <strong>class = blueprint, object = thing, method = action, handler = manager, ABC = contract.</strong> That's it.</div>`;
 
   }else if(p==='factory'){
