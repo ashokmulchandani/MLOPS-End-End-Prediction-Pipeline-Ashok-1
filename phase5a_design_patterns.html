@@ -75,6 +75,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-
 <div class="tabs">
   <button class="tab active" onclick="showPattern('factory', event)">🏭 Factory</button>
   <button class="tab" onclick="showPattern('strategy', event)">🎯 Strategy</button>
+  <button class="tab" onclick="showPattern('basics', event)">📖 Python Basics</button>
   <button class="tab" onclick="showPattern('template', event)">📋 Template</button>
   <button class="tab" onclick="showPattern('overview', event)">🗺️ Pipeline Map</button>
   <button class="tab" onclick="showPattern('structure', event)">📁 Project Setup</button>
@@ -93,7 +94,76 @@ function showPattern(p, evt){
   else { document.querySelector('.tab') && document.querySelector('.tab').classList.add('active'); }
   const c=document.getElementById('content');
 
-  if(p==='factory'){
+  if(p==='basics'){
+    c.innerHTML=`
+      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--cyan);margin-bottom:0.3rem">📖 Python Building Blocks — Explained Simply</h3>
+      <p style="color:var(--tdim);font-size:0.85rem;margin-bottom:0.8rem">Before patterns, you need to understand <strong>5 words</strong>. Each one is simpler than it sounds.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin:0.8rem 0">
+        <div style="background:var(--card);border:2px solid var(--cyan);border-radius:10px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--cyan);font-weight:700">🏗️ CLASS = A Blueprint</div>
+          <div style="font-size:0.7rem;color:var(--tdim);line-height:1.7;margin-top:0.3rem">
+            <strong>Analogy:</strong> A house blueprint. The blueprint is NOT a house — it's the PLAN for building houses.<br><br>
+            <code>class House:</code> = "Here's how to build a house"<br>
+            <code>my_house = House()</code> = "Build me one using the blueprint"<br><br>
+            <span style="color:var(--cyan)">class = blueprint. object = the actual thing built from it.</span>
+          </div>
+        </div>
+        <div style="background:var(--card);border:2px solid var(--cyan);border-radius:10px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--cyan);font-weight:700">📦 OBJECT = One House Built from the Blueprint</div>
+          <div style="font-size:0.7rem;color:var(--tdim);line-height:1.7;margin-top:0.3rem">
+            <strong>Analogy:</strong> If <code>class House</code> is the blueprint, then <code>my_house = House()</code> creates one actual house. You can build many houses from one blueprint.<br><br>
+            <code>house1 = House()</code> → 123 Main St<br>
+            <code>house2 = House()</code> → 456 Oak Ave<br><br>
+            <span style="color:var(--cyan)">One blueprint → unlimited houses. Same idea: one class → unlimited objects.</span>
+          </div>
+        </div>
+        <div style="background:var(--card);border:2px solid var(--amber);border-radius:10px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--amber);font-weight:700">🔧 METHOD = Something the Object Can DO</div>
+          <div style="font-size:0.7rem;color:var(--tdim);line-height:1.7;margin-top:0.3rem">
+            <strong>Analogy:</strong> A house can <code>open_door()</code>, <code>turn_on_lights()</code>, <code>lock()</code>. These are actions.<br><br>
+            <code>df.fillna(0)</code> = "DataFrame, fill your empty spots with 0"<br>
+            <code>df.dropna()</code> = "DataFrame, drop rows with empty spots"<br><br>
+            <span style="color:var(--amber)">method = action. It's a function that belongs to a class.</span>
+          </div>
+        </div>
+        <div style="background:var(--card);border:2px solid var(--amber);border-radius:10px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--amber);font-weight:700">🎛️ HANDLER = A Manager That Delegates</div>
+          <div style="font-size:0.7rem;color:var(--tdim);line-height:1.7;margin-top:0.3rem">
+            <strong>Analogy:</strong> A hotel front desk. You say "I need my room cleaned." The front desk doesn't clean — it CALLS the housekeeping staff.<br><br>
+            <code>handler.handle_missing_values(df)</code><br>
+            = "Handler, fix the missing values"<br>
+            → Handler calls <code>strategy.handle(df)</code><br><br>
+            <span style="color:var(--amber)">handler = middleman. It doesn't do the work — it delegates.</span>
+          </div>
+        </div>
+        <div style="background:var(--card);border:2px solid var(--violet);border-radius:10px;padding:0.8rem;grid-column:1/-1">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);font-weight:700">📋 ABC (Abstract Base Class) = A Contract — "You MUST have this method"</div>
+          <div style="font-size:0.7rem;color:var(--tdim);line-height:1.7;margin-top:0.3rem">
+            <strong>Analogy:</strong> A job description. "All chefs MUST know how to <code>cook()</code>. Italian chef, Chinese chef — doesn't matter. If you can't <code>cook()</code>, you're not hired."<br><br>
+            <code>class DataIngestor(ABC):</code> = "Every ingestor MUST have an <code>ingest()</code> method"<br>
+            <code>class ZipDataIngestor(DataIngestor):</code> = "I'm an ingestor, and here's MY version of <code>ingest()</code>"<br><br>
+            <span style="color:var(--violet)">ABC = a promise. "I guarantee every subclass has this method."</span>
+          </div>
+        </div>
+      </div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1rem 0 0.4rem">🔗 How These 5 Words Connect in Our Code</h4>
+      <div class="code-box"><span class="cm"># CLASS (blueprint) + ABC (contract)</span>
+<span class="kw">class</span> MissingValueHandlingStrategy(<span style="color:var(--violet)">ABC</span>):          <span class="cm">← "Every strategy MUST have handle()"</span>
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> <span style="color:var(--amber)">handle</span>(self, df):                          <span class="cm">← METHOD: what the strategy can DO</span>
+        <span class="kw">pass</span>
+
+<span class="cm"># OBJECT (actual thing) created from the CLASS blueprint</span>
+strategy = FillMissingValuesStrategy(<span class="str">"median"</span>)  <span class="cm">← OBJECT: one specific strategy</span>
+
+<span class="cm"># HANDLER (manager) DELEGATES to the strategy OBJECT</span>
+handler = MissingValueHandler()                <span class="cm">← OBJECT: the manager</span>
+handler.set_strategy(strategy)                 <span class="cm">← "Use this strategy please"</span>
+handler.handle_missing_values(df)              <span class="cm">← HANDLER delegates → strategy.handle(df)</span></div>
+
+      <div class="callout"><strong>🧠 BOTTOM LINE:</strong> You don't need to be a Python expert. You need to recognize these 5 words when you see them. <strong>class = blueprint, object = thing, method = action, handler = manager, ABC = contract.</strong> That's it.</div>`;
     c.innerHTML=`
       <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--amber);margin-bottom:0.3rem">🏭 Factory Pattern — The "Auto-Detect" Pattern</h3>
       <p style="color:var(--tdim);font-size:0.85rem;margin-bottom:1rem"><strong>What problem does it solve?</strong> Your data arrives in different formats — ZIP files, CSV files, Parquet files. You don't want to remember which class handles which format. The Factory remembers for you.</p>
