@@ -282,7 +282,103 @@ function showTab(p,evt){
 <span class="cm"># That's it. The @step is the ONLY ZenML code.
 # Everything else is plain Python calling src/.</span></div>
 
-      <div class="callout"><strong>🔑 ONE LINE TO REMEMBER:</strong> <code>@step</code> = "ZenML, track this function." <strong>Without it:</strong> normal Python. <strong>With it:</strong> ZenML watches inputs, outputs, caching, and errors.</div>`;
+      <div class="callout"><strong>🔑 ONE LINE TO REMEMBER:</strong> <code>@step</code> = "ZenML, track this function." <strong>Without it:</strong> normal Python. <strong>With it:</strong> ZenML watches inputs, outputs, caching, and errors.</div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.85rem;color:var(--violet);margin:1.2rem 0 0.4rem">🖥️ ZenML HAS a Real Dashboard — Here's What It Looks Like</h4>
+
+      <div style="background:var(--card);border:2px solid var(--violet);border-radius:12px;padding:1rem;margin:0.6rem 0">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem">
+          <div style="background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:0.7rem">
+            <div style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">📊 Pipeline Runs (DAG View)</div>
+            <div style="font-size:0.58rem;color:var(--tdim);line-height:1.7">
+              ┌──────────────────────────┐<br>
+              │ <span style="color:var(--amber)">◉ data_ingestion_step</span>  │<br>
+              │ &nbsp;&nbsp;✅ 2930 rows, 82 cols  │<br>
+              │ &nbsp;&nbsp;⏱ 2.3s               │<br>
+              └──────────┬───────────────┘<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+              ┌──────────────────────────┐<br>
+              │ <span style="color:var(--amber)">◉ handle_missing</span>       │<br>
+              │ &nbsp;&nbsp;✅ Filled 15067 nulls   │<br>
+              └──────────┬───────────────┘<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+              ┌──────────────────────────┐<br>
+              │ <span style="color:var(--amber)">◉ feature_engineering</span>   │<br>
+              │ &nbsp;&nbsp;✅ Log transform applied │<br>
+              └──────────────────────────┘<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;... 4 more steps ...
+            </div>
+          </div>
+          <div style="background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:0.7rem">
+            <div style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">🗄️ Stack Components</div>
+            <div style="font-size:0.58rem;color:var(--tdim);line-height:1.7">
+              ┌──────────────────────────┐<br>
+              │ 📦 <b>Artifact Store</b>       │<br>
+              │ &nbsp;&nbsp;local_store           │<br>
+              │ &nbsp;&nbsp;C:/.../prices-predictor│<br>
+              ├──────────────────────────┤<br>
+              │ 🔬 <b>Experiment Tracker</b>    │<br>
+              │ &nbsp;&nbsp;mlflow_tracker         │<br>
+              │ &nbsp;&nbsp;Flavor: mlflow          │<br>
+              ├──────────────────────────┤<br>
+              │ 🚀 <b>Model Deployer</b>        │<br>
+              │ &nbsp;&nbsp;mlflow_deployer         │<br>
+              └──────────────────────────┘
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin:0.8rem 0 0.3rem">⚡ How to Start the Dashboard</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;margin:0.6rem 0">
+        <div style="background:var(--amber-bg);border:1px solid var(--amber);border-radius:8px;padding:0.7rem;text-align:center">
+          <div style="font-size:1.2rem">1️⃣</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;font-weight:700;color:var(--amber);margin-top:0.2rem">Start ZenML Server</div>
+          <div style="font-size:0.55rem;color:var(--tdim);margin-top:0.2rem"><code>zenml login --local</code><br>or<br><code>zenml up</code></div>
+        </div>
+        <div style="background:var(--vbg);border:1px solid var(--violet);border-radius:8px;padding:0.7rem;text-align:center">
+          <div style="font-size:1.2rem">2️⃣</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;font-weight:700;color:var(--violet);margin-top:0.2rem">Open Dashboard</div>
+          <div style="font-size:0.55rem;color:var(--tdim);margin-top:0.2rem">Opens at<br><code>http://localhost:8237</code><br>in your browser</div>
+        </div>
+        <div style="background:var(--green-bg);border:1px solid var(--green);border-radius:8px;padding:0.7rem;text-align:center">
+          <div style="font-size:1.2rem">3️⃣</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;font-weight:700;color:var(--green);margin-top:0.2rem">Run Pipeline</div>
+          <div style="font-size:0.55rem;color:var(--tdim);margin-top:0.2rem"><code>python run_pipeline.py</code><br>Dashboard shows<br>live progress!</div>
+        </div>
+      </div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin:0.8rem 0 0.3rem">🆚 ZenML Dashboard vs MLflow UI — Side by Side</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:0.6rem 0">
+        <div style="background:var(--vbg);border:2px solid var(--violet);border-radius:8px;padding:0.7rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">🟣 ZenML Dashboard</div>
+          <div style="font-size:0.58rem;color:var(--tdim);line-height:1.7">
+            <b>Shows:</b><br>
+            ✅ Pipeline DAG (visual graph)<br>
+            ✅ Step-by-step status<br>
+            ✅ Stack configuration<br>
+            ✅ Model registry<br>
+            ✅ Artifact lineage<br><br>
+            <b>Best for:</b> Pipeline orchestration<br>
+            <b>URL:</b> localhost:8237
+          </div>
+        </div>
+        <div style="background:var(--cyan-bg);border:2px solid var(--cyan);border-radius:8px;padding:0.7rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--cyan);font-weight:700;margin-bottom:0.3rem">🔵 MLflow UI</div>
+          <div style="font-size:0.58rem;color:var(--tdim);line-height:1.7">
+            <b>Shows:</b><br>
+            ✅ Experiment runs<br>
+            ✅ Metrics (R², RMSE)<br>
+            ✅ Parameters<br>
+            ✅ Model artifacts<br>
+            ✅ Run comparison<br><br>
+            <b>Best for:</b> Experiment tracking<br>
+            <b>URL:</b> localhost:5000
+          </div>
+        </div>
+      </div>
+
+      <div class="callout"><strong>🧠 They work TOGETHER:</strong> ZenML orchestrates the pipeline (what runs when). MLflow tracks experiments (how well it ran). <strong>ZenML uses MLflow under the hood</strong> — it auto-starts MLflow runs for each step. You see the pipeline in ZenML, the metrics in MLflow.</div>`;
 
   }else if(p==='errors'){
     c.innerHTML=`
