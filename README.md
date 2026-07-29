@@ -10,7 +10,7 @@ An end-to-end MLOps and ML System Design learning project built from scratch fol
 | Phase 2 | Data Strategy & Engineering (sampling, labeling, versioning) | ✅ Theory complete | [🔗 HTML](phase2_data_strategy.html) |
 | Phase 3 | Feature Engineering & Pipeline (scaling, encoding, leakage detection) | ✅ Theory complete | [🔗 HTML](phase3_feature_engineering.html) |
 | Phase 4 | Baseline First (rules → simple model → measure → iterate) | ✅ Theory complete | [🔗 HTML](phase4_baseline_first.html) |
-| Phase 5 | **House Prices Predictor System** (ZenML + MLflow + Design Patterns) | ✅ Reference code | — |
+| Phase 5 | **House Prices Predictor System** (ZenML + MLflow + Design Patterns) | 🔨 In Progress (5A done) | [🔗 5A HTML](phase5a_design_patterns.html) |
 | Phase 6 | Enterprise Training Data Pipeline (async, AI generation, quality eval) | 📖 Plan ready | — |
 | Phase 6G | AI/ML Testing & QA (PR review, test cases, 4 layers, pyramid, CI/CD) | ✅ Theory complete | [🔗 HTML](phase4b_ai_testing.html) |
 | Phase 7 | Monitoring & Production Ops (drift, retraining, A/B testing) | 📖 Plan ready | — |
@@ -29,6 +29,8 @@ An end-to-end MLOps and ML System Design learning project built from scratch fol
 | Feature Profiling (3.1) | [🔗 HTML](feature_profiling_visualizer.html) | Distributions, correlations, missing value analysis |
 | Missing Values (3.2) | [🔗 HTML](missing_values_visualizer.html) | WHY before HOW — apply strategies to 5 scenarios |
 | Feature Monitoring (3.10) | [🔗 HTML](feature_monitoring_visualizer.html) | Live drift dashboard — simulate market shifts |
+| MLOps Pipeline — All Phases | [🔗 HTML](mlops_pipeline_visualizer.html) | PREPROCESS→TRAIN→POSTPROCESS across 6 phases |
+| Phase 5A Design Patterns | [🔗 HTML](phase5a_design_patterns.html) | Factory, Strategy, Template with Python Basics |
 
 ## Key Project: Prices Predictor System (Phase 5)
 
