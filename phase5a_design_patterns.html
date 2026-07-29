@@ -326,60 +326,69 @@ handler = MissingValueHandler(FillMissingValuesStrategy(<span class="str">"media
 
   }else if(p==='structure'){
     c.innerHTML=`
-      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1rem;color:var(--violet);margin-bottom:0.5rem">📁 Phase 5A: Project Structure</h3>
-      <div class="split">
-        <div>
-          <div class="tree">
-<div class="dir">prices-predictor-system/</div>
-<div>├── <span class="dir">src/</span>              <span style="color:var(--tmut)">← Core logic (Design Patterns)</span></div>
-<div>│   ├── <span class="pat">ingest_data.py</span>      <span class="tag tag-factory">FACTORY</span></div>
-<div>│   ├── <span class="pat">handle_missing_values.py</span> <span class="tag tag-strategy">STRATEGY</span></div>
-<div>│   ├── <span class="pat">feature_engineering.py</span>  <span class="tag tag-strategy">STRATEGY</span></div>
-<div>│   ├── <span class="pat">outlier_detection.py</span>    <span class="tag tag-strategy">STRATEGY</span></div>
-<div>│   ├── <span class="pat">data_splitter.py</span>       <span class="tag tag-strategy">STRATEGY</span></div>
-<div>│   ├── <span class="pat">model_building.py</span>      <span class="tag tag-strategy">STRATEGY</span></div>
-<div>│   └── <span class="pat">model_evaluator.py</span>     <span class="tag tag-strategy">STRATEGY</span></div>
-<div>├── <span class="dir">steps/</span>            <span style="color:var(--tmut)">← ZenML @step wrappers</span></div>
-<div>├── <span class="dir">pipelines/</span>        <span style="color:var(--tmut)">← ZenML @pipeline definitions</span></div>
-<div>├── <span class="dir">analysis/</span>         <span style="color:var(--tmut)">← EDA (Template Pattern)</span></div>
-<div>├── <span class="dir">explanations/</span>     <span style="color:var(--tmut)">← Pattern demos</span></div>
-<div>├── run_pipeline.py</div>
-<div>└── requirements.txt</div>
-          </div>
-        </div>
-        <div class="analogy-box">
-          <h3>📦 What We Set Up</h3>
-          <table class="map-table">
-            <tr><th>Component</th><th>Status</th></tr>
-            <tr><td>.venv (Python 3.12)</td><td style="color:var(--green)">✓ Created</td></tr>
-            <tr><td>numpy, pandas, scikit-learn</td><td style="color:var(--green)">✓ Installed</td></tr>
-            <tr><td>MLflow 3.14</td><td style="color:var(--green)">✓ Installed</td></tr>
-            <tr><td>ZenML 0.96</td><td style="color:var(--green)">✓ Installed</td></tr>
-            <tr><td>zenml init</td><td style="color:var(--green)">✓ Done</td></tr>
-            <tr><td>MLflow tracker + deployer</td><td style="color:var(--green)">✓ Registered</td></tr>
-            <tr><td>mlops_stack</td><td style="color:var(--green)">✓ Active</td></tr>
-            <tr><td>Hardcoded paths fixed</td><td style="color:var(--green)">✓ data/archive.zip</td></tr>
-            <tr><td>Pipeline runs E2E</td><td style="color:var(--green)">✓ R²=0.70 verified</td></tr>
-          </table>
+      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1rem;color:var(--violet);margin-bottom:0.3rem">📁 Project Folder Structure — Where Everything Lives</h3>
+      <p style="color:var(--tdim);font-size:0.8rem;margin-bottom:0.8rem">All code is <strong>already written</strong> in <code>prices-predictor-system/prices-predictor-system/</code>. This map shows you where to find each file and what pattern it uses.</p>
+
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin:0.8rem 0">
+        <div class="tree" style="line-height:2.2;font-size:0.72rem">
+<div><span class="dir">prices-predictor-system/prices-predictor-system/</span>  <span style="color:var(--tmut);font-size:0.6rem">← ROOT (cd here)</span></div>
+<div>│</div>
+<div>├── <span class="dir">📂 src/</span>  <span style="color:var(--tmut);font-size:0.62rem">← CORE LOGIC — All design patterns live here (7 files)</span></div>
+<div>│   ├── <span style="color:var(--amber);font-weight:700">ingest_data.py</span>           <span class="tag tag-factory">FACTORY</span> <span style="color:var(--tmut);font-size:0.55rem">→ DataIngestorFactory + ZipDataIngestor</span></div>
+<div>│   ├── <span style="color:var(--violet);font-weight:700">handle_missing_values.py</span> <span class="tag tag-strategy">STRATEGY</span> <span style="color:var(--tmut);font-size:0.55rem">→ DropMissing OR FillMissing</span></div>
+<div>│   ├── <span style="color:var(--violet);font-weight:700">feature_engineering.py</span>  <span class="tag tag-strategy">STRATEGY</span> <span style="color:var(--tmut);font-size:0.55rem">→ Log, StandardScale, MinMax, OneHot</span></div>
+<div>│   ├── <span style="color:var(--violet);font-weight:700">outlier_detection.py</span>    <span class="tag tag-strategy">STRATEGY</span> <span style="color:var(--tmut);font-size:0.55rem">→ ZScore OR IQR detection</span></div>
+<div>│   ├── <span style="color:var(--violet);font-weight:700">data_splitter.py</span>       <span class="tag tag-strategy">STRATEGY</span> <span style="color:var(--tmut);font-size:0.55rem">→ Train/Test split</span></div>
+<div>│   ├── <span style="color:var(--violet);font-weight:700">model_building.py</span>      <span class="tag tag-strategy">STRATEGY</span> <span style="color:var(--tmut);font-size:0.55rem">→ LinearRegression (swappable)</span></div>
+<div>│   └── <span style="color:var(--violet);font-weight:700">model_evaluator.py</span>     <span class="tag tag-strategy">STRATEGY</span> <span style="color:var(--tmut);font-size:0.55rem">→ Regression metrics</span></div>
+<div>│</div>
+<div>├── <span class="dir">📂 steps/</span>  <span style="color:var(--tmut);font-size:0.62rem">← ZenML @step Wrappers (thin — delegates to src/)</span></div>
+<div>│   ├── data_ingestion_step.py     <span style="color:var(--tmut);font-size:0.55rem">→ calls DataIngestorFactory</span></div>
+<div>│   ├── handle_missing_values_step.py</div>
+<div>│   ├── feature_engineering_step.py</div>
+<div>│   ├── outlier_detection_step.py</div>
+<div>│   ├── data_splitter_step.py</div>
+<div>│   ├── model_building_step.py     <span style="color:var(--tmut);font-size:0.55rem">→ MLflow autolog + ColumnTransformer</span></div>
+<div>│   └── model_evaluator_step.py</div>
+<div>│</div>
+<div>├── <span class="dir">📂 pipelines/</span>  <span style="color:var(--tmut);font-size:0.62rem">← ZenML @pipeline definitions (chains steps together)</span></div>
+<div>│   ├── training_pipeline.py       <span style="color:var(--tmut);font-size:0.55rem">→ 6 steps: ingest→clean→feature→outlier→split→train→eval</span></div>
+<div>│   └── deployment_pipeline.py     <span style="color:var(--tmut);font-size:0.55rem">→ deploy + inference</span></div>
+<div>│</div>
+<div>├── <span class="dir">📂 analysis/</span>  <span style="color:var(--tmut);font-size:0.62rem">← EDA notebooks + Template Pattern modules</span></div>
+<div>│   ├── EDA.ipynb</div>
+<div>│   └── analyze_src/               <span style="color:var(--tmut);font-size:0.55rem">→ 5 analysis modules (TEMPLATE + STRATEGY)</span></div>
+<div>│       ├── basic_data_inspection.py    <span class="tag tag-strategy" style="font-size:0.4rem">STRATEGY</span></div>
+<div>│       ├── missing_values_analysis.py  <span class="tag tag-template" style="font-size:0.4rem">TEMPLATE</span></div>
+<div>│       └── multivariate_analysis.py    <span class="tag tag-template" style="font-size:0.4rem">TEMPLATE</span></div>
+<div>│</div>
+<div>├── <span class="dir">📂 explanations/</span>  <span style="color:var(--tmut);font-size:0.62rem">← Standalone pattern demos (educational only)</span></div>
+<div>│   ├── factory_design_patter.py   <span style="color:var(--tmut);font-size:0.55rem">→ CoffeeMachine example</span></div>
+<div>│   ├── strategy_design_pattern.py <span style="color:var(--tmut);font-size:0.55rem">→ Payment method example</span></div>
+<div>│   └── template_design_pattern.py <span style="color:var(--tmut);font-size:0.55rem">→ Restaurant dinner example</span></div>
+<div>│</div>
+<div>├── <span class="dir">📂 data/</span>  <span style="color:var(--tmut);font-size:0.62rem">← Raw data (archive.zip = Ames Housing dataset)</span></div>
+<div>├── run_pipeline.py          <span style="color:var(--tmut);font-size:0.55rem">→ Entry point: python run_pipeline.py</span></div>
+<div>├── run_deployment.py        <span style="color:var(--tmut);font-size:0.55rem">→ Entry point: deploy + inference</span></div>
+<div>├── sample_predict.py        <span style="color:var(--tmut);font-size:0.55rem">→ Test the deployed API</span></div>
+<div>├── config.yaml              <span style="color:var(--tmut);font-size:0.55rem">→ ZenML model config</span></div>
+<div>├── requirements.txt         <span style="color:var(--tmut);font-size:0.55rem">→ Python dependencies</span></div>
+<div>└── .venv/                   <span style="color:var(--tmut);font-size:0.55rem">→ Virtual environment (created by us)</span></div>
         </div>
       </div>
 
-      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--violet);margin:0.8rem 0 0.4rem">Quick Start Commands</h4>
-      <div class="code-box"><span class="cm"># Activate environment</span>
-<span class="kw">cd</span> prices-predictor-system/prices-predictor-system
-<span class="kw">source</span> .venv/Scripts/activate
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin:1rem 0 0.4rem">🧠 How It All Connects</h4>
+      <div style="display:flex;align-items:center;gap:0.3rem;flex-wrap:wrap;justify-content:center;font-size:0.62rem;margin:0.6rem 0">
+        <div style="background:var(--amber-bg);border:1px solid var(--amber);border-radius:6px;padding:0.4rem 0.6rem;text-align:center"><strong>src/</strong><br><span style="color:var(--tmut)">Core Logic<br>(Patterns)</span></div>
+        <span style="color:var(--violet);font-size:1rem">→</span>
+        <div style="background:var(--vbg);border:1px solid var(--violet);border-radius:6px;padding:0.4rem 0.6rem;text-align:center"><strong>steps/</strong><br><span style="color:var(--tmut)">ZenML Wrappers<br>(Thin layer)</span></div>
+        <span style="color:var(--violet);font-size:1rem">→</span>
+        <div style="background:var(--cyan-bg);border:1px solid var(--cyan);border-radius:6px;padding:0.4rem 0.6rem;text-align:center"><strong>pipelines/</strong><br><span style="color:var(--tmut)">Chain Steps<br>(DAG)</span></div>
+        <span style="color:var(--violet);font-size:1rem">→</span>
+        <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:6px;padding:0.4rem 0.6rem;text-align:center"><strong>run_pipeline.py</strong><br><span style="color:var(--green)">Execute!</span></div>
+      </div>
 
-<span class="cm"># Run the pipeline (ZenML)</span>
-<span class="kw">python</span> run_pipeline.py
-
-<span class="cm"># Run without ZenML (directly)</span>
-<span class="kw">python</span> -c <span class="str">"
-from src.ingest_data import DataIngestorFactory
-df = DataIngestorFactory.get_data_ingestor('.zip').ingest('data/archive.zip')
-print(f'Ingested {len(df)} rows, {len(df.columns)} columns')
-"</span></div>
-
-      <div class="callout"><strong>ZenML note:</strong> ZenML 0.96 has a Windows path normalization bug. The pipeline logic is verified working — ZenML orchestration will work once the path issue is resolved or a compatible version is used.</div>`;
+      <div class="callout"><strong>🔑 KEY INSIGHT:</strong> You don't write this structure from scratch. It's the <strong>standard MLOps project layout</strong>. For every new ML project, you create the same folders: <code>src/</code> (logic), <code>steps/</code> (orchestration wrappers), <code>pipelines/</code> (DAG definition). <strong>Same structure, different models.</strong></div>`;
   }
 }
 showPattern('factory');
