@@ -398,6 +398,70 @@ df = ingestor.ingest(<span class="str">"data/archive.zip"</span>)  <span class="
           <strong>Why not <code>-> ZipDataIngestor</code>?</strong> Because tomorrow the factory might return a <code>CsvDataIngestor</code> or <code>ParquetDataIngestor</code>. The parent type <code>DataIngestor</code> covers ALL of them.<br><br>
           <strong>Analogy:</strong> "I return a Vehicle" — could be Car, Truck, Motorcycle. All are Vehicles. Same idea: "I return a DataIngestor" — could be Zip, Csv, Parquet. All are DataIngestors.
         </div>
+      </div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--amber);margin:1.2rem 0 0.4rem">✍️ How to WRITE This Code From Memory (3-Step Recipe)</h4>
+      <p style="color:var(--tdim);font-size:0.78rem;margin-bottom:0.6rem">You don't need to memorize syntax. You need to remember the <strong>SHAPE</strong>. Here's the recipe:</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;margin:0.6rem 0">
+        <div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:10px;padding:0.8rem;text-align:center">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--amber);font-weight:700;margin-bottom:0.4rem">STEP 1<br>The Contract</div>
+          <div style="font-size:0.6rem;color:var(--tdim);line-height:1.8;text-align:left">
+            <strong>Pattern:</strong><br>
+            <code>class Xxx(ABC):</code><br>
+            <code>&nbsp;&nbsp;@abstractmethod</code><br>
+            <code>&nbsp;&nbsp;def yyy(self, zzz):</code><br>
+            <code>&nbsp;&nbsp;&nbsp;&nbsp;pass</code><br><br>
+            <strong>Fill in:</strong><br>
+            Xxx = your class name<br>
+            yyy = the method name<br>
+            zzz = the input<br><br>
+            <strong>Only 5 lines!</strong>
+          </div>
+        </div>
+        <div style="background:var(--vbg);border:2px solid var(--violet);border-radius:10px;padding:0.8rem;text-align:center">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--violet);font-weight:700;margin-bottom:0.4rem">STEP 2<br>The Worker</div>
+          <div style="font-size:0.6rem;color:var(--tdim);line-height:1.8;text-align:left">
+            <strong>Pattern:</strong><br>
+            <code>class XxxImpl(Xxx):</code><br>
+            <code>&nbsp;&nbsp;def yyy(self, zzz):</code><br>
+            <code>&nbsp;&nbsp;&nbsp;&nbsp;# Do the work</code><br>
+            <code>&nbsp;&nbsp;&nbsp;&nbsp;return result</code><br><br>
+            <strong>Fill in:</strong><br>
+            XxxImpl = WorkerName<br>
+            yyy = same name as Step 1<br>
+            # Do the work = YOUR logic<br><br>
+            <strong>Extends Step 1!</strong>
+          </div>
+        </div>
+        <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:10px;padding:0.8rem;text-align:center">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--green);font-weight:700;margin-bottom:0.4rem">STEP 3<br>The Factory</div>
+          <div style="font-size:0.6rem;color:var(--tdim);line-height:1.8;text-align:left">
+            <strong>Pattern:</strong><br>
+            <code>class XxxFactory:</code><br>
+            <code>&nbsp;&nbsp;@staticmethod</code><br>
+            <code>&nbsp;&nbsp;def choose(key):</code><br>
+            <code>&nbsp;&nbsp;&nbsp;&nbsp;if key == "A":</code><br>
+            <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return AImpl()</code><br><br>
+            <strong>Fill in:</strong><br>
+            key = file extension<br>
+            "A" = ".zip"<br>
+            AImpl = ZipXxx<br><br>
+            <strong>Just if-else!</strong>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--card);border:2px solid var(--violet);border-radius:10px;padding:1rem;margin:0.8rem 0;text-align:center">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--violet);font-weight:700;margin-bottom:0.4rem">🧠 How To Remember It Forever</div>
+        <div style="font-size:0.72rem;color:var(--tdim);line-height:2">
+          <strong>CONTRACT → WORKER → FACTORY</strong><br><br>
+          Step 1: <strong>"Here is what I need"</strong> (ABC with one @abstractmethod)<br>
+          Step 2: <strong>"I'll do it for X"</strong> (subclass with actual code)<br>
+          Step 3: <strong>"I'll pick who does it"</strong> (factory with if-else)<br><br>
+          <span style="color:var(--violet)">That's it. 3 classes. Every. Single. Time.</span><br>
+          <span style="font-size:0.65rem;color:var(--tmut)">The names change. The SHAPE never does.</span>
+        </div>
       </div>`;
 
   }else if(p==='strategy'){
