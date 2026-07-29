@@ -437,49 +437,97 @@ handler.set_strategy(DropMissingValuesStrategy())
 
   }else if(p==='template'){
     c.innerHTML=`
-      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1rem;color:var(--green);margin-bottom:0.5rem">📋 Template Pattern — "Same dinner structure, different dishes" = "Same analysis structure, different data"</h3>
-      <p style="color:var(--tdim);font-size:0.8rem;margin-bottom:1rem">The skeleton is FIXED. Subclasses fill in the steps. The sequence never changes.</p>
+      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--green);margin-bottom:0.3rem">📋 Template Pattern — The "Fill-in-the-Blanks" Pattern</h3>
+      <p style="color:var(--tdim);font-size:0.85rem;margin-bottom:1rem"><strong>What problem does it solve?</strong> You have a process with fixed steps — but each step can be done differently depending on the situation. Template defines the SEQUENCE, subclasses fill in the DETAILS.</p>
 
-      <div class="split">
-        <div class="analogy-box">
-          <h3>🍝 Analogy: Restaurant Dinner</h3>
-          <div style="text-align:center;font-size:0.7rem;line-height:2">
-            <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:0.3rem;margin:0.2rem 0"><strong>1. Appetizer</strong><br><span style="color:var(--tdim)">Italian: Bruschetta | Chinese: Spring Rolls</span></div>
-            <div style="color:var(--green)">↓ fixed sequence ↓</div>
-            <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:0.3rem;margin:0.2rem 0"><strong>2. Main Course</strong><br><span style="color:var(--tdim)">Italian: Pasta | Chinese: Kung Pao</span></div>
-            <div style="color:var(--green)">↓ fixed sequence ↓</div>
-            <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:0.3rem;margin:0.2rem 0"><strong>3. Dessert</strong><br><span style="color:var(--tdim)">Italian: Tiramisu | Chinese: Mango Pudding</span></div>
+      <div style="background:var(--green-bg);border:1px solid var(--green);border-radius:12px;padding:1.2rem;margin:1rem 0">
+        <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--green);margin-bottom:0.8rem;text-align:center">🧠 BUILD YOUR INTUITION — Before vs After</h4>
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:0.6rem;align-items:center">
+          <div style="background:var(--red-bg, #ffebe9);border:1px solid var(--red);border-radius:8px;padding:0.8rem;text-align:center">
+            <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--red);font-weight:700;margin-bottom:0.4rem">❌ WITHOUT Template</div>
+            <div style="font-size:0.65rem;color:var(--tdim);line-height:1.8">
+              Each analysis type<br>writes its OWN sequence<br>from scratch.<br><br>
+              "Did I remember to<br>call step 2 after step 1?"<br><br>
+              <span style="color:var(--red)">Easy to forget steps.<br>Inconsistent across analyses.</span>
+            </div>
           </div>
-        </div>
-        <div class="analogy-box">
-          <h3>📊 In Our Pipeline: MissingValuesAnalysis</h3>
-          <div style="text-align:center;font-size:0.7rem;line-height:2">
-            <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:0.3rem;margin:0.2rem 0"><strong>1. identify_missing_values()</strong><br><span style="color:var(--tdim)">Count nulls per column</span></div>
-            <div style="color:var(--green)">↓ fixed sequence ↓</div>
-            <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:0.3rem;margin:0.2rem 0"><strong>2. visualize_missing_values()</strong><br><span style="color:var(--tdim)">Heatmap of missing patterns</span></div>
+          <div style="font-size:1.5rem;font-weight:700;color:var(--green)">→</div>
+          <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.8rem;text-align:center">
+            <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--green);font-weight:700;margin-bottom:0.4rem">✅ WITH Template</div>
+            <div style="font-size:0.65rem;color:var(--tdim);line-height:1.8">
+              The SEQUENCE is guaranteed<br>by the parent class.<br><br>
+              You only fill in<br><strong>HOW</strong> each step works.<br><br>
+              <span style="color:var(--green)">Never forget a step.<br>Same structure every time.</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--violet);margin:0.8rem 0 0.4rem">Pipeline Code (analysis/analyze_src/missing_values_analysis.py)</h4>
-      <div class="code-box"><span class="cm"># Template — defines the SKELETON</span>
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1rem 0 0.4rem">📦 WHERE exactly does this happen?</h4>
+      <div style="display:flex;align-items:center;gap:0.3rem;flex-wrap:wrap;justify-content:center;margin:0.8rem 0;font-size:0.65rem">
+        <div style="background:var(--card);border:2px solid var(--border);border-radius:8px;padding:0.5rem;text-align:center"><strong>Phase 5</strong><br>Pipeline<br>Training</div>
+        <span style="color:var(--violet);font-size:1rem">→</span>
+        <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.5rem;text-align:center"><strong>EDA</strong><br>Analysis<br>Phase</div>
+        <span style="color:var(--green);font-size:1rem">→</span>
+        <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.5rem;text-align:center"><strong>Missing<br>Values</strong><br>Template</div>
+        <span style="color:var(--green);font-size:0.8rem">+</span>
+        <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.5rem;text-align:center"><strong>Multi<br>variate</strong><br>Template</div>
+      </div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1rem 0 0.4rem">👤 WHO writes this code?</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin:0.8rem 0">
+        <div style="background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--green);font-weight:700;margin-bottom:0.3rem">✅ WE write ONCE (setup)</div>
+          <div style="font-size:0.65rem;color:var(--tdim);line-height:1.7">The abstract template class with <code>analyze()</code> skeleton. <strong>~30 lines.</strong> Written ONCE. The sequence <code>step1 → step2</code> is LOCKED in the parent class — nobody can change it accidentally.</div>
+        </div>
+        <div style="background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:0.8rem">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--amber);font-weight:700;margin-bottom:0.3rem">📝 Subclass fills the blanks (per analysis)</div>
+          <div style="font-size:0.65rem;color:var(--tdim);line-height:1.7">Each new analysis type extends the template and fills in <strong>HOW</strong> to do each step. Italian restaurant fills in "Bruschetta" for appetizer. Chinese restaurant fills in "Spring Rolls." Same dinner, different dishes.</div>
+        </div>
+      </div>
+
+      <div style="background:var(--green-bg);border:2px solid var(--green);border-radius:10px;padding:0.8rem 1rem;margin:1rem 0;text-align:center">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;color:var(--green);font-weight:700;margin-bottom:0.3rem">❓ WHO WROTE THIS CODE?</div>
+        <div style="font-size:0.75rem;color:var(--tdim);line-height:1.7">
+          <strong>Already written</strong> in <code style="background:var(--raised);padding:0.1em 0.4em;border-radius:3px">analysis/analyze_src/missing_values_analysis.py</code> and <code>multivariate_analysis.py</code><br>
+          Your job: <strong>UNDERSTAND the pattern</strong> — see how the skeleton enforces the sequence and subclasses fill the details.
+        </div>
+      </div>
+
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1rem 0 0.4rem">📝 The Code (analysis/analyze_src/missing_values_analysis.py)</h4>
+      <div class="code-box"><span class="cm"># Step 1: TEMPLATE — defines the SKELETON (fixed sequence)</span>
+<span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod
 <span class="kw">class</span> MissingValuesAnalysisTemplate(ABC):
+    <span class="cm"># THIS is the template method — the sequence is LOCKED here</span>
     <span class="kw">def</span> analyze(self, df):
-        self.identify_missing_values(df)    <span class="cm"># Step 1: fixed order</span>
-        self.visualize_missing_values(df)   <span class="cm"># Step 2: fixed order</span>
+        missing = self.identify_missing_values(df)    <span class="cm"># Step 1: ALWAYS first</span>
+        self.visualize_missing_values(df, missing)    <span class="cm"># Step 2: ALWAYS second</span>
+        <span class="cm"># No subclass can change this order. Ever.</span>
 
-    <span class="kw">def</span> identify_missing_values(self, df): ...  <span class="cm"># Subclass fills this</span>
-    <span class="kw">def</span> visualize_missing_values(self, df): ... <span class="cm"># Subclass fills this</span>
+    <span class="cm"># Step 2: ABSTRACT methods — subclasses MUST fill these in</span>
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> identify_missing_values(self, df):
+        <span class="kw">pass</span>  <span class="cm"># "I don't know HOW yet — subclass decides"</span>
 
-<span class="cm"># Concrete Implementation</span>
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> visualize_missing_values(self, df, missing):
+        <span class="kw">pass</span>  <span class="cm"># "I don't know HOW yet — subclass decides"</span>
+
+<span class="cm"># Step 3: CONCRETE subclass — fills in the blanks</span>
 <span class="kw">class</span> SimpleMissingValuesAnalysis(MissingValuesAnalysisTemplate):
     <span class="kw">def</span> identify_missing_values(self, df):
-        <span class="kw">return</span> df.isnull().sum()
-    <span class="kw">def</span> visualize_missing_values(self, df):
-        <span class="kw">import</span> seaborn <span class="kw">as</span> sns
-        sns.heatmap(df.isnull())</div>
+        <span class="kw">return</span> df.isnull().sum()  <span class="cm"># Count nulls per column</span>
 
-      <div class="callout"><strong>Used in 2 EDA modules:</strong> MissingValuesAnalysis + MultivariateAnalysis. <strong>The skeleton is sacred. The details are flexible.</strong></div>`;
+    <span class="kw">def</span> visualize_missing_values(self, df, missing):
+        <span class="kw">import</span> seaborn <span class="kw">as</span> sns
+        <span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+        sns.heatmap(df.isnull(), cbar=<span class="kw">True</span>)  <span class="cm"># Red/yellow heatmap</span>
+
+<span class="cm"># Step 4: USE it — the sequence runs automatically</span>
+analysis = SimpleMissingValuesAnalysis()
+analysis.analyze(my_dataframe)  <span class="cm"># Step1 → Step2. Guaranteed. Every time.</span></div>
+
+      <div class="callout"><strong>🧠 Remember:</strong> Template = "The recipe steps are fixed. The ingredients are flexible." <strong>Strategy lets you swap ALGORITHMS. Template lets you swap DETAILS while keeping the same STRUCTURE.</strong></div>`;
 
   }else if(p==='overview'){
     c.innerHTML=`
