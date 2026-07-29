@@ -163,6 +163,27 @@ handler = MissingValueHandler()                <span class="cm">← OBJECT: the 
 handler.set_strategy(strategy)                 <span class="cm">← "Use this strategy please"</span>
 handler.handle_missing_values(df)              <span class="cm">← HANDLER delegates → strategy.handle(df)</span></div>
 
+      <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--amber);margin:1rem 0 0.4rem">🔍 How to Read: <code>def handle(self, df):</code></h4>
+      <div style="background:var(--amber-bg);border:1px solid var(--amber);border-radius:8px;padding:0.8rem;font-size:0.72rem;color:var(--tdim);line-height:2">
+        <code><b>def</b></code> = <strong>"I'm defining a method"</strong> (a function that belongs to a class)<br>
+        <code><b>handle</b></code> = <strong>The name of this method.</strong> It handles (processes) something.<br>
+        <code><b>self</b></code> = <strong>"Me. This specific object."</strong> When you write <code>strategy.handle(df)</code>, Python automatically passes the strategy object as <code>self</code>. You never write it — Python fills it in.<br>
+        <code><b>df</b></code> = <strong>"The DataFrame you give me."</strong> This is the input. When you call <code>strategy.handle(my_dataframe)</code>, <code>my_dataframe</code> becomes <code>df</code> inside the method.<br>
+        <code><b>-> pd.DataFrame</b></code> = <strong>"I promise to return a DataFrame."</strong> It's a type hint — helpful but not enforced.
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:0.8rem;margin-top:0.5rem">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">🧠 Read it in plain English:</div>
+        <div style="font-size:0.72rem;color:var(--tdim);line-height:1.8">
+          <code>def handle(self, df):</code><br>
+          = <strong>"I am a method called 'handle'. When called, I receive MYSELF (self) and a DataFrame (df). I will process it."</strong>
+        </div>
+        <div style="margin-top:0.5rem;font-size:0.65rem;color:var(--tmut)">
+          Example: <code>strategy.handle(my_data)</code><br>
+          → Python sends: self = strategy, df = my_data<br>
+          → Inside the method, <code>self</code> means "this strategy" and <code>df</code> means "my_data"
+        </div>
+      </div>
+
       <div class="callout"><strong>🧠 BOTTOM LINE:</strong> You don't need to be a Python expert. You need to recognize these 5 words when you see them. <strong>class = blueprint, object = thing, method = action, handler = manager, ABC = contract.</strong> That's it.</div>`;
 
   }else if(p==='factory'){
