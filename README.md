@@ -10,7 +10,11 @@ An end-to-end MLOps and ML System Design learning project built from scratch fol
 | Phase 2 | Data Strategy & Engineering (sampling, labeling, versioning) | ✅ Theory complete | [🔗 HTML](phase2_data_strategy.html) |
 | Phase 3 | Feature Engineering & Pipeline (scaling, encoding, leakage detection) | ✅ Theory complete | [🔗 HTML](phase3_feature_engineering.html) |
 | Phase 4 | Baseline First (rules → simple model → measure → iterate) | ✅ Theory complete | [🔗 HTML](phase4_baseline_first.html) |
-| Phase 5 | **House Prices Predictor System** (ZenML + MLflow + Design Patterns) | 🔨 In Progress (5A done) | [🔗 5A HTML](phase5a_design_patterns.html) |
+| Phase 5A | Design Patterns (Factory, Strategy, Template + Python Basics) | ✅ Complete | [🔗 HTML](phase5a_design_patterns.html) |
+| Phase 5B | Data Ingestion (Factory Pattern — ZIP→DataFrame) | ✅ Complete | [🔗 HTML](phase5b_data_ingestion.html) |
+| Phase 5C | EDA (Strategy + Template — Inspect→Decisions) | ✅ Complete | [🔗 HTML](phase5c_eda.html) |
+| Phase 5D | Processing Steps (Strategy ×4 — Missing→Features→Outliers→Split) | ✅ Complete | [🔗 HTML](phase5d_processing.html) |
+| Phase 5E-F | Model Building + Deployment (MLflow, ZenML) | 📖 Plan ready | — |
 | Phase 6 | Enterprise Training Data Pipeline (async, AI generation, quality eval) | 📖 Plan ready | — |
 | Phase 6G | AI/ML Testing & QA (PR review, test cases, 4 layers, pyramid, CI/CD) | ✅ Theory complete | [🔗 HTML](phase4b_ai_testing.html) |
 | Phase 7 | Monitoring & Production Ops (drift, retraining, A/B testing) | 📖 Plan ready | — |
@@ -30,7 +34,10 @@ An end-to-end MLOps and ML System Design learning project built from scratch fol
 | Missing Values (3.2) | [🔗 HTML](missing_values_visualizer.html) | WHY before HOW — apply strategies to 5 scenarios |
 | Feature Monitoring (3.10) | [🔗 HTML](feature_monitoring_visualizer.html) | Live drift dashboard — simulate market shifts |
 | MLOps Pipeline — All Phases | [🔗 HTML](mlops_pipeline_visualizer.html) | PREPROCESS→TRAIN→POSTPROCESS across 6 phases |
-| Phase 5A Design Patterns | [🔗 HTML](phase5a_design_patterns.html) | Factory, Strategy, Template with Python Basics |
+| Phase 5A Design Patterns | [🔗 HTML](phase5a_design_patterns.html) | Factory, Strategy, Template + Python Basics |
+| Phase 5B Data Ingestion | [🔗 HTML](phase5b_data_ingestion.html) | ZIP→CSV→DataFrame + ZenML step |
+| Phase 5C EDA | [🔗 HTML](phase5c_eda.html) | Inspect → Missing → Uni/Bi/Multi → Decisions |
+| Phase 5D Processing | [🔗 HTML](phase5d_processing.html) | Missing → Features → Outliers → Split (Strategy ×4) |
 
 ## Key Project: Prices Predictor System (Phase 5)
 
