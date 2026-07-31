@@ -218,7 +218,25 @@ else if(p==='features'){c.innerHTML=`
     <span class="kw">def</span> apply_feature_engineering(self, df):
         <span class="kw">return</span> self.strategy.apply_transformation(df)</div>
 
-<div class="callout"><strong>🔑 Ordered application:</strong> Log first (on raw data), THEN scale (on transformed data). The ZenML step calls <strong>log → scale → encode</strong> in sequence. Order matters — log before scale, never the reverse.</div>`;}
+<div class="callout"><strong>🔑 Ordered application:</strong> Log first (on raw data), THEN scale (on transformed data). The ZenML step calls <strong>log → scale → encode</strong> in sequence. Order matters — log before scale, never the reverse.</div>
+
+<div class="code-box"><span class="cm"># USE it — chain multiple strategies</span>
+engineer = FeatureEngineer()
+
+<span class="cm"># Step 1: Log-transform skewed features</span>
+engineer.set_strategy(LogTransformation(features=[<span class="str">"SalePrice"</span>, <span class="str">"GrLivArea"</span>]))
+df = engineer.apply_feature_engineering(df)
+
+<span class="cm"># Step 2: Scale all numerical features</span>
+engineer.set_strategy(StandardScaling())
+df = engineer.apply_feature_engineering(df)
+
+<span class="cm"># Step 3: OneHotEncode categoricals</span>
+engineer.set_strategy(OneHotEncoding())
+df = engineer.apply_feature_engineering(df)
+
+<span class="cm"># Want MinMax instead of StandardScaler? ONE line change:</span>
+engineer.set_strategy(MinMaxScaling())</div>`;}
 
 else if(p==='outliers'){c.innerHTML=`
 <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--amber);margin-bottom:0.3rem">📍 Step 4: Outlier Detection (Strategy Pattern)</h3>
