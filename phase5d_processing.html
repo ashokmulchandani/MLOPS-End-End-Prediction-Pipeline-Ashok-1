@@ -461,7 +461,162 @@ else if(p==='anatomy'){c.innerHTML=`
 <code>variable = object . method ( input )</code><br>
 &nbsp;&nbsp;└─store──┘ &nbsp;&nbsp;&nbsp;&nbsp;└─── "do this" ───┘<br><br>
 <strong>Every Python line follows this. You just need to recognize these 5 pieces.</strong>
-</div>`;}
+</div>
+
+<h3 style="font-family:'Space Grotesk',sans-serif;font-size:1rem;color:var(--violet);margin:1.5rem 0 0.5rem">🔬 Anatomy of the Strategy Code — Line by Line Walkthrough</h3>
+<p style="color:var(--tdim);font-size:0.82rem;margin-bottom:0.8rem">The complete Strategy Pattern code from <code>src/handle_missing_values.py</code>. Every line annotated — what it is, who writes it, and how it connects.</p>
+
+<div class="code-box" style="font-size:0.78rem;"><span style="color:#6a9955;"># FILE: src/handle_missing_values.py</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── Importing the ABC toolkit from Python's standard library</span>
+<span style="color:#6a9955;">#  │   abc = Abstract Base Classes. abstractmethod = "you MUST write this"</span>
+<span style="color:#6a9955;">#  │</span>
+<span style="color:#569cd6;">from</span> abc <span style="color:#569cd6;">import</span> ABC, abstractmethod
+<span style="color:#6a9955;">#  └── Python built-in ─┘   └── "contract" tools ─────┘</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ╔══════════════════════════════════════════════════════════════╗</span>
+<span style="color:#6a9955;">#  ║  LAYER 1: THE CONTRACT (ABC)                                ║</span>
+<span style="color:#6a9955;">#  ║  "Every strategy MUST have a handle() method"               ║</span>
+<span style="color:#6a9955;">#  ╚══════════════════════════════════════════════════════════════╝</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── WE define this class (it\'s YOUR blueprint)</span>
+<span style="color:#6a9955;">#  │</span>
+<span style="color:#569cd6;">class</span> <span style="color:#4ec9b0;">MissingValueHandlingStrategy</span>(<span style="color:#569cd6;">ABC</span>):
+<span style="color:#6a9955;">#  └── a class ──────┘ └── NAME we chose ──┘   └── "I\'m an Abstract Base Class"</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#      ┌── @abstractmethod says: "SUBCLASS — you MUST write this!"</span>
+<span style="color:#6a9955;">#      │   Python WILL crash if a subclass forgets handle()</span>
+<span style="color:#6a9955;">#      │</span>
+    <span style="color:#569cd6;">@abstractmethod</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#      ┌── def = "I\'m defining a method"</span>
+<span style="color:#6a9955;">#      │</span>
+<span style="color:#6a9955;">#      │         ┌── self = "this specific object" (Python fills it)</span>
+<span style="color:#6a9955;">#      │         │</span>
+<span style="color:#6a9955;">#      │         │      ┌── df = "the DataFrame you give me"</span>
+<span style="color:#6a9955;">#      │         │      │</span>
+    <span style="color:#569cd6;">def</span> <span style="color:#c586c0;">handle</span>(<span style="color:#569cd6;">self</span>, df: pd.DataFrame) -> pd.DataFrame:
+<span style="color:#6a9955;">#      └── method name ─┘             └── type hint: "I return a DataFrame"</span>
+<span style="color:#6a9955;">#</span>
+        <span style="color:#569cd6;">pass</span>
+<span style="color:#6a9955;">#       └── "I\'m intentionally empty. My subclasses will fill this in."</span>
+<span style="color:#6a9955;">#          Without pass → Python crashes (empty blocks not allowed)</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  📦 WHO WRITES THIS: You (the developer). ~4 lines. Written ONCE at setup.</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ╔══════════════════════════════════════════════════════════════╗</span>
+<span style="color:#6a9955;">#  ║  LAYER 2: CONCRETE STRATEGIES (the options)                 ║</span>
+<span style="color:#6a9955;">#  ║  "I implement handle() MY way"                              ║</span>
+<span style="color:#6a9955;">#  ╚══════════════════════════════════════════════════════════════╝</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  STRATEGY A: DELETE rows with nulls</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── class Name(PARENT) = "I inherit the contract"</span>
+<span style="color:#6a9955;">#  │   This is a SUBCLASS of MissingValueHandlingStrategy</span>
+<span style="color:#6a9955;">#  │</span>
+<span style="color:#569cd6;">class</span> <span style="color:#4ec9b0;">DropMissingValuesStrategy</span>(MissingValueHandlingStrategy):
+<span style="color:#6a9955;">#  └── NAME we chose ──────────┘ └── PARENT (the contract) ───┘</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#      ┌── I MUST write handle() because of @abstractmethod above</span>
+<span style="color:#6a9955;">#      │   If I forget → Python CRASHES when creating this class</span>
+<span style="color:#6a9955;">#      │</span>
+    <span style="color:#569cd6;">def</span> <span style="color:#c586c0;">handle</span>(<span style="color:#569cd6;">self</span>, df):
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#      ┌── My implementation: just drop rows with any NaN</span>
+<span style="color:#6a9955;">#      │   .dropna() is a pandas built-in method</span>
+        <span style="color:#569cd6;">return</span> df.dropna()
+<span style="color:#6a9955;">#      └── "give back" ─┘ └── "DataFrame, drop any row with nulls"</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  STRATEGY B: FILL nulls (with a choice of method)</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#569cd6;">class</span> <span style="color:#4ec9b0;">FillMissingValuesStrategy</span>(MissingValueHandlingStrategy):
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#      ┌── __init__ = the SETUP that runs when you create this object</span>
+<span style="color:#6a9955;">#      │   Called automatically when you write: FillMissingValuesStrategy("median")</span>
+<span style="color:#6a9955;">#      │</span>
+<span style="color:#6a9955;">#      │         ┌── method = input parameter</span>
+<span style="color:#6a9955;">#      │         │</span>
+<span style="color:#6a9955;">#      │         │            ┌── "median" is the DEFAULT if you don\'t pass anything</span>
+<span style="color:#6a9955;">#      │         │            │</span>
+    <span style="color:#569cd6;">def</span> <span style="color:#c586c0;">__init__</span>(<span style="color:#569cd6;">self</span>, method=<span style="color:#ce9178;">"median"</span>):
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#      ┌── Store "median" (or whatever was passed) ON this object</span>
+<span style="color:#6a9955;">#      │   self.method = pocket on the object. method = value passed in.</span>
+<span style="color:#6a9955;">#      │   Without self. → value disappears when __init__ finishes!</span>
+        <span style="color:#569cd6;">self</span>.method = method
+<span style="color:#6a9955;">#      └── pocket ─┘   └── the value ("median", "mean", "mode", or a number)</span>
+<span style="color:#6a9955;">#</span>
+    <span style="color:#569cd6;">def</span> <span style="color:#c586c0;">handle</span>(<span style="color:#569cd6;">self</span>, df):
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#      ┌── Check WHAT method was stored during __init__</span>
+<span style="color:#6a9955;">#      │   self.method reads the pocket we set up above</span>
+        <span style="color:#569cd6;">if</span> <span style="color:#569cd6;">self</span>.method == <span style="color:#ce9178;">"median"</span>: <span style="color:#569cd6;">return</span> df.fillna(df.median())
+<span style="color:#6a9955;">#      └──────────────────────┘  └── fill NaN with column medians</span>
+        <span style="color:#569cd6;">if</span> <span style="color:#569cd6;">self</span>.method == <span style="color:#ce9178;">"mean"</span>:   <span style="color:#569cd6;">return</span> df.fillna(df.mean())
+<span style="color:#6a9955;">#                                               └── column averages</span>
+        <span style="color:#569cd6;">if</span> <span style="color:#569cd6;">self</span>.method == <span style="color:#ce9178;">"mode"</span>:   <span style="color:#569cd6;">return</span> df.fillna(df.mode().iloc[0])
+<span style="color:#6a9955;">#                                               └── most common value</span>
+        <span style="color:#569cd6;">return</span> df.fillna(<span style="color:#569cd6;">self</span>.method)
+<span style="color:#6a9955;">#      └── if none matched → use the constant (e.g., 0 or "None")</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  📦 WHO WRITES THIS: You. ~15 lines per strategy. Copy the pattern.</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ╔══════════════════════════════════════════════════════════════╗</span>
+<span style="color:#6a9955;">#  ║  LAYER 3: THE HANDLER (delegator)                           ║</span>
+<span style="color:#6a9955;">#  ║  "I don\'t do the work. I delegate to the strategy."         ║</span>
+<span style="color:#6a9955;">#  ╚══════════════════════════════════════════════════════════════╝</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── NOT a subclass! No (ABC). Standalone class.</span>
+<span style="color:#569cd6;">class</span> <span style="color:#4ec9b0;">MissingValueHandler</span>:
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#      ┌── "Remember THIS strategy for later"</span>
+<span style="color:#6a9955;">#      │</span>
+<span style="color:#6a9955;">#      │         ┌── strategy is a MissingValueHandlingStrategy object</span>
+<span style="color:#6a9955;">#      │         │   (either DropMissingValues OR FillMissingValues)</span>
+    <span style="color:#569cd6;">def</span> <span style="color:#c586c0;">set_strategy</span>(<span style="color:#569cd6;">self</span>, strategy):
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#      ┌── STORE it on myself so handle_missing_values can use it</span>
+        <span style="color:#569cd6;">self</span>.strategy = strategy
+<span style="color:#6a9955;">#      └── pocket ──┘   └── the strategy object (Drop/Fill)</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#      ┌── "Do the work — by delegating to the strategy"</span>
+    <span style="color:#569cd6;">def</span> <span style="color:#c586c0;">handle_missing_values</span>(<span style="color:#569cd6;">self</span>, df):
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#      ┌── THIS IS THE MAGIC: delegates to whichever strategy is active</span>
+<span style="color:#6a9955;">#      │   self.strategy = the one you set with set_strategy()</span>
+<span style="color:#6a9955;">#      │   .handle(df) = call its handle() method</span>
+        <span style="color:#569cd6;">return</span> <span style="color:#569cd6;">self</span>.strategy.handle(df)
+<span style="color:#6a9955;">#      └── delegate ────────────┘</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  📦 WHO WRITES THIS: You. ~8 lines. Written ONCE.</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ╔══════════════════════════════════════════════════════════════╗</span>
+<span style="color:#6a9955;">#  ║  LAYER 4: HOW TO USE (your code that calls it)              ║</span>
+<span style="color:#6a9955;">#  ╚══════════════════════════════════════════════════════════════╝</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── 1. Create the handler (a MissingValueHandler object)</span>
+handler = MissingValueHandler()
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── 2. Set which strategy it should use</span>
+<span style="color:#6a9955;">#  │   Creates a FillMissingValuesStrategy with method="median"</span>
+<span style="color:#6a9955;">#  │   and passes it into handler.set_strategy()</span>
+handler.set_strategy(FillMissingValuesStrategy(<span style="color:#ce9178;">"median"</span>))
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── 3. Do the work — handler delegates to the strategy</span>
+<span style="color:#6a9955;">#  │   raw_df = original data with nulls. clean_df = result.</span>
+clean_df = handler.handle_missing_values(raw_df)
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── 4. Want dropping instead? ONE LINE CHANGE:</span>
+<span style="color:#6a9955;">#  │   handler.set_strategy(DropMissingValuesStrategy())</span>
+<span style="color:#6a9955;">#  │   clean_df = handler.handle_missing_values(raw_df)</span>
+<span style="color:#6a9955;">#  └── The handler. The pipeline. The rest of the code — ZERO changes.</span></div>
+
+<div class="callout"><strong>🧠 THE 4-LAYER PATTERN (Memorize This):</strong> Layer 1: CONTRACT (ABC + @abstractmethod) → Layer 2: STRATEGIES (2+ concrete classes) → Layer 3: HANDLER (delegates) → Layer 4: USAGE (3 lines, swappable). <strong>Every Strategy module in this pipeline follows these exact 4 layers.</strong></div>`;}
 }
 showTab('overview');
 </script>
