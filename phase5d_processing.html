@@ -160,7 +160,16 @@ else if(p==='missing'){c.innerHTML=`
     handler = MissingValueHandler(FillMissingValuesStrategy(<span class="str">"median"</span>))
     <span class="kw">return</span> handler.handle_missing_values(df)</div>
 
-<div class="callout"><strong>🔑 ONE LINE SWAP:</strong> <code>handler.set_strategy(DropMissingValuesStrategy())</code> — and the entire pipeline drops instead of fills. <strong>Nothing else changes.</strong></div>`;}
+<div class="callout"><strong>🔑 ONE LINE SWAP:</strong> <code>handler.set_strategy(DropMissingValuesStrategy())</code> — and the entire pipeline drops instead of fills. <strong>Nothing else changes.</strong>
+
+<div class="code-box"><span class="cm"># USE it — swap strategies in ONE line</span>
+handler = MissingValueHandler()
+handler.set_strategy(FillMissingValuesStrategy(<span class="str">"median"</span>))
+clean_df = handler.handle_missing_values(raw_df)
+
+<span class="cm"># Want to try dropping instead? ONE line change:</span>
+handler.set_strategy(DropMissingValuesStrategy())
+<span class="cm"># The handler, pipeline, and rest of code — ZERO changes.</span></div>`;}
 
 else if(p==='features'){c.innerHTML=`
 <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--violet);margin-bottom:0.3rem">🔧 Step 3: Feature Engineering (Strategy Pattern)</h3>
@@ -272,7 +281,16 @@ else if(p==='outliers'){c.innerHTML=`
         <span class="kw">if</span> method == <span class="str">'remove'</span>: <span class="kw">return</span> self.strategy.detect_outliers(df, column)
         <span class="kw">elif</span> method == <span class="str">'cap'</span>: <span class="kw">return</span> self._cap_outliers(df, column)</div>
 
-<div class="callout"><strong>🔑 Ames uses ZScore(threshold=3) on SalePrice.</strong> Removes ~5-8 extreme houses. You can swap to IQR in one line: <code>detector.set_strategy(IQROutlierDetection())</code>.</div>`;}
+<div class="callout"><strong>🔑 Ames uses ZScore(threshold=3) on SalePrice.</strong> Removes ~5-8 extreme houses. You can swap to IQR in one line: <code>detector.set_strategy(IQROutlierDetection())</code>.
+
+<div class="code-box"><span class="cm"># USE it — default: ZScore(threshold=3)</span>
+detector = OutlierDetector(ZScoreOutlierDetection(threshold=3))
+clean_df = detector.handle_outliers(df, column=<span class="str">"SalePrice"</span>, method=<span class="str">'remove'</span>)
+
+<span class="cm"># Want IQR instead? ONE line change:</span>
+detector.set_strategy(IQROutlierDetection())
+<span class="cm"># Want to cap instead of remove?</span>
+clean_df = detector.handle_outliers(df, column=<span class="str">"SalePrice"</span>, method=<span class="str">'cap'</span>)</div>`;}
 
 else if(p==='split'){c.innerHTML=`
 <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--green);margin-bottom:0.3rem">✂️ Step 5: Data Splitting (Strategy Pattern)</h3>
@@ -322,7 +340,15 @@ else if(p==='split'){c.innerHTML=`
     <span class="kw">def</span> split(self, df, target):
         <span class="kw">return</span> self.strategy.split(df, target)</div>
 
-<div class="callout"><strong>🔑 random_state=42</strong> ensures the same split every time. Without it, every run produces different train/test sets — making experiments incomparable. <strong>Always set a seed.</strong></div>`;}
+<div class="callout"><strong>🔑 random_state=42</strong> ensures the same split every time. Without it, every run produces different train/test sets — making experiments incomparable. <strong>Always set a seed.</strong>
+
+<div class="code-box"><span class="cm"># USE it — standard 80/20 split</span>
+splitter = DataSplitter(SimpleTrainTestSplitStrategy(test_size=0.2, random_state=42))
+X_train, X_test, y_train, y_test = splitter.split(df, target_column=<span class="str">"SalePrice"</span>)
+
+<span class="cm"># Switch to stratified split if needed:</span>
+splitter.set_strategy(StratifiedTrainTestSplitStrategy(test_size=0.2))
+<span class="cm"># The pipeline, model, and rest of code — ZERO changes.</span></div>`;}
 
 else if(p==='pattern'){c.innerHTML=`
 <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--violet);margin-bottom:0.3rem">🎯 The Strategy Pattern — Same Shape, 4 Modules</h3>
@@ -362,7 +388,21 @@ else if(p==='pattern'){c.innerHTML=`
 <tr style="background:var(--raised)"><td style="padding:0.35rem;font-weight:700;color:var(--green)">Data Split</td><td style="padding:0.35rem">DataSplitting</td><td style="padding:0.35rem">split</td><td style="padding:0.35rem">Simple / Stratified</td><td style="padding:0.35rem;font-size:0.55rem">data_splitter.py</td></tr>
 </table></div>
 
-<div class="callout"><strong>✅ Phase 5D Complete!</strong> 4 processing steps. Same pattern. <strong>Contract → Strategies → Handler.</strong> The only difference is the <code>Xxx</code> name and the <code>do_work</code> method name. <strong>Next: Phase 5E — Model Building + MLflow Tracking.</strong></div>`;}
+<div class="callout"><strong>✅ Phase 5D Complete!</strong> 4 processing steps. Same pattern. <strong>Contract → Strategies → Handler.</strong> The only difference is the <code>Xxx</code> name and the <code>do_work</code> method name. <strong>Next: Phase 5E — Model Building + MLflow Tracking.</strong>
+
+<div class="code-box"><span class="cm"># ALL 4 modules follow the same usage pattern:</span>
+
+<span class="cm"># 1. Create the handler</span>
+handler = XxxHandler()
+
+<span class="cm"># 2. Set the strategy</span>
+handler.set_strategy(YOUR_CHOSEN_STRATEGY())
+
+<span class="cm"># 3. Execute</span>
+result = handler.process(df)
+
+<span class="cm"># 4. Swap strategy anytime — 1 line, zero risk:</span>
+handler.set_strategy(DIFFERENT_STRATEGY())</div>`;}
 }
 showTab('overview');
 </script>

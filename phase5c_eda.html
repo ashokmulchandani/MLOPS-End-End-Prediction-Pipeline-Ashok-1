@@ -145,7 +145,16 @@ else if(p==='inspect'){c.innerHTML=`
     <span class="kw">def</span> set_strategy(self, s): self.strategy = s
     <span class="kw">def</span> execute(self, df): <span class="kw">return</span> self.strategy.inspect(df)</div>
 
-<div class="callout"><strong>🔑 KEY FINDING:</strong> SalePrice is <strong>right-skewed (1.88)</strong>. Most homes $100K-$250K, but a tail stretches to $755K. <strong>Decision: Log-transform SalePrice before training.</strong></div>`;}
+<div class="callout"><strong>🔑 KEY FINDING:</strong> SalePrice is <strong>right-skewed (1.88)</strong>
+
+<div class="code-box"><span class="cm"># Step 4: USE the DataInspector</span>
+inspector = DataInspector()
+inspector.set_strategy(DataTypesInspectionStrategy())
+types_report = inspector.execute(df)  <span class="cm"># → dtypes, nulls, cardinality</span>
+
+<span class="cm"># Swap strategy in ONE line:</span>
+inspector.set_strategy(SummaryStatisticsStrategy())
+stats_report = inspector.execute(df)  <span class="cm"># → mean, std, min, max</span></div>. Most homes $100K-$250K, but a tail stretches to $755K. <strong>Decision: Log-transform SalePrice before training.</strong></div>`;}
 
 else if(p==='missing'){c.innerHTML=`
 <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--green);margin-bottom:0.3rem">🕳️ Phase 2: Missing Values Analysis (Template Pattern)</h3>
@@ -204,7 +213,11 @@ else if(p==='missing'){c.innerHTML=`
         <span class="kw">import</span> seaborn <span class="kw">as</span> sns
         sns.heatmap(df.isnull(), cbar=<span class="kw">True</span>)</div>
 
-<div class="callout"><strong>🧠 KEY INSIGHT:</strong> The Template guarantees you never skip a step. First identify, THEN visualize. <strong>PoolQC (99.7% null) → DROP. FireplaceQu (47% null) → "None" is a meaningful category.</strong></div>`;}
+<div class="callout"><strong>🧠 KEY INSIGHT:</strong> The Template guarantees you never skip a step. First identify, THEN visualize. <strong>PoolQC (99.7% null) → DROP. FireplaceQu (47% null) → "None" is a meaningful category.</strong>
+
+<div class="code-box"><span class="cm"># Step 3: USE the MissingValuesAnalysis (Template)</span>
+analysis = SimpleMissingValuesAnalysis()
+analysis.analyze(df)  <span class="cm"># Step1 → Step2. Guaranteed sequence. Every time.</span></div>`;}
 
 else if(p==='uni'){c.innerHTML=`
 <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--cyan);margin-bottom:0.3rem">📊 Phase 3a: Univariate Analysis (Strategy Pattern)</h3>
@@ -273,7 +286,16 @@ else if(p==='uni'){c.innerHTML=`
 <span class="kw">class</span> <span class="fn">NumericalUnivariateAnalysis</span>:  <span class="cm"># Histogram + KDE</span>
 <span class="kw">class</span> <span class="fn">CategoricalUnivariateAnalysis</span>: <span class="cm"># Count plot</span></div>
 
-<div class="callout"><strong>🔑 DECISION:</strong> SalePrice is right-skewed → <strong>log transform before training.</strong> This one decision can improve R² by 5-10% because Linear Regression assumes normally distributed targets.</div>`;}
+<div class="callout"><strong>🔑 DECISION:</strong> SalePrice is right-skewed → <strong>log transform before training.</strong>
+
+<div class="code-box"><span class="cm"># Step 4: USE the UnivariateAnalysis (Strategy)</span>
+analyzer = DataInspector()
+analyzer.set_strategy(NumericalUnivariateAnalysis())
+analyzer.execute(df, feature=<span class="str">'SalePrice'</span>)  <span class="cm"># → histogram + KDE</span>
+
+<span class="cm"># Swap to categorical analysis in ONE line:</span>
+analyzer.set_strategy(CategoricalUnivariateAnalysis())
+analyzer.execute(df, feature=<span class="str">'Neighborhood'</span>)  <span class="cm"># → count plot</span></div> can improve R² by 5-10% because Linear Regression assumes normally distributed targets.</div>`;}
 
 else if(p==='bi'){c.innerHTML=`
 <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--amber);margin-bottom:0.3rem">📈 Phase 3b: Bivariate Analysis (Strategy Pattern)</h3>
