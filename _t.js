@@ -1,55 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Phase 5D: Processing Steps — Interactive Learning</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#f8f9fc;--card:#fff;--raised:#eef0f5;--border:#dde0e6;--text:#1a1d23;--tdim:#4a4f5b;--tmut:#8b909b;--violet:#5b3aa8;--vbg:#f3effc;--cyan:#007a99;--cyan-bg:#e6f4f7;--amber:#b87000;--amber-bg:#fff6e5;--green:#1a6e34;--green-bg:#e6f4ea;--red:#c62828;--magenta:#9e2a6b}
-body.dark{--bg:#06090f;--card:#0d1117;--raised:#161b22;--border:#21262d;--text:#e6edf3;--tdim:#8b949e;--tmut:#484f58;--violet:#a371f7;--vbg:#a371f710;--cyan:#39d2ff;--cyan-bg:#39d2ff10;--amber:#ffb347;--amber-bg:#ffb34710;--green:#3fb950;--green-bg:#3fb95010;--red:#f85149;--magenta:#ff6ec7}
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.65;min-height:100vh;transition:background 0.3s,color 0.3s}
-.theme-btn{position:fixed;top:1rem;right:1rem;z-index:10;background:var(--raised);border:1px solid var(--border);color:var(--text);padding:0.5rem 0.9rem;border-radius:8px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-size:0.75rem;font-weight:600}
-.theme-btn:hover{border-color:var(--violet);color:var(--violet)}
-.app{max-width:950px;margin:0 auto;padding:1.5rem}
-.header{text-align:center;padding:1rem 0 0.3rem}
-.header h1{font-family:'Space Grotesk',sans-serif;font-size:1.4rem;font-weight:700;color:var(--violet)}
-.header p{color:var(--tdim);font-size:0.85rem;margin-top:0.2rem}
-.tabs{display:flex;gap:0.35rem;justify-content:center;margin:0.8rem 0;flex-wrap:wrap}
-.tab{font-family:'Space Grotesk',sans-serif;font-size:0.58rem;font-weight:600;padding:0.5em 1em;border-radius:100px;border:1.5px solid var(--border);background:var(--card);color:var(--tdim);cursor:pointer;transition:0.15s}
-.tab:hover{border-color:var(--violet);color:var(--violet)}
-.tab.active{background:var(--violet);border-color:var(--violet);color:#fff}
-.content{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin:0.6rem 0}
-.code-box{background:var(--raised);border-left:4px solid var(--violet);border-radius:8px;padding:0.8rem 1rem;font-family:'JetBrains Mono',monospace;font-size:0.66rem;line-height:1.7;color:var(--text);white-space:pre-wrap;overflow-x:auto;margin:0.6rem 0}
-.code-box .kw{color:var(--violet)}.code-box .str{color:var(--green)}.code-box .cm{color:var(--tmut)}.code-box .fn{color:var(--amber)}
-.callout{background:var(--vbg);border:1px solid rgba(91,58,168,0.15);border-radius:8px;padding:0.6rem 1rem;margin:0.6rem 0;font-size:0.78rem;text-align:center}
-.viz-row{display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;justify-content:center;margin:0.8rem 0;font-size:0.62rem}
-.viz-box{background:var(--card);border:2px solid var(--border);border-radius:8px;padding:0.5rem 0.7rem;text-align:center;min-width:80px}
-.viz-box.in{border-color:var(--amber);background:var(--amber-bg)}.viz-box.proc{border-color:var(--violet);background:var(--vbg)}.viz-box.out{border-color:var(--green);background:var(--green-bg)}
-.viz-arrow{font-size:1rem;color:var(--violet)}
-</style>
-</head>
-<body>
-<button class="theme-btn" onclick="toggleTheme()">🌙 Dark</button>
-<div class="app">
-<header class="header">
-  <h1>Phase 5D: Processing Steps (Strategy Pattern × 4)</h1>
-  <p>4 processing steps. Same Strategy Pattern. Swap algorithms without changing the pipeline.</p>
-</header>
 
-<div class="tabs">
-  <button class="tab active" onclick="showTab('overview',event)">🗺️ Pipeline Flow</button>
-  <button class="tab" onclick="showTab('missing',event)">🕳️ 1. Missing Values</button>
-  <button class="tab" onclick="showTab('features',event)">🔧 2. Feature Eng</button>
-  <button class="tab" onclick="showTab('outliers',event)">📍 3. Outliers</button>
-  <button class="tab" onclick="showTab('split',event)">✂️ 4. Data Split</button>
-  <button class="tab" onclick="showTab('pattern',event)">🎯 The Pattern</button>
-  <button class="tab" onclick="showTab('anatomy',event)">📖 Code Anatomy</button>
-</div>
-<div class="content" id="content"></div>
-</div>
-<script>
 function toggleTheme(){document.body.classList.toggle('dark');document.querySelector('.theme-btn').textContent=document.body.classList.contains('dark')?'☀️ Light':'🌙 Dark';localStorage.setItem('p5d-theme',document.body.classList.contains('dark')?'dark':'light')}
 if(localStorage.getItem('p5d-theme')==='dark'){document.body.classList.add('dark');document.querySelector('.theme-btn').textContent='☀️ Light'}
 
@@ -540,6 +489,3 @@ handler . set_strategy ( FillMissingValuesStrategy ( "median" ) )
 After you've seen it 3 times, you can read any Python code.
 </div>`;}
 showTab('overview');
-</script>
-</body>
-</html>
