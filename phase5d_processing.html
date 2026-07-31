@@ -481,6 +481,38 @@ else if(p==='anatomy'){c.innerHTML=`
 <strong>Every Python line follows this. You just need to recognize these 5 pieces.</strong>
 </div>
 
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.78rem;color:var(--amber);margin:1.2rem 0 0.4rem">❓ When Do You Write <code>__init__</code> vs When Do You Skip It?</h4>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:0.6rem 0">
+<div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:8px;padding:0.8rem">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--amber);font-weight:700;margin-bottom:0.4rem">✅ YES — Write __init__ WHEN:</div>
+<div style="font-size:0.62rem;color:var(--tdim);line-height:1.8">
+<strong>The object needs to remember something DIFFERENT each time.</strong><br><br>
+<code>FillMissingValuesStrategy(<span style="color:var(--amber)">"median"</span>)</code> ← remembers method<br>
+<code>LogTransformation(<span style="color:var(--amber)">[features]</span>)</code> ← remembers which features<br>
+<code>ZScoreOutlierDetection(<span style="color:var(--amber)">threshold=3</span>)</code> ← remembers threshold<br>
+<code>SimpleTrainTestSplit(<span style="color:var(--amber)">test_size=0.2</span>)</code> ← remembers ratio<br><br>
+<strong>Rule: If you pass () something → write __init__</strong>
+</div>
+</div>
+<div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.8rem">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;color:var(--green);font-weight:700;margin-bottom:0.4rem">❌ NO — Skip __init__ WHEN:</div>
+<div style="font-size:0.62rem;color:var(--tdim);line-height:1.8">
+<strong>The object does the SAME thing every time.</strong><br><br>
+<code>DropMissingValuesStrategy()</code> ← always drops rows<br>
+<code>MissingValueHandler()</code> ← starts empty, gets strategy later<br>
+<code>MissingValueHandlingStrategy(ABC)</code> ← just a contract<br><br>
+<strong>Rule: If you call it with empty () → no __init__ needed</strong>
+</div>
+</div>
+</div>
+
+<div style="background:var(--vbg);border:2px solid var(--violet);border-radius:8px;padding:0.8rem;margin:0.6rem 0;text-align:center;font-size:0.65rem;color:var(--tdim);line-height:1.8">
+<strong style="color:var(--violet)">🧠 THE SIMPLE TEST:</strong> Look at how the object is CREATED.<br>
+<code>DropMissingValuesStrategy()</code> — empty brackets → no __init__<br>
+<code>FillMissingValuesStrategy(<strong>"median"</strong>)</code> — something inside → needs __init__<br><br>
+<strong>__init__ is just "the setup that runs when you create an object." If there's nothing to set up, you don't need it.</strong>
+</div>
+
 <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1rem;color:var(--violet);margin:1.5rem 0 0.5rem">🔬 Anatomy of the Strategy Code — Line by Line Walkthrough</h3>
 <p style="color:var(--tdim);font-size:0.82rem;margin-bottom:0.8rem">The complete Strategy Pattern code from <code>src/handle_missing_values.py</code>. Every line annotated — what it is, who writes it, and how it connects.</p>
 
