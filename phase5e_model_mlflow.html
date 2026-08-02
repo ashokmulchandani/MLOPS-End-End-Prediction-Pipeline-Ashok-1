@@ -157,7 +157,7 @@ model = Model(name=<span class="str">"prices_predictor"</span>)
 
 <div class="callout"><strong>🔑 ONE LINE MAGIC:</strong> <code>mlflow.sklearn.autolog()</code> — MLflow automatically logs ALL parameters, metrics, and the trained model. <strong>Zero manual logging code needed.</strong>
 
-<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:1rem 0 0.4rem;text-align:left">🔬 Anatomy of model_building_step.py — Every Line Explained</h4>
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:1rem 0 0.4rem;text-align:left">🔬 COMPLETE Anatomy of model_building_step.py — All 104 Lines</h4>
 <div class="code-box" style="font-size:0.75rem;line-height:2;text-align:left">
 <span style="color:#6a9955;"># FILE: steps/model_building_step.py</span>
 <span style="color:#6a9955;">#</span>
@@ -304,7 +304,52 @@ model = Model(
 <span style="color:#6a9955;">#  ┌── Return the TRAINED pipeline (preprocessor + model, ONE object)</span>
     <span style="color:#569cd6;">return</span> pipeline
 <span style="color:#6a9955;">#  └── This returned object is saved by MLflow as an artifact.</span>
-<span style="color:#6a9955;">#      ZenML registers it in the Model Registry.</span></div></div>`;}
+<span style="color:#6a9955;">#      ZenML registers it in the Model Registry.</span>
+
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ╔══════════════════════════════════════════════════════════════╗</span>
+<span style="color:#6a9955;">#  ║  MISSING SECTIONS — Lines not shown above                   ║</span>
+<span style="color:#6a9955;">#  ╚══════════════════════════════════════════════════════════════╝</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  LINES 1-2: Standard library imports</span>
+<span style="color:#6a9955;">#    import logging          ← for info/error messages during training</span>
+<span style="color:#6a9955;">#    from typing import Annotated ← ZenML uses this to tag return types</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  LINE 6: RegressorMixin (imported but not used in this step)</span>
+<span style="color:#6a9955;">#    from sklearn.base import RegressorMixin ← base class for all regressors</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  LINES 15-16: HOW ZenML connects to MLflow</span>
+<span style="color:#6a9955;">#    experiment_tracker = Client().active_stack.experiment_tracker</span>
+<span style="color:#6a9955;">#    ↑ THIS is the bridge! Gets "mlflow_tracker" from the active stack.</span>
+<span style="color:#6a9955;">#    Without this line → step doesn\'t know where to log experiments.</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  LINES 41-45: INPUT VALIDATION (professional guard code)</span>
+<span style="color:#6a9955;">#    if not isinstance(X_train, pd.DataFrame):</span>
+<span style="color:#6a9955;">#        raise TypeError("X_train must be a pandas DataFrame.")</span>
+<span style="color:#6a9955;">#    if not isinstance(y_train, pd.Series):</span>
+<span style="color:#6a9955;">#        raise TypeError("y_train must be a pandas Series.")</span>
+<span style="color:#6a9955;">#    ↑ Guards: catch wrong input types early with CLEAR error messages.</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  LINES 75-102: MLflow RUN LIFECYCLE + ERROR HANDLING</span>
+<span style="color:#6a9955;">#    if not mlflow.active_run():     ← check if a run is already active</span>
+<span style="color:#6a9955;">#        mlflow.start_run()          ← starts a new MLflow run (unique ID)</span>
+<span style="color:#6a9955;">#    try:                           ← "attempt this"</span>
+<span style="color:#6a9955;">#        mlflow.sklearn.autolog()   ← THE MAGIC LINE</span>
+<span style="color:#6a9955;">#        pipeline.fit(X_train, y_train) ← actual training</span>
+<span style="color:#6a9955;">#    except Exception as e:         ← "if anything fails"</span>
+<span style="color:#6a9955;">#        logging.error(f"...{e}")   ← log the error for debugging</span>
+<span style="color:#6a9955;">#        raise e                    ← re-raise (don\'t swallow silently)</span>
+<span style="color:#6a9955;">#    finally:                       ← "ALWAYS run this, error or not"</span>
+<span style="color:#6a9955;">#        mlflow.end_run()           ← close the MLflow run (CRITICAL!)</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  LINES 86-94: EXTRACTING EXPECTED COLUMNS</span>
+<span style="color:#6a9955;">#    onehot_encoder = pipeline.named_steps["preprocessor"]\</span>
+<span style="color:#6a9955;">#                    .transformers_[1][1].named_steps["onehot"]</span>
+<span style="color:#6a9955;">#    ↑ Navigates the pipeline hierarchy to find the OneHotEncoder</span>
+<span style="color:#6a9955;">#    expected_columns = numerical_cols.tolist() + \</span>
+<span style="color:#6a9955;">#                      list(onehot_encoder.get_feature_names_out(cat_cols))</span>
+<span style="color:#6a9955;">#    ↑ Builds the full list: ["GrLivArea",...,"Neighborhood_Downtown",...]</span>
+<span style="color:#6a9955;">#    This is DOCUMENTATION so you know EXACTLY what features the model uses.</span></div></div>`;}
 
 else if(p==='coltrans'){c.innerHTML=`
 <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--amber);margin-bottom:0.3rem">🔧 ColumnTransformer — The Secret Sauce</h3>
