@@ -319,9 +319,27 @@ model = Model(
 <span style="color:#6a9955;">#    from sklearn.base import RegressorMixin ← base class for all regressors</span>
 <span style="color:#6a9955;">#</span>
 <span style="color:#6a9955;">#  LINES 15-16: HOW ZenML connects to MLflow</span>
-<span style="color:#6a9955;">#    experiment_tracker = Client().active_stack.experiment_tracker</span>
-<span style="color:#6a9955;">#    ↑ THIS is the bridge! Gets "mlflow_tracker" from the active stack.</span>
-<span style="color:#6a9955;">#    Without this line → step doesn\'t know where to log experiments.</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── experiment_tracker = Client().active_stack.experiment_tracker</span>
+<span style="color:#6a9955;">#  │</span>
+<span style="color:#6a9955;">#  │   READ LEFT TO RIGHT — each dot goes deeper:</span>
+<span style="color:#6a9955;">#  │</span>
+<span style="color:#6a9955;">#  │   Client()          ← ZenML client (connects to YOUR ZenML setup)</span>
+<span style="color:#6a9955;">#  │   └── ZenML library defines this class (pip install zenml)</span>
+<span style="color:#6a9955;">#  │</span>
+<span style="color:#6a9955;">#  │   .active_stack     ← "Which stack am I using right now?"</span>
+<span style="color:#6a9955;">#  │   └── Returns: mlops_stack (the one we registered)</span>
+<span style="color:#6a9955;">#  │       Contains: artifact_store, orchestrator, experiment_tracker, model_deployer</span>
+<span style="color:#6a9955;">#  │</span>
+<span style="color:#6a9955;">#  │   .experiment_tracker ← "Give me the MLflow tracker from that stack"</span>
+<span style="color:#6a9955;">#  │   └── Returns: mlflow_tracker (the one we registered with zenml experiment-tracker register)</span>
+<span style="color:#6a9955;">#  │</span>
+<span style="color:#6a9955;">#  │   RESULT stored in: experiment_tracker (variable)</span>
+<span style="color:#6a9955;">#  │   Later used as: @step(experiment_tracker=experiment_tracker.name)</span>
+<span style="color:#6a9955;">#  │   → experiment_tracker.name = "mlflow_tracker" (string)</span>
+<span style="color:#6a9955;">#  │</span>
+<span style="color:#6a9955;">#  │   WHO DEFINED all this? ZenML library (pip install zenml).</span>
+<span style="color:#6a9955;">#  │   WE just call it. ZenML handles the connection internally.</span>
 <span style="color:#6a9955;">#</span>
 <span style="color:#6a9955;">#  LINES 41-45: INPUT VALIDATION (professional guard code)</span>
 <span style="color:#6a9955;">#    if not isinstance(X_train, pd.DataFrame):</span>
@@ -349,7 +367,35 @@ model = Model(
 <span style="color:#6a9955;">#    expected_columns = numerical_cols.tolist() + \</span>
 <span style="color:#6a9955;">#                      list(onehot_encoder.get_feature_names_out(cat_cols))</span>
 <span style="color:#6a9955;">#    ↑ Builds the full list: ["GrLivArea",...,"Neighborhood_Downtown",...]</span>
-<span style="color:#6a9955;">#    This is DOCUMENTATION so you know EXACTLY what features the model uses.</span></div></div>`;}
+<span style="color:#6a9955;">#    This is DOCUMENTATION so you know EXACTLY what features the model uses.</span>
+
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ╔══════════════════════════════════════════════════════════════╗</span>
+<span style="color:#6a9955;">#  ║  BEGINNER QUESTIONS — Where Do These Objects Come From?      ║</span>
+<span style="color:#6a9955;">#  ╚══════════════════════════════════════════════════════════════╝</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ❓ Q1: Client().active_stack.experiment_tracker — WHO defined this?</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ANSWER: ZenML library (pip install zenml). Read left to right:</span>
+<span style="color:#6a9955;">#    Client()     ← ZenML class. Creates connection to YOUR ZenML setup.</span>
+<span style="color:#6a9955;">#    .active_stack ← Property. Returns the stack we set as active (mlops_stack).</span>
+<span style="color:#6a9955;">#    .experiment_tracker ← Property. Returns the MLflow tracker from that stack.</span>
+<span style="color:#6a9955;">#  Each dot goes deeper: Client → active stack → experiment tracker component.</span>
+<span style="color:#6a9955;">#  WE registered these earlier (zenml experiment-tracker register...).</span>
+<span style="color:#6a9955;">#  Now ZenML just FETCHES them. We don\'t define — we call what ZenML provides.</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ❓ Q2: X_train.select_dtypes() — WHERE does X_train come from?</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ANSWER: X_train is a PARAMETER — passed INTO this function.</span>
+<span style="color:#6a9955;">#    Look at line 28: def model_building_step(X_train, y_train):</span>
+<span style="color:#6a9955;">#    X_train is the FIRST parameter. It comes from the PREVIOUS pipeline step:</span>
+<span style="color:#6a9955;">#      data_splitter_step → splits data → returns X_train, y_train</span>
+<span style="color:#6a9955;">#      → ZenML passes them → model_building_step receives them</span>
+<span style="color:#6a9955;">#    X_train is a pandas DataFrame (2336 rows x ~80 columns).</span>
+<span style="color:#6a9955;">#    .select_dtypes() is a pandas method: "select columns by their data type"</span>
+<span style="color:#6a9955;">#    include=["object","category"] → text columns: "Neighborhood", etc.</span>
+<span style="color:#6a9955;">#    exclude=["object","category"] → number columns: "GrLivArea", etc.</span>
+<span style="color:#6a9955;">#    .columns → returns just the column NAMES (a list of strings).</span></div></div>`;}
 
 else if(p==='coltrans'){c.innerHTML=`
 <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--amber);margin-bottom:0.3rem">🔧 ColumnTransformer — The Secret Sauce</h3>
