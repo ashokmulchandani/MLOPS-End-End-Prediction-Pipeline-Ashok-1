@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 5E: Model Building + MLflow — Interactive Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f8f9fc;--card:#fff;--raised:#eef0f5;--border:#dde0e6;--text:#1a1d23;--tdim:#4a4f5b;--tmut:#8b909b;--violet:#5b3aa8;--vbg:#f3effc;--cyan:#007a99;--cyan-bg:#e6f4f7;--amber:#b87000;--amber-bg:#fff6e5;--green:#1a6e34;--green-bg:#e6f4ea;--red:#c62828;--magenta:#9e2a6b}
+body.dark{--bg:#06090f;--card:#0d1117;--raised:#161b22;--border:#21262d;--text:#e6edf3;--tdim:#8b949e;--tmut:#484f58;--violet:#a371f7;--vbg:#a371f710;--cyan:#39d2ff;--cyan-bg:#39d2ff10;--amber:#ffb347;--amber-bg:#ffb34710;--green:#3fb950;--green-bg:#3fb95010;--red:#f85149;--magenta:#ff6ec7}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.65;min-height:100vh;transition:background 0.3s,color 0.3s}
+.theme-btn{position:fixed;top:1rem;right:1rem;z-index:10;background:var(--raised);border:1px solid var(--border);color:var(--text);padding:0.5rem 0.9rem;border-radius:8px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-size:0.75rem;font-weight:600}
+.theme-btn:hover{border-color:var(--violet);color:var(--violet)}
+.app{max-width:950px;margin:0 auto;padding:1.5rem}
+.header{text-align:center;padding:1rem 0 0.3rem}
+.header h1{font-family:'Space Grotesk',sans-serif;font-size:1.4rem;font-weight:700;color:var(--violet)}
+.header p{color:var(--tdim);font-size:0.85rem;margin-top:0.2rem}
+.tabs{display:flex;gap:0.35rem;justify-content:center;margin:0.8rem 0;flex-wrap:wrap}
+.tab{font-family:'Space Grotesk',sans-serif;font-size:0.58rem;font-weight:600;padding:0.5em 1em;border-radius:100px;border:1.5px solid var(--border);background:var(--card);color:var(--tdim);cursor:pointer;transition:0.15s}
+.tab:hover{border-color:var(--violet);color:var(--violet)}
+.tab.active{background:var(--violet);border-color:var(--violet);color:#fff}
+.content{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin:0.6rem 0}
+.code-box{background:#1e1e1e;border:1px solid #333;border-left:4px solid var(--violet);border-radius:8px;padding:0.8rem 1rem;font-family:'JetBrains Mono',monospace;font-size:0.66rem;line-height:1.7;color:#d4d4d4;white-space:pre-wrap;overflow-x:auto;margin:0.6rem 0}
+.code-box .kw{color:#569cd6}.code-box .str{color:#ce9178}.code-box .cm{color:#6a9955}.code-box .fn{color:#c586c0}.code-box .cls{color:#4ec9b0}
+.callout{background:var(--vbg);border:1px solid rgba(91,58,168,0.15);border-radius:8px;padding:0.6rem 1rem;margin:0.6rem 0;font-size:0.78rem;text-align:center}
+.viz-row{display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;justify-content:center;margin:0.8rem 0;font-size:0.62rem}
+.viz-box{background:var(--card);border:2px solid var(--border);border-radius:8px;padding:0.5rem 0.7rem;text-align:center;min-width:80px}
+.viz-box.in{border-color:var(--amber);background:var(--amber-bg)}.viz-box.proc{border-color:var(--violet);background:var(--vbg)}.viz-box.out{border-color:var(--green);background:var(--green-bg)}
+.viz-arrow{font-size:1rem;color:var(--violet)}
+</style>
+</head>
+<body>
+<button class="theme-btn" onclick="toggleTheme()">🌙 Dark</button>
+<div class="app">
+<header class="header">
+  <h1>Phase 5E: Model Building + MLflow Tracking</h1>
+  <p>Build. Track. Compare. The Strategy Pattern for models + MLflow for experiment management.</p>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('overview',event)">🗺️ Overview</button>
+  <button class="tab" onclick="showTab('model',event)">🧠 Model Building</button>
+  <button class="tab" onclick="showTab('coltrans',event)">🔧 ColumnTransformer</button>
+  <button class="tab" onclick="showTab('mlflow',event)">📊 MLflow Tracking</button>
+  <button class="tab" onclick="showTab('eval',event)">📈 Evaluation</button>
+  <button class="tab" onclick="showTab('usage',event)">▶️ How to Use</button>
+</div>
+<div class="content" id="content"></div>
+</div>
+<script>
+function toggleTheme(){document.body.classList.toggle('dark');document.querySelector('.theme-btn').textContent=document.body.classList.contains('dark')?'☀️ Light':'🌙 Dark';localStorage.setItem('p5e-theme',document.body.classList.contains('dark')?'dark':'light')}
+if(localStorage.getItem('p5e-theme')==='dark'){document.body.classList.add('dark');document.querySelector('.theme-btn').textContent='☀️ Light'}
+
+function showTab(p,evt){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  if(evt&&evt.target)evt.target.classList.add('active');else document.querySelector('.tab').classList.add('active');
+  const c=document.getElementById('content');
+
+if(p==='overview'){c.innerHTML=`
+<h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--violet);margin-bottom:0.3rem">🗺️ Phase 5E: Where Model + MLflow Fit</h3>
+<p style="color:var(--tdim);font-size:0.85rem;margin-bottom:1rem">After processing (Phase 5D), the pipeline <strong>builds a model and tracks everything</strong>. MLflow records every experiment so you can compare and choose the best one.</p>
+
+<div style="background:var(--vbg);border:2px solid var(--violet);border-radius:12px;padding:1rem;margin:1rem 0">
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin-bottom:0.6rem;text-align:center">📊 The 7-Step Pipeline — Steps 6-7</h4>
+<div class="viz-row" style="flex-direction:column;gap:0.4rem">
+<div class="viz-row">
+<div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.4rem 0.6rem"><strong>Steps 1-5</strong><br>Processed Data<br><span style="color:var(--tmut)">Strategy x4</span></div>
+<span class="viz-arrow">→</span>
+<div class="viz-box proc"><strong>Step 6</strong><br>MODEL BUILD<br><span style="color:var(--tmut)">MLflow autolog</span></div>
+<span class="viz-arrow">→</span>
+<div class="viz-box out"><strong>Step 7</strong><br>EVALUATION<br><span style="color:var(--tmut)">R², RMSE, MSE</span></div>
+</div>
+</div>
+</div>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;color:var(--violet);margin:0.8rem 0 0.3rem">🎯 What MLflow Tracks (Automatically)</h4>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;margin:0.6rem 0;font-size:0.6rem">
+<div style="background:var(--vbg);border:2px solid var(--violet);border-radius:8px;padding:0.6rem;text-align:center">
+<div style="font-size:1.3rem">⚙️</div><strong>PARAMETERS</strong><br><span style="color:var(--tmut)">imputer strategy,<br>scaler type, model type<br>→ All auto-logged</span>
+</div>
+<div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:8px;padding:0.6rem;text-align:center">
+<div style="font-size:1.3rem">📊</div><strong>METRICS</strong><br><span style="color:var(--tmut)">R², RMSE, MSE, MAE<br>→ Auto-calculated<br>on test set</span>
+</div>
+<div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.6rem;text-align:center">
+<div style="font-size:1.3rem">💾</div><strong>ARTIFACTS</strong><br><span style="color:var(--tmut)">model.pkl,<br>scaler.pkl, pipeline<br>→ Saved together</span>
+</div>
+</div>
+
+<div class="callout"><strong>🧠 KEY:</strong> MLflow + ZenML work TOGETHER. ZenML runs the pipeline steps. MLflow records what happens INSIDE each step. <strong>One line of code: <code>mlflow.sklearn.autolog()</code> — MLflow tracks everything automatically.</strong></div>`;}
+
+else if(p==='model'){c.innerHTML=`
+<h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--violet);margin-bottom:0.3rem">🧠 Model Building (Strategy Pattern)</h3>
+<p style="color:var(--tdim);font-size:0.85rem;margin-bottom:0.8rem"><strong>File:</strong> <code>steps/model_building_step.py</code>. Strategy lets you swap models without changing the pipeline. Start with <strong>LinearRegression</strong> — the simplest model that works.</p>
+
+<div style="background:var(--vbg);border:2px solid var(--violet);border-radius:12px;padding:1rem;margin:1rem 0">
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin-bottom:0.5rem;text-align:center">🧠 What This Step Does</h4>
+<div class="viz-row">
+<div class="viz-box in"><strong>INPUT</strong><br>X_train: 2336 rows<br>y_train: SalePrice</div>
+<div class="viz-arrow">→</div>
+<div class="viz-box proc"><strong>ColumnTransformer</strong><br>Impute + Scale + Encode<br>+ LinearRegression</div>
+<div class="viz-arrow">→</div>
+<div class="viz-box out"><strong>OUTPUT</strong><br>Trained Pipeline<br>Saved by MLflow</div>
+</div>
+</div>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:0.8rem 0 0.3rem">🎯 The Strategy — Start Simple, Upgrade Later</h4>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;margin:0.6rem 0;font-size:0.62rem">
+<div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.7rem;text-align:center">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;color:var(--green);font-weight:700">⭐ START HERE</div>
+<div style="color:var(--tdim);line-height:1.7;margin-top:0.3rem"><strong>LinearRegression</strong><br>Simplest. Fastest.<br>Explainable coefficients.<br>R² ~0.85 on Ames.</div>
+</div>
+<div style="background:var(--amber-bg);border:1px solid var(--amber);border-radius:8px;padding:0.7rem;text-align:center">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;color:var(--amber);font-weight:700">🔧 TRY LATER</div>
+<div style="color:var(--tdim);line-height:1.7;margin-top:0.3rem"><strong>Ridge / Lasso</strong><br>Add regularization.<br>Better if overfitting.<br>Swap in 1 line.</div>
+</div>
+<div style="background:var(--vbg);border:1px solid var(--violet);border-radius:8px;padding:0.7rem;text-align:center">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;color:var(--violet);font-weight:700">🚀 ADVANCED</div>
+<div style="color:var(--tdim);line-height:1.7;margin-top:0.3rem"><strong>XGBoost</strong><br>Best accuracy.<br>More complex.<br>Only if needed.</div>
+</div>
+</div>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:0.8rem 0 0.3rem">📝 The Model Building Code</h4>
+<div class="code-box"><span class="cm"># FILE: steps/model_building_step.py</span>
+<span class="kw">from</span> zenml <span class="kw">import</span> step, ArtifactConfig, Model
+<span class="kw">import</span> mlflow
+
+<span class="cm"># ZenML Model registration</span>
+model = Model(name=<span class="str">"prices_predictor"</span>)
+
+<span class="kw">@step</span>(experiment_tracker=..., model=model)
+<span class="kw">def</span> <span class="fn">model_building_step</span>(X_train, y_train):
+    <span class="cm"># 1. Split columns by type</span>
+    cat_cols = X_train.select_dtypes(include=[<span class="str">"object"</span>]).columns
+    num_cols = X_train.select_dtypes(exclude=[<span class="str">"object"</span>]).columns
+
+    <span class="cm"># 2. Build the preprocessing pipeline</span>
+    preprocessor = ColumnTransformer([
+        (<span class="str">"num"</span>, SimpleImputer(strategy=<span class="str">"mean"</span>), num_cols),
+        (<span class="str">"cat"</span>, Pipeline([
+            (<span class="str">"imputer"</span>, SimpleImputer(strategy=<span class="str">"most_frequent"</span>)),
+            (<span class="str">"encoder"</span>, OneHotEncoder(handle_unknown=<span class="str">"ignore"</span>))
+        ]), cat_cols)
+    ])
+
+    <span class="cm"># 3. Full pipeline = preprocess + model</span>
+    pipeline = Pipeline([
+        (<span class="str">"preprocessor"</span>, preprocessor),
+        (<span class="str">"model"</span>, LinearRegression())
+    ])
+
+    <span class="cm"># 4. MLflow auto-tracks EVERYTHING</span>
+    mlflow.sklearn.autolog()
+    pipeline.fit(X_train, y_train)
+
+    <span class="kw">return</span> pipeline</div>
+
+<div class="callout"><strong>🔑 ONE LINE MAGIC:</strong> <code>mlflow.sklearn.autolog()</code> — MLflow automatically logs ALL parameters, metrics, and the trained model. <strong>Zero manual logging code needed.</strong></div>`;}
+
+else if(p==='coltrans'){c.innerHTML=`
+<h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--amber);margin-bottom:0.3rem">🔧 ColumnTransformer — The Secret Sauce</h3>
+<p style="color:var(--tdim);font-size:0.85rem;margin-bottom:0.8rem">This is the <strong>most important concept</strong> in the entire pipeline. The ColumnTransformer applies DIFFERENT preprocessing to numerical and categorical columns — all in ONE object that you save and reuse.</p>
+
+<div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:12px;padding:1rem;margin:1rem 0">
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--amber);margin-bottom:0.5rem;text-align:center">🔧 What ColumnTransformer Does (Visual)</h4>
+<div class="viz-row" style="flex-direction:column;gap:0.5rem">
+<div class="viz-row">
+<div class="viz-box in" style="min-width:120px"><strong>RAW DATA</strong><br>38 num cols<br>+ 43 cat cols</div>
+<div class="viz-arrow">→</div>
+<div style="background:var(--card);border:2px solid var(--violet);border-radius:8px;padding:0.6rem;text-align:center">
+<strong>ColumnTransformer</strong><br>
+<span style="color:var(--cyan)">NUM: Impute(mean) → Scale</span><br>
+<span style="color:var(--magenta)">CAT: Impute(mode) → OneHotEncode</span>
+</div>
+<div class="viz-arrow">→</div>
+<div class="viz-box out" style="min-width:120px"><strong>MODEL READY</strong><br>~250 cols<br>all numerical</div>
+</div>
+</div>
+</div>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:0.8rem 0 0.3rem">🔑 Why ColumnTransformer = Train/Serve Parity</h4>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:0.6rem 0;font-size:0.62rem">
+<div style="background:var(--red-bg,#ffebe9);border:2px solid var(--red);border-radius:8px;padding:0.7rem;text-align:center">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;color:var(--red);font-weight:700;margin-bottom:0.3rem">❌ WITHOUT ColumnTransformer</div>
+<div style="color:var(--tdim);line-height:1.7">
+Training: scaler.fit(train) → model.fit()<br>
+Serving: scaler.fit(live) → model.predict()<br><br>
+<span style="color:var(--red)">Two DIFFERENT scalers!<br>Silent wrong predictions!</span>
+</div>
+</div>
+<div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.7rem;text-align:center">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;color:var(--green);font-weight:700;margin-bottom:0.3rem">✅ WITH ColumnTransformer</div>
+<div style="color:var(--tdim);line-height:1.7">
+Training: pipeline.fit(train)<br>
+Serving: pipeline.predict(live)<br><br>
+<span style="color:var(--green)">SAME pipeline object!<br>Impossible to mismatch.</span>
+</div>
+</div>
+</div>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:0.8rem 0 0.3rem">📝 The ColumnTransformer Code (Inside model_building_step.py)</h4>
+<div class="code-box"><span class="cm"># NUMERICAL pipeline: fill missing with mean</span>
+num_pipe = SimpleImputer(strategy=<span class="str">"mean"</span>)
+<span class="cm"># → GrLivArea null → fill with average GrLivArea</span>
+
+<span class="cm"># CATEGORICAL pipeline: fill missing + one-hot encode</span>
+cat_pipe = Pipeline([
+    (<span class="str">"imputer"</span>, SimpleImputer(strategy=<span class="str">"most_frequent"</span>)),
+    <span class="cm"># → "Missing" → fill with most common category</span>
+    (<span class="str">"encoder"</span>, OneHotEncoder(handle_unknown=<span class="str">"ignore"</span>))
+    <span class="cm"># → "Downtown" → [1,0,0,...] 25 cols. New category? → all zeros.</span>
+])
+
+<span class="cm"># COMBINE: apply different transforms to different columns</span>
+preprocessor = ColumnTransformer([
+    (<span class="str">"num"</span>, num_pipe, numerical_cols),    <span class="cm"># → 38 columns get imputed</span>
+    (<span class="str">"cat"</span>, cat_pipe, categorical_cols)  <span class="cm"># → 43 columns get encoded → ~200 cols</span>
+])
+
+<span class="cm"># FULL pipeline: preprocess + model = ONE object</span>
+pipeline = Pipeline([
+    (<span class="str">"preprocessor"</span>, preprocessor),
+    (<span class="str">"model"</span>, LinearRegression())
+])</div>
+
+<div class="callout"><strong>🧠 ONE OBJECT = NO MISTAKES:</strong> Save the ENTIRE pipeline with MLflow. At serving time, load it and call <code>pipeline.predict()</code>. The scaler, imputer, encoder — all use the SAME fitted values from training. <strong>Impossible to mismatch.</strong></div>`;}
+
+else if(p==='mlflow'){c.innerHTML=`
+<h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--cyan);margin-bottom:0.3rem">📊 MLflow Tracking — Automatically Log Everything</h3>
+<p style="color:var(--tdim);font-size:0.85rem;margin-bottom:0.8rem">MLflow is your <strong>lab notebook for ML experiments</strong>. One line of code turns on automatic tracking of parameters, metrics, and model artifacts.</p>
+
+<div style="background:var(--cyan-bg);border:2px solid var(--cyan);border-radius:12px;padding:1rem;margin:1rem 0">
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--cyan);margin-bottom:0.5rem;text-align:center">📊 What <code>mlflow.sklearn.autolog()</code> Captures (AUTO MAGIC)</h4>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;margin:0.6rem 0;font-size:0.6rem">
+<div style="background:var(--card);border:2px solid var(--violet);border-radius:8px;padding:0.6rem">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.55rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">⚙️ PARAMETERS (Auto)</div>
+<div style="color:var(--tdim);line-height:1.8">
+imputer_strategy: <span style="color:var(--violet)">mean</span><br>
+model: <span style="color:var(--violet)">LinearRegression</span><br>
+fit_intercept: <span style="color:var(--violet)">True</span><br>
+n_jobs: <span style="color:var(--violet)">None</span><br>
+<span style="color:var(--tmut)">→ Every sklearn param logged</span>
+</div>
+</div>
+<div style="background:var(--card);border:2px solid var(--amber);border-radius:8px;padding:0.6rem">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.55rem;color:var(--amber);font-weight:700;margin-bottom:0.3rem">📊 METRICS (Auto)</div>
+<div style="color:var(--tdim);line-height:1.8">
+training_score: <span style="color:var(--amber)">0.92</span><br>
+training_r2: <span style="color:var(--amber)">0.91</span><br>
+<span style="color:var(--tmut)">→ Training metrics auto-captured</span>
+</div>
+</div>
+<div style="background:var(--card);border:2px solid var(--green);border-radius:8px;padding:0.6rem">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.55rem;color:var(--green);font-weight:700;margin-bottom:0.3rem">💾 ARTIFACTS (Auto)</div>
+<div style="color:var(--tdim);line-height:1.8">
+model.pkl<br>
+conda.yaml<br>
+requirements.txt<br>
+MLmodel<br>
+<span style="color:var(--tmut)">→ Full model saved with dependencies</span>
+</div>
+</div>
+</div>
+</div>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:0.8rem 0 0.3rem">🖥️ The MLflow UI — What You See at localhost:5000</h4>
+<div style="background:var(--card);border:2px solid var(--violet);border-radius:10px;padding:0.8rem;margin:0.6rem 0">
+<div style="font-size:0.62rem;color:var(--tdim);line-height:1.8;font-family:'JetBrains Mono',monospace">
+┌─────────────────────────────────────────────────────┐<br>
+│ <strong>MLflow Experiments</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+├─────────────────────────────────────────────────────┤<br>
+│ Run 1: R²=0.87, RMSE=$24K &nbsp;&nbsp;✅ best so far &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+│ Run 2: R²=0.82, RMSE=$31K &nbsp;&nbsp;❌ worse &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+│ Run 3: R²=0.88, RMSE=$22K &nbsp;&nbsp;<span style="color:var(--green)">★ PROMOTED</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+│ Run 4: R²=0.85, RMSE=$25K &nbsp;&nbsp;(new experiment) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+├─────────────────────────────────────────────────────┤<br>
+│ Click any run → See params, metrics, artifacts &nbsp;&nbsp;&nbsp;&nbsp;│<br>
+│ Compare runs → Side-by-side metrics table &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+│ Register → Model Registry: Staging → Production &nbsp;&nbsp;&nbsp;&nbsp;│<br>
+└─────────────────────────────────────────────────────┘
+</div>
+</div>
+
+<div class="code-box"><span class="cm"># Start MLflow UI</span>
+mlflow ui
+<span class="cm"># → Opens http://localhost:5000</span>
+
+<span class="cm"># The one line that makes it all work:</span>
+mlflow.sklearn.autolog()
+<span class="cm"># That\'s it. MLflow does the rest automatically.</span></div>
+
+<div class="callout"><strong>🖥️ MLflow is LIVE on your machine:</strong> Open <strong>http://localhost:5000</strong> right now to see your experiment runs. Compare R², RMSE, parameters. MLflow is already running from our earlier setup.</div>`;}
+
+else if(p==='eval'){c.innerHTML=`
+<h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--green);margin-bottom:0.3rem">📈 Model Evaluation (Strategy Pattern)</h3>
+<p style="color:var(--tdim);font-size:0.85rem;margin-bottom:0.8rem"><strong>File:</strong> <code>steps/model_evaluator_step.py</code>. Evaluate the trained model on the test set. Calculate R², RMSE, MSE. Check against North Star and guardrails.</p>
+
+<div style="background:var(--green-bg);border:2px solid var(--green);border-radius:12px;padding:1rem;margin:1rem 0">
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--green);margin-bottom:0.5rem;text-align:center">📈 What Evaluation Checks</h4>
+<div class="viz-row">
+<div class="viz-box in"><strong>INPUT</strong><br>Trained Pipeline<br>X_test + y_test</div>
+<div class="viz-arrow">→</div>
+<div class="viz-box proc"><strong>RegressionEvaluator</strong><br>1. pipeline.predict(X_test)<br>2. Compare vs y_test</div>
+<div class="viz-arrow">→</div>
+<div class="viz-box out"><strong>OUTPUT</strong><br>R²: 0.87<br>RMSE: $24,000<br>MSE: 576M</div>
+</div>
+</div>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:0.8rem 0 0.3rem">⭐ The North Star + Guardrail Check</h4>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.4rem;margin:0.6rem 0;font-size:0.58rem">
+<div style="background:var(--vbg);border:2px solid var(--violet);border-radius:6px;padding:0.5rem;text-align:center">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.55rem;color:var(--violet);font-weight:700">⭐ NORTH STAR</div>
+<strong>R² > 0.85</strong><br>
+<span style="color:var(--green)">✅ 0.87 → PASS</span>
+</div>
+<div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:6px;padding:0.5rem;text-align:center">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.55rem;color:var(--amber);font-weight:700">🛡 GUARDRAIL 1</div>
+<strong>RMSE < $25K</strong><br>
+<span style="color:var(--green)">✅ $24K → PASS</span>
+</div>
+<div style="background:var(--cyan-bg);border:2px solid var(--cyan);border-radius:6px;padding:0.5rem;text-align:center">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.55rem;color:var(--cyan);font-weight:700">🛡 GUARDRAIL 2</div>
+<strong>Overfit Δ < 0.05</strong><br>
+<span style="color:var(--green)">✅ 0.03 → PASS</span>
+</div>
+<div style="background:var(--green-bg);border:2px solid var(--green);border-radius:6px;padding:0.5rem;text-align:center">
+<div style="font-family:'Space Grotesk',sans-serif;font-size:0.55rem;color:var(--green);font-weight:700">🛡 GUARDRAIL 3</div>
+<strong>MAE < $18K</strong><br>
+<span style="color:var(--green)">✅ $16K → PASS</span>
+</div>
+</div>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:0.8rem 0 0.3rem">📝 The Evaluation Code</h4>
+<div class="code-box"><span class="cm"># FILE: steps/model_evaluator_step.py</span>
+<span class="kw">from</span> sklearn.metrics <span class="kw">import</span> r2_score, mean_squared_error, mean_absolute_error
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="kw">@step</span>
+<span class="kw">def</span> <span class="fn">model_evaluator_step</span>(trained_model, X_test, y_test):
+    <span class="cm"># 1. Predict on test set (pipeline handles preprocessing!)</span>
+    predictions = trained_model.predict(X_test)
+
+    <span class="cm"># 2. Calculate metrics</span>
+    r2 = r2_score(y_test, predictions)
+    rmse = np.sqrt(mean_squared_error(y_test, predictions))
+    mae = mean_absolute_error(y_test, predictions)
+
+    <span class="cm"># 3. Return metrics — logged by MLflow automatically</span>
+    <span class="kw">return</span> {<span class="str">"r2"</span>: r2, <span class="str">"rmse"</span>: rmse, <span class="str">"mae"</span>: mae, <span class="str">"mse"</span>: rmse**2}</div>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:0.8rem 0 0.3rem">🧪 Experiment: Compare Different Strategies</h4>
+<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:0.8rem;margin:0.6rem 0">
+<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:0.62rem;font-family:Inter,sans-serif">
+<tr style="border-bottom:2px solid var(--violet)"><th style="text-align:left;padding:0.4rem;color:var(--violet)">Experiment</th><th style="text-align:left;padding:0.4rem;color:var(--violet)">Imputer</th><th style="text-align:left;padding:0.4rem;color:var(--violet)">Model</th><th style="text-align:left;padding:0.4rem;color:var(--violet)">R²</th><th style="text-align:left;padding:0.4rem;color:var(--violet)">RMSE</th><th style="text-align:left;padding:0.4rem;color:var(--violet)">MLflow Run</th></tr>
+<tr><td style="padding:0.3rem;font-weight:700;color:var(--violet)">1 (Baseline)</td><td style="padding:0.3rem">mean</td><td style="padding:0.3rem">LinearRegression</td><td style="padding:0.3rem;color:var(--amber)">0.87</td><td style="padding:0.3rem">$24K</td><td style="padding:0.3rem">Run #1</td></tr>
+<tr style="background:var(--raised)"><td style="padding:0.3rem;font-weight:700;color:var(--violet)">2</td><td style="padding:0.3rem">median</td><td style="padding:0.3rem">LinearRegression</td><td style="padding:0.3rem;color:var(--green)">0.88</td><td style="padding:0.3rem;color:var(--green)">$22K</td><td style="padding:0.3rem">Run #2</td></tr>
+<tr><td style="padding:0.3rem;font-weight:700;color:var(--violet)">3</td><td style="padding:0.3rem">median</td><td style="padding:0.3rem">Ridge</td><td style="padding:0.3rem">0.86</td><td style="padding:0.3rem">$25K</td><td style="padding:0.3rem">Run #3</td></tr>
+</table></div>
+</div>
+
+<div class="callout"><strong>🔑 MLflow shows all 3 runs side by side.</strong> You see immediately: Experiment 2 (median + LinearRegression) is best. <strong>No guessing. No spreadsheets. Data-driven decisions.</strong></div>`;}
+
+else if(p==='usage'){c.innerHTML=`
+<h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--green);margin-bottom:0.3rem">▶️ How to USE It — The Complete Flow</h3>
+<p style="color:var(--tdim);font-size:0.85rem;margin-bottom:0.8rem">Build → Track → Evaluate → Compare. The full model building workflow in 6 lines.</p>
+
+<div class="code-box"><span class="cm"># STEP 1: Build the model (ColumnTransformer + LinearRegression)</span>
+pipeline = Pipeline([
+    (<span class="str">"preprocessor"</span>, ColumnTransformer([
+        (<span class="str">"num"</span>, SimpleImputer(strategy=<span class="str">"mean"</span>), num_cols),
+        (<span class="str">"cat"</span>, Pipeline([SimpleImputer(strategy=<span class="str">"most_frequent"</span>),
+                              OneHotEncoder(handle_unknown=<span class="str">"ignore"</span>)]), cat_cols)
+    ])),
+    (<span class="str">"model"</span>, LinearRegression())
+])
+
+<span class="cm"># STEP 2: ONE line — MLflow auto-tracks everything</span>
+mlflow.sklearn.autolog()
+
+<span class="cm"># STEP 3: Train</span>
+pipeline.fit(X_train, y_train)
+
+<span class="cm"># STEP 4: Evaluate</span>
+predictions = pipeline.predict(X_test)
+r2 = r2_score(y_test, predictions)
+<span class="kw">print</span>(<span class="str">f"R²: {r2:.2f} | RMSE: \${np.sqrt(mean_squared_error(y_test, predictions)):,.0f}"</span>)
+
+<span class="cm"># STEP 5: View results — open MLflow UI</span>
+<span class="cm"># mlflow ui → http://localhost:5000</span>
+
+<span class="cm"># Want to try a different model? ONE line change:</span>
+<span class="cm"># Pipeline([..., ("model", Ridge())])  ← swap LinearRegression for Ridge</span>
+<span class="cm"># Pipeline([..., ("model", XGBoost())]) ← or XGBoost</span>
+<span class="cm"># MLflow tracks ALL of them. Compare side by side.</span></div>
+
+<div style="background:var(--green-bg);border:2px solid var(--green);border-radius:10px;padding:1rem;margin:1rem 0;text-align:center">
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--green);margin-bottom:0.4rem">✅ Phase 5E Checklist</h4>
+<table style="width:100%;border-collapse:collapse;font-size:0.62rem;font-family:Inter,sans-serif;text-align:left">
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:0.3rem;color:var(--green);font-weight:700">✅ 5E.1</td><td style="padding:0.3rem">ModelBuildingStrategy (ABC) + LinearRegressionStrategy</td></tr>
+<tr style="border-bottom:1px solid var(--border);background:var(--raised)"><td style="padding:0.3rem;color:var(--green);font-weight:700">✅ 5E.2</td><td style="padding:0.3rem">Pipeline = StandardScaler + LinearRegression — same for train AND serve</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:0.3rem;color:var(--green);font-weight:700">✅ 5E.3</td><td style="padding:0.3rem">model_building_step with mlflow.sklearn.autolog()</td></tr>
+<tr style="border-bottom:1px solid var(--border);background:var(--raised)"><td style="padding:0.3rem;color:var(--green);font-weight:700">✅ 5E.4</td><td style="padding:0.3rem">ColumnTransformer: num(mean impute) + cat(mode + OneHotEncode)</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:0.3rem;color:var(--green);font-weight:700">✅ 5E.5</td><td style="padding:0.3rem">Register model as ZenML artifact (prices_predictor)</td></tr>
+<tr style="border-bottom:1px solid var(--border);background:var(--raised)"><td style="padding:0.3rem;color:var(--green);font-weight:700">✅ 5E.6</td><td style="padding:0.3rem">ModelEvaluationStrategy + RegressionModelEvaluationStrategy</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:0.3rem;color:var(--green);font-weight:700">✅ 5E.7</td><td style="padding:0.3rem">model_evaluator_step — preprocess with SAME pipeline, predict, evaluate</td></tr>
+<tr style="border-bottom:1px solid var(--border);background:var(--raised)"><td style="padding:0.3rem;color:var(--green);font-weight:700">✅ 5E.8</td><td style="padding:0.3rem">Full training pipeline runs — verify in ZenML dashboard</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:0.3rem;color:var(--green);font-weight:700">✅ 5E.9</td><td style="padding:0.3rem">MLflow UI → check params, metrics, artifacts at localhost:5000</td></tr>
+<tr><td style="padding:0.3rem;color:var(--green);font-weight:700">✅ 5E.10</td><td style="padding:0.3rem">Experiment: mean→median, LinearReg→Ridge — compare in MLflow</td></tr>
+</table>
+</div>
+
+<div class="callout"><strong>✅ Phase 5E Complete!</strong> Model built, tracked with MLflow, evaluated against North Star + 3 guardrails. <strong>Next: Phase 5F — Deployment Pipeline + Inference.</strong></div>`;}
+}
+showTab('overview');
+</script>
+</body>
+</html>
