@@ -157,38 +157,154 @@ model = Model(name=<span class="str">"prices_predictor"</span>)
 
 <div class="callout"><strong>🔑 ONE LINE MAGIC:</strong> <code>mlflow.sklearn.autolog()</code> — MLflow automatically logs ALL parameters, metrics, and the trained model. <strong>Zero manual logging code needed.</strong>
 
-<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:1rem 0 0.4rem">🔬 Anatomy — Line by Line</h4>
-<div class="code-box" style="font-size:0.72rem;"><span style="color:#6a9955;">#  ┌── @step = "ZenML, track this function"</span>
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:1rem 0 0.4rem;text-align:left">🔬 Anatomy of model_building_step.py — Every Line Explained</h4>
+<div class="code-box" style="font-size:0.75rem;line-height:2;text-align:left">
+<span style="color:#6a9955;"># FILE: steps/model_building_step.py</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ╔══════════════════════════════════════════════════════════════╗</span>
+<span style="color:#6a9955;">#  ║  PART 1: IMPORTS + ZENML SETUP                              ║</span>
+<span style="color:#6a9955;">#  ╚══════════════════════════════════════════════════════════════╝</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── ZenML: the pipeline orchestrator</span>
+<span style="color:#6a9955;">#  │   step = decorator, ArtifactConfig = labels, Model = registry</span>
 <span style="color:#6a9955;">#  │</span>
-<span style="color:#569cd6;">@step</span>
-<span style="color:#569cd6;">def</span> <span style="color:#c586c0;">model_building_step</span>(X_train, y_train):
-<span style="color:#6a9955;">#  └── features (2336 rows) ─┘ └── target ─┘</span>
-
-<span style="color:#6a9955;">#  ┌── Split: "object" = categorical, rest = numerical</span>
+<span style="color:#569cd6;">from</span> zenml <span style="color:#569cd6;">import</span> step, ArtifactConfig, Model
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── MLflow: experiment tracking</span>
+<span style="color:#569cd6;">import</span> mlflow
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── sklearn: the actual ML tools</span>
+<span style="color:#6a9955;">#  │   LinearRegression = the model</span>
+<span style="color:#6a9955;">#  │   Pipeline + ColumnTransformer = preprocessing</span>
+<span style="color:#6a9955;">#  │   SimpleImputer = fill missing values</span>
+<span style="color:#6a9955;">#  │   OneHotEncoder = text categories → numbers</span>
+<span style="color:#569cd6;">from</span> sklearn.linear_model <span style="color:#569cd6;">import</span> LinearRegression
+<span style="color:#569cd6;">from</span> sklearn.pipeline <span style="color:#569cd6;">import</span> Pipeline
+<span style="color:#569cd6;">from</span> sklearn.compose <span style="color:#569cd6;">import</span> ColumnTransformer
+<span style="color:#569cd6;">from</span> sklearn.impute <span style="color:#569cd6;">import</span> SimpleImputer
+<span style="color:#569cd6;">from</span> sklearn.preprocessing <span style="color:#569cd6;">import</span> OneHotEncoder
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ╔══════════════════════════════════════════════════════════════╗</span>
+<span style="color:#6a9955;">#  ║  PART 2: ZENML MODEL REGISTRATION                           ║</span>
+<span style="color:#6a9955;">#  ╚══════════════════════════════════════════════════════════════╝</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── Register this model in ZenML\'s Model Registry</span>
+<span style="color:#6a9955;">#  │   name = unique identifier. Every trained version is tracked.</span>
+<span style="color:#6a9955;">#  │</span>
+model = Model(
+    name=<span style="color:#ce9178;">"prices_predictor"</span>,
+<span style="color:#6a9955;">#  └── ZenML stores every version under this name ─┘</span>
+    version=<span style="color:#569cd6;">None</span>,          <span style="color:#6a9955;">← Auto-increment version number</span>
+    license=<span style="color:#ce9178;">"Apache 2.0"</span>,
+    description=<span style="color:#ce9178;">"Price prediction model for houses."</span>
+)
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ╔══════════════════════════════════════════════════════════════╗</span>
+<span style="color:#6a9955;">#  ║  PART 3: THE @step DECORATOR                                 ║</span>
+<span style="color:#6a9955;">#  ╚══════════════════════════════════════════════════════════════╝</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── @step = ZenML decorator. "ZenML, please track this function."</span>
+<span style="color:#6a9955;">#  │   Without it → normal Python. With it → ZenML watches everything.</span>
+<span style="color:#6a9955;">#  │</span>
+<span style="color:#6a9955;">#  │   experiment_tracker= → connects this step to MLflow</span>
+<span style="color:#6a9955;">#  │   model= → registers output in ZenML Model Registry</span>
+<span style="color:#6a9955;">#  │</span>
+<span style="color:#569cd6;">@step</span>(experiment_tracker=..., model=model)
+<span style="color:#6a9955;">#  └── "connect to MLflow" ─┘  └── "register in ZenML" ─┘</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── def = define a function</span>
+<span style="color:#6a9955;">#  │   X_train = features (2336 rows × ~80 columns after EDA)</span>
+<span style="color:#6a9955;">#  │   y_train = target SalePrice (2336 values)</span>
+<span style="color:#6a9955;">#  │   -> Pipeline = "I will return a trained sklearn Pipeline"</span>
+<span style="color:#6a9955;">#  │</span>
+<span style="color:#569cd6;">def</span> <span style="color:#c586c0;">model_building_step</span>(
+    X_train: pd.DataFrame,
+    y_train: pd.Series
+) -> Pipeline:
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ╔══════════════════════════════════════════════════════════════╗</span>
+<span style="color:#6a9955;">#  ║  PART 4: SPLIT COLUMNS BY TYPE                               ║</span>
+<span style="color:#6a9955;">#  ╚══════════════════════════════════════════════════════════════╝</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── Select categorical columns: type = "object" in pandas</span>
+<span style="color:#6a9955;">#  │   Ex: Neighborhood, HouseStyle, MSZoning...</span>
     cat_cols = X_train.select_dtypes(include=[<span style="color:#ce9178;">"object"</span>]).columns
-
-<span style="color:#6a9955;">#  ┌── Different treatment per column type</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── Select numerical columns: everything ELSE</span>
+<span style="color:#6a9955;">#  │   Ex: GrLivArea, OverallQual, YearBuilt...</span>
+    num_cols = X_train.select_dtypes(exclude=[<span style="color:#ce9178;">"object"</span>]).columns
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ╔══════════════════════════════════════════════════════════════╗</span>
+<span style="color:#6a9955;">#  ║  PART 5: BUILD THE PREPROCESSOR (ColumnTransformer)          ║</span>
+<span style="color:#6a9955;">#  ╚══════════════════════════════════════════════════════════════╝</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── ColumnTransformer: "These columns → this treatment"</span>
     preprocessor = ColumnTransformer([
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#      ┌── TRANSFORMER 1: Numerical columns</span>
+<span style="color:#6a9955;">#      │   name = "num" (arbitrary label)</span>
+<span style="color:#6a9955;">#      │   strategy = "mean" → fill NaN with column average</span>
+<span style="color:#6a9955;">#      │   applied to: num_cols (38 columns)</span>
         (<span style="color:#ce9178;">"num"</span>, SimpleImputer(strategy=<span style="color:#ce9178;">"mean"</span>), num_cols),
-<span style="color:#6a9955;">#       └── fill NaN with average ─┘</span>
+<span style="color:#6a9955;">#       └── label ─┘ └── fill NaN with avg ─┘ └── on these cols ─┘</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#      ┌── TRANSFORMER 2: Categorical columns (Pipeline inside Pipeline!)</span>
+<span style="color:#6a9955;">#      │   name = "cat"</span>
+<span style="color:#6a9955;">#      │   Pipeline: impute first → then encode</span>
         (<span style="color:#ce9178;">"cat"</span>, Pipeline([
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#          ┌── Step 1: Fill missing categories with most frequent</span>
+<span style="color:#6a9955;">#          │   Ex: GarageType NaN → "Attchd" (most common)</span>
             SimpleImputer(strategy=<span style="color:#ce9178;">"most_frequent"</span>),
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#          ┌── Step 2: Convert text categories to binary columns</span>
+<span style="color:#6a9955;">#          │   Ex: "Downtown" → [1,0,0,0,...] (25 columns)</span>
+<span style="color:#6a9955;">#          │   handle_unknown="ignore": NEW category → all zeros (no crash!)</span>
             OneHotEncoder(handle_unknown=<span style="color:#ce9178;">"ignore"</span>)
         ]), cat_cols)
     ])
-
-<span style="color:#6a9955;">#  ┌── ONE object = preprocessor + model</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ╔══════════════════════════════════════════════════════════════╗</span>
+<span style="color:#6a9955;">#  ║  PART 6: THE FULL PIPELINE (Preprocess + Model)             ║</span>
+<span style="color:#6a9955;">#  ╚══════════════════════════════════════════════════════════════╝</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── Pipeline: connects preprocessor + model into ONE object</span>
+<span style="color:#6a9955;">#  │   THIS is what guarantees train/serve parity!</span>
     pipeline = Pipeline([
         (<span style="color:#ce9178;">"preprocessor"</span>, preprocessor),
+<span style="color:#6a9955;">#       └── Step 1: impute + encode ─┘</span>
         (<span style="color:#ce9178;">"model"</span>, LinearRegression())
+<span style="color:#6a9955;">#       └── Step 2: predict price ─┘</span>
     ])
-
-<span style="color:#6a9955;">#  ┌── THE MAGIC LINE — MLflow auto-logs everything</span>
+<span style="color:#6a9955;">#  └── This Pipeline object is saved to MLflow.</span>
+<span style="color:#6a9955;">#      At serving time: pipeline.predict(new_house) → price!</span>
+<span style="color:#6a9955;">#      SAME preprocessing. SAME model. Impossible to mismatch.</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ╔══════════════════════════════════════════════════════════════╗</span>
+<span style="color:#6a9955;">#  ║  PART 7: MLflow TRACKING + TRAINING + RETURN                ║</span>
+<span style="color:#6a9955;">#  ╚══════════════════════════════════════════════════════════════╝</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── THE MAGIC LINE. MLflow watches everything automatically.</span>
+<span style="color:#6a9955;">#  │   Logs: model params, training metrics, the model itself.</span>
     mlflow.sklearn.autolog()
-
+<span style="color:#6a9955;">#  └── That's it. One line. Everything tracked.</span>
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── FIT = train the entire pipeline</span>
+<span style="color:#6a9955;">#  │   Step 1: SimpleImputer learns (mean of each numerical col)</span>
+<span style="color:#6a9955;">#  │   Step 2: OneHotEncoder learns (all categories in each cat col)</span>
+<span style="color:#6a9955;">#  │   Step 3: LinearRegression learns (coefficients for each feature)</span>
     pipeline.fit(X_train, y_train)
-<span style="color:#6a9955;">#  └── Train: imputer learns, encoder learns, model learns</span>
-    <span style="color:#569cd6;">return</span> pipeline</div></div>`;}
+<span style="color:#6a9955;">#</span>
+<span style="color:#6a9955;">#  ┌── Return the TRAINED pipeline (preprocessor + model, ONE object)</span>
+    <span style="color:#569cd6;">return</span> pipeline
+<span style="color:#6a9955;">#  └── This returned object is saved by MLflow as an artifact.</span>
+<span style="color:#6a9955;">#      ZenML registers it in the Model Registry.</span></div></div>`;}
 
 else if(p==='coltrans'){c.innerHTML=`
 <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--amber);margin-bottom:0.3rem">🔧 ColumnTransformer — The Secret Sauce</h3>
