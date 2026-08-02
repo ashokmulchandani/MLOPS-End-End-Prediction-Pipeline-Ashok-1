@@ -155,7 +155,40 @@ model = Model(name=<span class="str">"prices_predictor"</span>)
 
     <span class="kw">return</span> pipeline</div>
 
-<div class="callout"><strong>🔑 ONE LINE MAGIC:</strong> <code>mlflow.sklearn.autolog()</code> — MLflow automatically logs ALL parameters, metrics, and the trained model. <strong>Zero manual logging code needed.</strong></div>`;}
+<div class="callout"><strong>🔑 ONE LINE MAGIC:</strong> <code>mlflow.sklearn.autolog()</code> — MLflow automatically logs ALL parameters, metrics, and the trained model. <strong>Zero manual logging code needed.</strong>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:1rem 0 0.4rem">🔬 Anatomy — Line by Line</h4>
+<div class="code-box" style="font-size:0.72rem;"><span style="color:#6a9955;">#  ┌── @step = "ZenML, track this function"</span>
+<span style="color:#6a9955;">#  │</span>
+<span style="color:#569cd6;">@step</span>
+<span style="color:#569cd6;">def</span> <span style="color:#c586c0;">model_building_step</span>(X_train, y_train):
+<span style="color:#6a9955;">#  └── features (2336 rows) ─┘ └── target ─┘</span>
+
+<span style="color:#6a9955;">#  ┌── Split: "object" = categorical, rest = numerical</span>
+    cat_cols = X_train.select_dtypes(include=[<span style="color:#ce9178;">"object"</span>]).columns
+
+<span style="color:#6a9955;">#  ┌── Different treatment per column type</span>
+    preprocessor = ColumnTransformer([
+        (<span style="color:#ce9178;">"num"</span>, SimpleImputer(strategy=<span style="color:#ce9178;">"mean"</span>), num_cols),
+<span style="color:#6a9955;">#       └── fill NaN with average ─┘</span>
+        (<span style="color:#ce9178;">"cat"</span>, Pipeline([
+            SimpleImputer(strategy=<span style="color:#ce9178;">"most_frequent"</span>),
+            OneHotEncoder(handle_unknown=<span style="color:#ce9178;">"ignore"</span>)
+        ]), cat_cols)
+    ])
+
+<span style="color:#6a9955;">#  ┌── ONE object = preprocessor + model</span>
+    pipeline = Pipeline([
+        (<span style="color:#ce9178;">"preprocessor"</span>, preprocessor),
+        (<span style="color:#ce9178;">"model"</span>, LinearRegression())
+    ])
+
+<span style="color:#6a9955;">#  ┌── THE MAGIC LINE — MLflow auto-logs everything</span>
+    mlflow.sklearn.autolog()
+
+    pipeline.fit(X_train, y_train)
+<span style="color:#6a9955;">#  └── Train: imputer learns, encoder learns, model learns</span>
+    <span style="color:#569cd6;">return</span> pipeline</div></div>`;}
 
 else if(p==='coltrans'){c.innerHTML=`
 <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--amber);margin-bottom:0.3rem">🔧 ColumnTransformer — The Secret Sauce</h3>
@@ -223,7 +256,35 @@ pipeline = Pipeline([
     (<span class="str">"model"</span>, LinearRegression())
 ])</div>
 
-<div class="callout"><strong>🧠 ONE OBJECT = NO MISTAKES:</strong> Save the ENTIRE pipeline with MLflow. At serving time, load it and call <code>pipeline.predict()</code>. The scaler, imputer, encoder — all use the SAME fitted values from training. <strong>Impossible to mismatch.</strong></div>`;}
+<div class="callout"><strong>🧠 ONE OBJECT = NO MISTAKES:</strong> Save the ENTIRE pipeline with MLflow. At serving time, load it and call <code>pipeline.predict()</code>. The scaler, imputer, encoder — all use the SAME fitted values from training. <strong>Impossible to mismatch.</strong>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:1rem 0 0.4rem">🔬 Anatomy — The ColumnTransformer Line by Line</h4>
+<div class="code-box" style="font-size:0.72rem;"><span style="color:#6a9955;">#  ┌── num_pipe: handles numerical columns</span>
+<span style="color:#6a9955;">#  │   SimpleImputer(strategy="mean") = fill NaN with column average</span>
+num_pipe = SimpleImputer(strategy=<span style="color:#ce9178;">"mean"</span>)
+<span style="color:#6a9955;">#  └── Ex: GrLivArea NaN → filled with avg GrLivArea (1515 sqft)</span>
+
+<span style="color:#6a9955;">#  ┌── cat_pipe: handles categorical columns (PIPELINE inside a PIPELINE!)</span>
+cat_pipe = Pipeline([
+    SimpleImputer(strategy=<span style="color:#ce9178;">"most_frequent"</span>),
+<span style="color:#6a9955;">#  └── Ex: GarageType NaN → filled with "Attchd" (most common)</span>
+    OneHotEncoder(handle_unknown=<span style="color:#ce9178;">"ignore"</span>)
+<span style="color:#6a9955;">#  └── Ex: "Downtown" → [1,0,0...] (25 binary cols for 25 neighborhoods)</span>
+<span style="color:#6a9955;">#      handle_unknown="ignore": new neighborhood → all zeros (no crash!)</span>
+])
+
+<span style="color:#6a9955;">#  ┌── ColumnTransformer: "Column A gets treatment X, Column B gets Y"</span>
+preprocessor = ColumnTransformer([
+    (<span style="color:#ce9178;">"num"</span>, num_pipe, numerical_cols),
+<span style="color:#6a9955;">#  └── name ─┘ └── pipeline ─┘ └── which columns ─┘</span>
+    (<span style="color:#ce9178;">"cat"</span>, cat_pipe, categorical_cols)
+])
+
+<span style="color:#6a9955;">#  ┌── FULL pipeline: preprocess → predict. ONE object.</span>
+pipeline = Pipeline([
+    (<span style="color:#ce9178;">"preprocessor"</span>, preprocessor),  <span style="color:#6a9955;">← Step 1</span>
+    (<span style="color:#ce9178;">"model"</span>, LinearRegression())     <span style="color:#6a9955;">← Step 2</span>
+])</div></div>`;}
 
 else if(p==='mlflow'){c.innerHTML=`
 <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--cyan);margin-bottom:0.3rem">📊 MLflow Tracking — Automatically Log Everything</h3>
@@ -289,7 +350,17 @@ mlflow ui
 mlflow.sklearn.autolog()
 <span class="cm"># That\'s it. MLflow does the rest automatically.</span></div>
 
-<div class="callout"><strong>🖥️ MLflow is LIVE on your machine:</strong> Open <strong>http://localhost:5000</strong> right now to see your experiment runs. Compare R², RMSE, parameters. MLflow is already running from our earlier setup.</div>`;}
+<div class="callout"><strong>🖥️ MLflow is LIVE on your machine:</strong> Open <strong>http://localhost:5000</strong> right now to see your experiment runs. Compare R², RMSE, parameters. MLflow is already running from our earlier setup.</strong>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:1rem 0 0.4rem">🔬 Anatomy — What autolog() Actually Does</h4>
+<div class="code-box" style="font-size:0.72rem;"><span style="color:#6a9955;"># ONE LINE. That's it.</span>
+mlflow.sklearn.autolog()
+
+<span style="color:#6a9955;"># When pipeline.fit() runs, MLflow automatically:</span>
+<span style="color:#6a9955;"># 1. BEFORE: Starts a new run (creates run ID, records time)</span>
+<span style="color:#6a9955;"># 2. DURING: Logs parameters (fit_intercept, n_jobs, etc.)</span>
+<span style="color:#6a9955;"># 3. AFTER: Logs training metrics + saves model.pkl + conda.yaml</span>
+<span style="color:#6a9955;"># ALL from ONE line. Zero manual logging code.</span></div></div>`;}
 
 else if(p==='eval'){c.innerHTML=`
 <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--green);margin-bottom:0.3rem">📈 Model Evaluation (Strategy Pattern)</h3>
@@ -358,7 +429,26 @@ else if(p==='eval'){c.innerHTML=`
 </table></div>
 </div>
 
-<div class="callout"><strong>🔑 MLflow shows all 3 runs side by side.</strong> You see immediately: Experiment 2 (median + LinearRegression) is best. <strong>No guessing. No spreadsheets. Data-driven decisions.</strong></div>`;}
+<div class="callout"><strong>🔑 MLflow shows all 3 runs side by side.</strong> You see immediately: Experiment 2 (median + LinearRegression) is best. <strong>No guessing. No spreadsheets. Data-driven decisions.</strong>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:1rem 0 0.4rem">🔬 Anatomy — The Evaluation Metrics</h4>
+<div class="code-box" style="font-size:0.72rem;"><span style="color:#6a9955;">#  ┌── pipeline.predict() = preprocess + predict in ONE call</span>
+predictions = trained_model.predict(X_test)
+<span style="color:#6a9955;">#  └── X_test goes through SAME imputer+encoder+scaler as training</span>
+
+<span style="color:#6a9955;">#  ┌── R²: "How much variance does the model explain?"</span>
+<span style="color:#6a9955;">#  │   1.0 = perfect. 0.0 = useless. Negative = worse than guessing.</span>
+r2 = r2_score(y_test, predictions)       <span style="color:#6a9955;">← Target: > 0.85</span>
+
+<span style="color:#6a9955;">#  ┌── RMSE: "How far off are predictions in DOLLARS?"</span>
+<span style="color:#6a9955;">#  │   Square root of average squared error. Penalizes big mistakes.</span>
+rmse = np.sqrt(mean_squared_error(y_test, predictions))  <span style="color:#6a9955;">← Target: < \$25K</span>
+
+<span style="color:#6a9955;">#  ┌── MAE: "Average error in dollars. Less sensitive to outliers."</span>
+mae = mean_absolute_error(y_test, predictions)   <span style="color:#6a9955;">← Target: < \$18K</span>
+
+<span style="color:#6a9955;">#  ┌── Guardrail: Is the model overfitting?</span>
+overfit_delta = training_r2 - r2             <span style="color:#6a9955;">← Target: < 0.05</span></div></div>`;}
 
 else if(p==='usage'){c.innerHTML=`
 <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--green);margin-bottom:0.3rem">▶️ How to USE It — The Complete Flow</h3>
