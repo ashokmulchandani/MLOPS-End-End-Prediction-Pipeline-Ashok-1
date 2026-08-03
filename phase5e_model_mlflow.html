@@ -465,8 +465,8 @@ pipeline = Pipeline([
 
 <div class="callout"><strong>🧠 ONE OBJECT = NO MISTAKES:</strong> Save the ENTIRE pipeline with MLflow. At serving time, load it and call <code>pipeline.predict()</code>. The scaler, imputer, encoder — all use the SAME fitted values from training. <strong>Impossible to mismatch.</strong>
 
-<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:1rem 0 0.4rem">🔬 Anatomy — The ColumnTransformer Line by Line</h4>
-<div class="code-box" style="font-size:0.72rem;"><span style="color:#6a9955;">#  ┌── num_pipe: handles numerical columns</span>
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:1rem 0 0.4rem;text-align:left">🔬 Anatomy — The ColumnTransformer Line by Line</h4>
+<div class="code-box" style="font-size:0.72rem;text-align:left"><span style="color:#6a9955;">#  ┌── num_pipe: handles numerical columns</span>
 <span style="color:#6a9955;">#  │   SimpleImputer(strategy="mean") = fill NaN with column average</span>
 num_pipe = SimpleImputer(strategy=<span style="color:#ce9178;">"mean"</span>)
 <span style="color:#6a9955;">#  └── Ex: GrLivArea NaN → filled with avg GrLivArea (1515 sqft)</span>
@@ -559,8 +559,8 @@ mlflow.sklearn.autolog()
 
 <div class="callout"><strong>🖥️ MLflow is LIVE on your machine:</strong> Open <strong>http://localhost:5000</strong> right now to see your experiment runs. Compare R², RMSE, parameters. MLflow is already running from our earlier setup.</strong>
 
-<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:1rem 0 0.4rem">🔬 Anatomy — What autolog() Actually Does</h4>
-<div class="code-box" style="font-size:0.72rem;"><span style="color:#6a9955;"># ONE LINE. That's it.</span>
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:1rem 0 0.4rem;text-align:left">🔬 Anatomy — What autolog() Actually Does</h4>
+<div class="code-box" style="font-size:0.72rem;text-align:left"><span style="color:#6a9955;"># ONE LINE. That's it.</span>
 mlflow.sklearn.autolog()
 
 <span style="color:#6a9955;"># When pipeline.fit() runs, MLflow automatically:</span>
@@ -638,8 +638,8 @@ else if(p==='eval'){c.innerHTML=`
 
 <div class="callout"><strong>🔑 MLflow shows all 3 runs side by side.</strong> You see immediately: Experiment 2 (median + LinearRegression) is best. <strong>No guessing. No spreadsheets. Data-driven decisions.</strong>
 
-<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:1rem 0 0.4rem">🔬 Anatomy — The Evaluation Metrics</h4>
-<div class="code-box" style="font-size:0.72rem;"><span style="color:#6a9955;">#  ┌── pipeline.predict() = preprocess + predict in ONE call</span>
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.72rem;color:var(--violet);margin:1rem 0 0.4rem;text-align:left">🔬 Anatomy — The Evaluation Metrics</h4>
+<div class="code-box" style="font-size:0.72rem;text-align:left"><span style="color:#6a9955;">#  ┌── pipeline.predict() = preprocess + predict in ONE call</span>
 predictions = trained_model.predict(X_test)
 <span style="color:#6a9955;">#  └── X_test goes through SAME imputer+encoder+scaler as training</span>
 
