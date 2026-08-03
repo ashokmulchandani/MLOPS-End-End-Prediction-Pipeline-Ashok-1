@@ -655,7 +655,112 @@ rmse = np.sqrt(mean_squared_error(y_test, predictions))  <span style="color:#6a9
 mae = mean_absolute_error(y_test, predictions)   <span style="color:#6a9955;">← Target: < \$18K</span>
 
 <span style="color:#6a9955;">#  ┌── Guardrail: Is the model overfitting?</span>
-overfit_delta = training_r2 - r2             <span style="color:#6a9955;">← Target: < 0.05</span></div></div>`;}
+overfit_delta = training_r2 - r2             <span style="color:#6a9955;"><- Target: < 0.05</span></div>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1.2rem 0 0.4rem;text-align:left">🔬 Anatomy of model_evaluator_step.py — The ZenML Step Wrapper</h4>
+<p style="color:var(--tdim);font-size:0.78rem;margin-bottom:0.4rem">The code above shows the STRATEGY logic. Here's the actual ZenML <strong>step wrapper</strong> that calls it — from <code>steps/model_evaluator_step.py</code> (49 lines).</p>
+
+<div class="code-box" style="font-size:0.68rem;line-height:1.8;text-align:left">
+<span style="color:#6a9955;"># ============================================================================</span>
+<span style="color:#6a9955;"># SECTION 1: IMPORTS (lines 1-7)</span>
+<span style="color:#6a9955;"># ============================================================================</span>
+
+<span style="color:#6a9955;"># LINE 1: Standard library — logging messages</span>
+<span style="color:#569cd6;">import</span> logging
+
+<span style="color:#6a9955;"># LINE 2: typing.Tuple — type hint for returning multiple values</span>
+<span style="color:#569cd6;">from</span> typing <span style="color:#569cd6;">import</span> Tuple
+
+<span style="color:#6a9955;"># LINE 4: pandas — DataFrames</span>
+<span style="color:#569cd6;">import</span> pandas <span style="color:#569cd6;">as</span> pd
+
+<span style="color:#6a9955;"># LINE 5: sklearn Pipeline — the trained model object</span>
+<span style="color:#569cd6;">from</span> sklearn.pipeline <span style="color:#569cd6;">import</span> Pipeline
+
+<span style="color:#6a9955;"># LINE 6: THIS is where the Strategy Pattern lives!</span>
+<span style="color:#6a9955;">#   ModelEvaluator = context class (delegates to strategy)</span>
+<span style="color:#6a9955;">#   RegressionModelEvaluationStrategy = concrete strategy (calculates R2, RMSE)</span>
+<span style="color:#569cd6;">from</span> src.model_evaluator <span style="color:#569cd6;">import</span> ModelEvaluator, RegressionModelEvaluationStrategy
+
+<span style="color:#6a9955;"># LINE 7: ZenML @step decorator</span>
+<span style="color:#569cd6;">from</span> zenml <span style="color:#569cd6;">import</span> step
+
+
+<span style="color:#6a9955;"># ============================================================================</span>
+<span style="color:#6a9955;"># SECTION 2: THE @step + FUNCTION SIGNATURE (lines 10-13)</span>
+<span style="color:#6a9955;"># ============================================================================</span>
+
+<span style="color:#6a9955;"># LINE 10: @step — "ZenML, track this function." enable_cache=False = always re-run.</span>
+<span style="color:#569cd6;">@step</span>(enable_cache=<span style="color:#569cd6;">False</span>)
+
+<span style="color:#6a9955;"># LINES 11-13: Function definition with type hints</span>
+<span style="color:#6a9955;">#   trained_model: Pipeline — the trained model from model_building_step</span>
+<span style="color:#6a9955;">#   X_test, y_test — test data from data_splitter_step</span>
+<span style="color:#6a9955;">#   -> Tuple[dict, float] — "I return a dict (metrics) + a float (MSE)"</span>
+<span style="color:#569cd6;">def</span> <span style="color:#c586c0;">model_evaluator_step</span>(
+    trained_model: Pipeline,
+    X_test: pd.DataFrame,
+    y_test: pd.Series
+) -> Tuple[dict, float]:
+
+<span style="color:#6a9955;"># LINES 14-24: Docstring — describes inputs and outputs</span>
+    <span style="color:#ce9178;">\"\"\"Evaluates the trained model.\"\"\"</span>
+
+
+<span style="color:#6a9955;"># ============================================================================</span>
+<span style="color:#6a9955;"># SECTION 3: INPUT VALIDATION (lines 25-29)</span>
+<span style="color:#6a9955;"># ============================================================================</span>
+
+<span style="color:#6a9955;"># LINES 26-29: Guards — catch wrong types with clear error messages</span>
+    <span style="color:#569cd6;">if not</span> <span style="color:#c586c0;">isinstance</span>(X_test, pd.DataFrame):
+        <span style="color:#569cd6;">raise</span> TypeError(<span style="color:#ce9178;">"X_test must be a pandas DataFrame."</span>)
+    <span style="color:#569cd6;">if not</span> <span style="color:#c586c0;">isinstance</span>(y_test, pd.Series):
+        <span style="color:#569cd6;">raise</span> TypeError(<span style="color:#ce9178;">"y_test must be a pandas Series."</span>)
+
+
+<span style="color:#6a9955;"># ============================================================================</span>
+<span style="color:#6a9955;"># SECTION 4: MANUAL PREPROCESSING (lines 31-34)</span>
+<span style="color:#6a9955;"># ============================================================================</span>
+
+<span style="color:#6a9955;"># LINE 31: Log message</span>
+    logging.info(<span style="color:#ce9178;">"Applying the same preprocessing to the test data."</span>)
+
+<span style="color:#6a9955;"># LINE 34: THE KEY LINE — manually extract and apply the preprocessor</span>
+<span style="color:#6a9955;">#   trained_model.named_steps["preprocessor"] -> get the ColumnTransformer</span>
+<span style="color:#6a9955;">#   .transform(X_test) -> apply SAME imputation + encoding as training</span>
+<span style="color:#6a9955;">#   This ensures X_test gets the IDENTICAL treatment as X_train!</span>
+    X_test_processed = trained_model.named_steps[<span style="color:#ce9178;">"preprocessor"</span>].transform(X_test)
+
+
+<span style="color:#6a9955;"># ============================================================================</span>
+<span style="color:#6a9955;"># SECTION 5: STRATEGY PATTERN — Evaluate (lines 36-48)</span>
+<span style="color:#6a9955;"># ============================================================================</span>
+
+<span style="color:#6a9955;"># LINE 37: Create the evaluator WITH the chosen strategy</span>
+<span style="color:#6a9955;">#   Strategy Pattern in action: ModelEvaluator (context) + Strategy (logic)</span>
+    evaluator = ModelEvaluator(strategy=RegressionModelEvaluationStrategy())
+
+<span style="color:#6a9955;"># LINES 40-42: DELEGATE to the strategy</span>
+<span style="color:#6a9955;">#   Extract just the MODEL part (not the preprocessor)</span>
+<span style="color:#6a9955;">#   Pass preprocessed X_test + true y_test</span>
+    evaluation_metrics = evaluator.evaluate(
+        trained_model.named_steps[<span style="color:#ce9178;">"model"</span>],  <span style="color:#6a9955;">// Just the LinearRegression</span>
+        X_test_processed,                     <span style="color:#6a9955;">// Already preprocessed</span>
+        y_test                                 <span style="color:#6a9955;">// True prices to compare against</span>
+    )
+
+<span style="color:#6a9955;"># LINES 45-46: Validate the result IS a dictionary</span>
+    <span style="color:#569cd6;">if not</span> <span style="color:#c586c0;">isinstance</span>(evaluation_metrics, dict):
+        <span style="color:#569cd6;">raise</span> ValueError(<span style="color:#ce9178;">"Evaluation metrics must be a dictionary."</span>)
+
+<span style="color:#6a9955;"># LINE 47: Extract MSE from the metrics dict</span>
+<span style="color:#6a9955;">#   .get("MSE", None) -> safely get MSE, return None if not found</span>
+    mse = evaluation_metrics.get(<span style="color:#ce9178;">"Mean Squared Error"</span>, <span style="color:#569cd6;">None</span>)
+
+<span style="color:#6a9955;"># LINE 48: Return BOTH as a tuple — matches -> Tuple[dict, float]</span>
+    <span style="color:#569cd6;">return</span> evaluation_metrics, mse</div>
+
+<div class="callout"><strong>KEY DIFFERENCE from model_building_step:</strong> The evaluation step manually calls <code>named_steps["preprocessor"].transform()</code> instead of <code>pipeline.predict()</code>. Why? Because <code>predict()</code> would run preprocessor + model in one call, but here we need the preprocessed X_test separately — the strategy's <code>evaluate()</code> method expects preprocessed data and just the model.</div></div>`;}
 
 else if(p==='usage'){c.innerHTML=`
 <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--green);margin-bottom:0.3rem">▶️ How to USE It — The Complete Flow</h3>
