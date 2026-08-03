@@ -760,7 +760,177 @@ overfit_delta = training_r2 - r2             <span style="color:#6a9955;"><- Tar
 <span style="color:#6a9955;"># LINE 48: Return BOTH as a tuple — matches -> Tuple[dict, float]</span>
     <span style="color:#569cd6;">return</span> evaluation_metrics, mse</div>
 
-<div class="callout"><strong>KEY DIFFERENCE from model_building_step:</strong> The evaluation step manually calls <code>named_steps["preprocessor"].transform()</code> instead of <code>pipeline.predict()</code>. Why? Because <code>predict()</code> would run preprocessor + model in one call, but here we need the preprocessed X_test separately — the strategy's <code>evaluate()</code> method expects preprocessed data and just the model.</div></div>`;}
+<div class="callout"><strong>KEY DIFFERENCE from model_building_step:</strong> The evaluation step manually calls <code>named_steps["preprocessor"].transform()</code> instead of <code>pipeline.predict()</code>. Why? Because <code>predict()</code> would run preprocessor + model in one call, but here we need the preprocessed X_test separately — the strategy's <code>evaluate()</code> method expects preprocessed data and just the model.</div>
+
+<h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;color:var(--violet);margin:1.2rem 0 0.4rem;text-align:left">🔬 Complete Anatomy of src/model_evaluator.py — The Strategy Pattern (111 active lines)</h4>
+<p style="color:var(--tdim);font-size:0.78rem;margin-bottom:0.4rem">This is where the actual evaluation LOGIC lives. The ZenML step above just delegates to this code. <strong>Same 3-layer Strategy Pattern</strong> as all other processing modules.</p>
+
+<div class="code-box" style="font-size:0.68rem;line-height:1.8;text-align:left">
+<span style="color:#6a9955;"># ============================================================================</span>
+<span style="color:#6a9955;"># SECTION 1: IMPORTS (lines 118-127)</span>
+<span style="color:#6a9955;"># ============================================================================</span>
+
+<span style="color:#6a9955;"># LINE 118: Standard library — logging messages</span>
+<span style="color:#569cd6;">import</span> logging
+
+<span style="color:#6a9955;"># LINE 119: abc — Abstract Base Classes. ABC = parent, abstractmethod = "you MUST write this"</span>
+<span style="color:#569cd6;">from</span> abc <span style="color:#569cd6;">import</span> ABC, abstractmethod
+
+<span style="color:#6a9955;"># LINE 121: numpy — numerical operations (sqrt for RMSE)</span>
+<span style="color:#569cd6;">import</span> numpy <span style="color:#569cd6;">as</span> np
+
+<span style="color:#6a9955;"># LINE 122: pandas — DataFrames</span>
+<span style="color:#569cd6;">import</span> pandas <span style="color:#569cd6;">as</span> pd
+
+<span style="color:#6a9955;"># LINE 123: sklearn.base.RegressorMixin — base class for all regression models</span>
+<span style="color:#6a9955;">#   Used as type hint: "model must be a regressor (LinearRegression, Ridge, etc.)"</span>
+<span style="color:#569cd6;">from</span> sklearn.base <span style="color:#569cd6;">import</span> RegressorMixin
+
+<span style="color:#6a9955;"># LINE 124: sklearn evaluation metrics</span>
+<span style="color:#6a9955;">#   mean_squared_error = average of (predicted - actual)^2</span>
+<span style="color:#6a9955;">#   r2_score = "how much variance does the model explain?" (0 to 1)</span>
+<span style="color:#569cd6;">from</span> sklearn.metrics <span style="color:#569cd6;">import</span> mean_squared_error, r2_score
+
+<span style="color:#6a9955;"># LINES 126-127: Configure logging format</span>
+logging.basicConfig(level=logging.INFO, format=<span style="color:#ce9178;">"%(asctime)s - %(levelname)s - %(message)s"</span>)
+
+
+<span style="color:#6a9955;"># ============================================================================</span>
+<span style="color:#6a9955;"># SECTION 2: THE CONTRACT (lines 130-147) — ABC</span>
+<span style="color:#6a9955;"># ============================================================================</span>
+
+<span style="color:#6a9955;"># LINES 130-131: The CONTRACT — "Every evaluation strategy MUST have evaluate_model()"</span>
+<span style="color:#569cd6;">class</span> <span style="color:#4ec9b0;">ModelEvaluationStrategy</span>(<span style="color:#569cd6;">ABC</span>):
+
+<span style="color:#6a9955;"># LINE 132: @abstractmethod = "SUBCLASS — you MUST write this method!"</span>
+    <span style="color:#569cd6;">@abstractmethod</span>
+
+<span style="color:#6a9955;"># LINES 133-135: Method signature with FULL type hints</span>
+<span style="color:#6a9955;">#   model: RegressorMixin -> any sklearn regressor (LinearRegression, Ridge...)</span>
+<span style="color:#6a9955;">#   X_test: pd.DataFrame -> test features (already preprocessed!)</span>
+<span style="color:#6a9955;">#   y_test: pd.Series -> true prices to compare against</span>
+<span style="color:#6a9955;">#   -> dict -> "I will return a dictionary of metric names and values"</span>
+    <span style="color:#569cd6;">def</span> <span style="color:#c586c0;">evaluate_model</span>(
+        self, model: RegressorMixin, X_test: pd.DataFrame, y_test: pd.Series
+    ) -> dict:
+
+<span style="color:#6a9955;"># LINES 136-146: Docstring — describes the contract</span>
+        <span style="color:#ce9178;">\"\"\"Abstract method to evaluate a model.\"\"\"</span>
+
+<span style="color:#6a9955;"># LINE 147: pass = "I'm intentionally empty. My subclasses fill this in."</span>
+        <span style="color:#569cd6;">pass</span>
+
+
+<span style="color:#6a9955;"># ============================================================================</span>
+<span style="color:#6a9955;"># SECTION 3: CONCRETE STRATEGY (lines 150-176)</span>
+<span style="color:#6a9955;"># ============================================================================</span>
+
+<span style="color:#6a9955;"># LINE 150-151: SUBCLASS — "I implement evaluate_model() MY way"</span>
+<span style="color:#569cd6;">class</span> <span style="color:#4ec9b0;">RegressionModelEvaluationStrategy</span>(ModelEvaluationStrategy):
+
+<span style="color:#6a9955;"># LINES 152-154: Same signature as the ABC (promise kept!)</span>
+    <span style="color:#569cd6;">def</span> <span style="color:#c586c0;">evaluate_model</span>(
+        self, model: RegressorMixin, X_test: pd.DataFrame, y_test: pd.Series
+    ) -> dict:
+
+<span style="color:#6a9955;"># LINES 155-165: Docstring</span>
+        <span style="color:#ce9178;">\"\"\"Evaluates a regression model using R-squared and MSE.\"\"\"</span>
+
+<span style="color:#6a9955;"># LINE 166: Log — visible in console during pipeline execution</span>
+        logging.info(<span style="color:#ce9178;">"Predicting using the trained model."</span>)
+
+<span style="color:#6a9955;"># LINE 167: THIS IS WHERE THE MAGIC HAPPENS</span>
+<span style="color:#6a9955;">#   model = the trained LinearRegression (coefficients already learned)</span>
+<span style="color:#6a9955;">#   .predict(X_test) = apply those coefficients to test features</span>
+<span style="color:#6a9955;">#   y_pred = array of predicted prices (e.g., [215000, 340000, ...])</span>
+        y_pred = model.predict(X_test)
+
+<span style="color:#6a9955;"># LINE 169: Log</span>
+        logging.info(<span style="color:#ce9178;">"Calculating evaluation metrics."</span>)
+
+<span style="color:#6a9955;"># LINE 170: MSE = average of (predicted - actual) squared</span>
+<span style="color:#6a9955;">#   Lower is better. 0 = perfect predictions.</span>
+        mse = mean_squared_error(y_test, y_pred)
+
+<span style="color:#6a9955;"># LINE 171: R2 = "what fraction of price variance does the model explain?"</span>
+<span style="color:#6a9955;">#   1.0 = perfect. 0.0 = useless. Negative = worse than guessing the mean.</span>
+        r2 = r2_score(y_test, y_pred)
+
+<span style="color:#6a9955;"># LINE 173: Package results into a dictionary</span>
+        metrics = {<span style="color:#ce9178;">"Mean Squared Error"</span>: mse, <span style="color:#ce9178;">"R-Squared"</span>: r2}
+
+<span style="color:#6a9955;"># LINE 175: Log the results</span>
+        logging.info(<span style="color:#ce9178;">f"Model Evaluation Metrics: {metrics}"</span>)
+
+<span style="color:#6a9955;"># LINE 176: Return the metrics dictionary</span>
+        <span style="color:#569cd6;">return</span> metrics
+
+
+<span style="color:#6a9955;"># ============================================================================</span>
+<span style="color:#6a9955;"># SECTION 4: CONTEXT CLASS — The Evaluator (lines 179-213)</span>
+<span style="color:#6a9955;"># ============================================================================</span>
+
+<span style="color:#6a9955;"># LINE 180: NOT a subclass! Standalone class. DELEGATES to the strategy.</span>
+<span style="color:#569cd6;">class</span> <span style="color:#4ec9b0;">ModelEvaluator</span>:
+
+<span style="color:#6a9955;"># LINE 181: __init__ = runs when you write ModelEvaluator(strategy=...)</span>
+<span style="color:#6a9955;">#   strategy: ModelEvaluationStrategy = must be a valid evaluation strategy</span>
+    <span style="color:#569cd6;">def</span> <span style="color:#c586c0;">__init__</span>(self, strategy: ModelEvaluationStrategy):
+
+<span style="color:#6a9955;"># LINES 182-188: Docstring</span>
+        <span style="color:#ce9178;">\"\"\"Initializes the ModelEvaluator with a strategy.\"\"\"</span>
+
+<span style="color:#6a9955;"># LINE 188: STORE the strategy on self</span>
+<span style="color:#6a9955;">#   _strategy (with underscore) = convention: "this is internal, don't touch directly"</span>
+        self._strategy = strategy
+
+<span style="color:#6a9955;"># LINE 190: SWAP strategy at any time — Strategy Pattern in action!</span>
+    <span style="color:#569cd6;">def</span> <span style="color:#c586c0;">set_strategy</span>(self, strategy: ModelEvaluationStrategy):
+
+<span style="color:#6a9955;"># LINES 191-198: Docstring</span>
+        <span style="color:#ce9178;">\"\"\"Sets a new strategy for the ModelEvaluator.\"\"\"</span>
+
+<span style="color:#6a9955;"># LINE 197: Log the switch</span>
+        logging.info(<span style="color:#ce9178;">"Switching model evaluation strategy."</span>)
+
+<span style="color:#6a9955;"># LINE 198: Replace the old strategy with the new one</span>
+        self._strategy = strategy
+
+<span style="color:#6a9955;"># LINE 200: THE MAIN METHOD — delegates to whichever strategy is active</span>
+    <span style="color:#569cd6;">def</span> <span style="color:#c586c0;">evaluate</span>(
+        self, model: RegressorMixin, X_test: pd.DataFrame, y_test: pd.Series
+    ) -> dict:
+
+<span style="color:#6a9955;"># LINES 201-211: Docstring</span>
+        <span style="color:#ce9178;">\"\"\"Executes the model evaluation using the current strategy.\"\"\"</span>
+
+<span style="color:#6a9955;"># LINE 212: Log</span>
+        logging.info(<span style="color:#ce9178;">"Evaluating the model using the selected strategy."</span>)
+
+<span style="color:#6a9955;"># LINE 213: THE DELEGATION — THIS is the Strategy Pattern!</span>
+<span style="color:#6a9955;">#   self._strategy = whichever strategy was set (RegressionModelEvaluation)</span>
+<span style="color:#6a9955;">#   .evaluate_model(model, X_test, y_test) = call ITS evaluate_model()</span>
+        <span style="color:#569cd6;">return</span> self._strategy.evaluate_model(model, X_test, y_test)
+
+
+<span style="color:#6a9955;"># ============================================================================</span>
+<span style="color:#6a9955;"># SECTION 5: EXAMPLE USAGE (lines 216-228)</span>
+<span style="color:#6a9955;"># ============================================================================</span>
+
+<span style="color:#6a9955;"># LINE 217: Guard — only runs when this file is executed directly</span>
+<span style="color:#6a9955;">#   When IMPORTED by model_evaluator_step.py -> __name__ = "src.model_evaluator" -> SKIP</span>
+<span style="color:#6a9955;">#   When RUN directly as python model_evaluator.py -> __name__ = "__main__" -> RUN</span>
+<span style="color:#569cd6;">if</span> __name__ == <span style="color:#ce9178;">"__main__"</span>:
+
+<span style="color:#6a9955;"># LINES 223-225: How to USE the evaluator (commented out — example only)</span>
+<span style="color:#6a9955;">#   model_evaluator = ModelEvaluator(RegressionModelEvaluationStrategy())</span>
+<span style="color:#6a9955;">#   evaluation_metrics = model_evaluator.evaluate(model, X_test, y_test)</span>
+<span style="color:#6a9955;">#   print(evaluation_metrics)</span>
+
+<span style="color:#6a9955;"># LINE 228: pass = placeholder (the actual test code is commented out above)</span>
+    <span style="color:#569cd6;">pass</span></div>
+
+<div class="callout"><strong>THE COMPLETE STRATEGY PATTERN:</strong> Layer 1: ModelEvaluationStrategy (ABC contract) -> Layer 2: RegressionModelEvaluationStrategy (calculates R2 + MSE) -> Layer 3: ModelEvaluator (context, delegates). <strong>Swap to ClassificationModelEvaluationStrategy later — ONE line change. Same pattern as ALL 6 processing modules.</strong></div></div>`;}
 
 else if(p==='usage'){c.innerHTML=`
 <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;color:var(--green);margin-bottom:0.3rem">▶️ How to USE It — The Complete Flow</h3>
