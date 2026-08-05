@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 5 — Complete Code Anatomy (Dependency Graph Order)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f8f9fc;--card:#fff;--raised:#eef0f5;--border:#dde0e6;--text:#1a1d23;--tdim:#4a4f5b;--tmut:#8b909b;--violet:#5b3aa8;--vbg:#f3effc;--cyan:#007a99;--cyan-bg:#e6f4f7;--amber:#b87000;--amber-bg:#fff6e5;--green:#1a6e34;--green-bg:#e6f4ea;--red:#c62828;--magenta:#9e2a6b}
+body.dark{--bg:#06090f;--card:#0d1117;--raised:#161b22;--border:#21262d;--text:#e6edf3;--tdim:#8b949e;--tmut:#484f58;--violet:#a371f7;--vbg:#a371f710;--cyan:#39d2ff;--cyan-bg:#39d2ff10;--amber:#ffb347;--amber-bg:#ffb34710;--green:#3fb950;--green-bg:#3fb95010;--red:#f85149;--magenta:#ff6ec7}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.65;min-height:100vh;transition:background 0.3s,color 0.3s}
+.theme-btn{position:fixed;top:1rem;right:1rem;z-index:10;background:var(--raised);border:1px solid var(--border);color:var(--text);padding:0.5rem 0.9rem;border-radius:8px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-size:0.75rem;font-weight:600}
+.theme-btn:hover{border-color:var(--violet);color:var(--violet)}
+.app{max-width:980px;margin:0 auto;padding:1.5rem}
+.header{text-align:center;padding:1rem 0 0.3rem}
+.header h1{font-family:'Space Grotesk',sans-serif;font-size:1.35rem;font-weight:700;color:var(--violet)}
+.header p{color:var(--tdim);font-size:0.85rem;margin-top:0.2rem}
+.main-tabs{display:flex;gap:0.25rem;justify-content:center;margin:0.8rem 0;flex-wrap:wrap}
+.main-tab{font-family:'Space Grotesk',sans-serif;font-size:0.5rem;font-weight:600;padding:0.4em 0.65em;border-radius:100px;border:1.5px solid var(--border);background:var(--card);color:var(--tdim);cursor:pointer;transition:0.15s}
+.main-tab:hover{border-color:var(--violet);color:var(--violet)}
+.main-tab.active{background:var(--violet);border-color:var(--violet);color:#fff}
+.content-area{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.5rem;margin:0.6rem 0}
+.code-box{background:#1e1e1e;border:1px solid #333;border-left:4px solid var(--violet);border-radius:8px;padding:0.7rem 0.9rem;font-family:'JetBrains Mono',monospace;font-size:0.6rem;line-height:1.65;color:#d4d4d4;white-space:pre-wrap;overflow-x:auto;margin:0.5rem 0;text-align:left}
+.code-box .kw{color:#569cd6}.code-box .str{color:#ce9178}.code-box .cm{color:#6a9955}.code-box .fn{color:#c586c0}.code-box .cls{color:#4ec9b0}.code-box .num{color:#b5cea8}.code-box .deco{color:#c586c0}
+.callout{background:var(--vbg);border:1px solid rgba(91,58,168,0.15);border-radius:8px;padding:0.6rem 1rem;margin:0.6rem 0;font-size:0.78rem;text-align:center}
+.beginner-box{background:var(--amber-bg);border:2px solid var(--amber);border-radius:8px;padding:0.55rem 0.75rem;margin:0.5rem 0;font-size:0.65rem}
+.beginner-box strong{color:var(--amber)}
+.flow-row{display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;justify-content:center;margin:0.7rem 0;font-size:0.6rem}
+.flow-box{background:var(--card);border:2px solid var(--border);border-radius:8px;padding:0.45rem 0.6rem;text-align:center;min-width:70px}
+.flow-box.in{border-color:var(--amber);background:var(--amber-bg)}.flow-box.proc{border-color:var(--violet);background:var(--vbg)}.flow-box.out{border-color:var(--green);background:var(--green-bg)}
+.flow-arrow{font-size:0.9rem;color:var(--violet)}
+h3,h4{font-family:'Space Grotesk',sans-serif}
+</style>
+</head>
+<body>
+<button class="theme-btn" onclick="toggleTheme()">🌙 Dark</button>
+<div class="app">
+<header class="header">
+  <h1>Phase 5 — Complete Code Anatomy</h1>
+  <p>Every file, every line, explained. Follows the exact dependency graph order. Build from left to right.</p>
+</header>
+<div class="main-tabs" id="main-tabs">
+  <button class="main-tab active" onclick="showMain('setup',event)">📁 SETUP</button>
+  <button class="main-tab" onclick="showMain('ingest',event)">📥 Ingest</button>
+  <button class="main-tab" onclick="showMain('missing',event)">🩹 Missing</button>
+  <button class="main-tab" onclick="showMain('feature',event)">🔧 Features</button>
+  <button class="main-tab" onclick="showMain('outlier',event)">🎯 Outliers</button>
+  <button class="main-tab" onclick="showMain('split',event)">✂️ Split</button>
+  <button class="main-tab" onclick="showMain('build',event)">🧠 Build</button>
+  <button class="main-tab" onclick="showMain('eval',event)">📈 Eval</button>
+  <button class="main-tab" onclick="showMain('trainpipe',event)">🔗 TrainPipe</button>
+  <button class="main-tab" onclick="showMain('importer',event)">📥 Import</button>
+  <button class="main-tab" onclick="showMain('srvloader',event)">🔌 SrvLoad</button>
+  <button class="main-tab" onclick="showMain('predictor',event)">🎯 Predict</button>
+  <button class="main-tab" onclick="showMain('deploypipe',event)">🚀 Deploy</button>
+  <button class="main-tab" onclick="showMain('rundeploy',event)">▶️ RunDeploy</button>
+  <button class="main-tab" onclick="showMain('sample',event)">🧪 Sample</button>
+</div>
+<div class="content-area" id="content"></div>
+</div>
+<script>
+"use strict";
+
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  document.querySelector('.theme-btn').textContent=document.body.classList.contains('dark')?'☀️ Light':'🌙 Dark';
+  localStorage.setItem('p5ref-theme',document.body.classList.contains('dark')?'dark':'light');
+}
+if(localStorage.getItem('p5ref-theme')==='dark'){document.body.classList.add('dark');document.querySelector('.theme-btn').textContent='☀️ Light';}
+
+function showMain(p,evt){
+  var tabs=document.querySelectorAll('#main-tabs .main-tab');
+  for(var i=0;i<tabs.length;i++)tabs[i].classList.remove('active');
+  if(evt&&evt.target)evt.target.classList.add('active');else tabs[0].classList.add('active');
+  var c=document.getElementById('content');if(!c)return;
+  var B=builders;if(B[p])c.innerHTML=B[p]();
+}
+
+var builders={};
+
+// ====== TAB: SETUP ======
+builders.setup=function(){
+  var h='';
+  h+='<h3 style="color:var(--amber);font-size:1.05rem;margin-bottom:0.2rem">📁 Project Setup — The Foundation</h3>';
+  h+='<p style="color:var(--tdim);font-size:0.78rem;margin-bottom:0.6rem">3 things to create before any Python code. These are the ROOTS of the dependency graph — nothing else works without them. <strong>Every other tab in this reference depends on these 3 steps being done first.</strong></p>';
+  h+='<div class="flow-row"><div class="flow-box in"><strong>config.yaml</strong></div><span class="flow-arrow">→</span><div class="flow-box in"><strong>requirements.txt</strong></div><span class="flow-arrow">→</span><div class="flow-box out"><strong>ZenML CLI</strong></div></div>';
+
+  // ===== 1. requirements.txt =====
+  h+='<h4 style="color:var(--violet);font-size:0.72rem;margin:1rem 0 0.2rem">📦 1. requirements.txt — Every pip package, explained</h4>';
+  h+='<p style="color:var(--tdim);font-size:0.65rem;margin-bottom:0.3rem">This file tells <code>pip install -r requirements.txt</code> what to install. <strong>Each line = one package.</strong> The <code>>=</code> means "this version OR newer." You lock the MINIMUM, not the exact version — your code stays compatible with future updates. <strong>9 packages total.</strong></p>';
+
+  h+='<h4 style="color:var(--violet);font-size:0.68rem;margin:0.6rem 0 0.15rem">🔬 COMPLETE Anatomy — Every package, line by line</h4>';
+  h+='<div class="code-box" style="font-size:0.6rem;line-height:1.75;text-align:left">';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm"># PACKAGE 1: click>=8.1</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   WHAT: CLI framework.</span>\n';
+  h+='<span class="cm">#   WHY: Turns Python functions into terminal commands with flags and options.</span>\n';
+  h+='<span class="cm">#   USED IN: run_pipeline.py, run_deployment.py</span>\n';
+  h+='<span class="cm">#   EXAMPLE: @click.command() + @click.option("--stop-service")</span>\n';
+  h+='<span class="cm">#   WITHOUT IT: You cannot run python run_pipeline.py from terminal.</span>\n';
+  h+='click>=8.1\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm"># PACKAGE 2: matplotlib>=3.8</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   WHAT: Charts and plots.</span>\n';
+  h+='<span class="cm">#   WHY: All EDA visualizations — histograms, scatter plots, box plots, heatmaps.</span>\n';
+  h+='<span class="cm">#   USED IN: Phase 5C EDA (all 5 analysis files)</span>\n';
+  h+='<span class="cm">#   EXAMPLE: plt.figure(), plt.hist(), plt.show()</span>\n';
+  h+='<span class="cm">#   WITHOUT IT: No charts. No visual EDA. Blind data exploration.</span>\n';
+  h+='matplotlib>=3.8\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm"># PACKAGE 3: mlflow>=2.15</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   WHAT: ML lifecycle platform.</span>\n';
+  h+='<span class="cm">#   WHY: TWO critical roles: 1) EXPERIMENT TRACKING via mlflow.sklearn.autolog() — auto-logs params, metrics, and model artifacts during training. 2) MODEL SERVING — wraps trained models as REST APIs on port 8000.</span>\n';
+  h+='<span class="cm">#   USED IN: steps/model_building_step.py, mlflow ui, model deployment</span>\n';
+  h+='<span class="cm">#   EXAMPLE: mlflow.sklearn.autolog(), mlflow ui, service.predict(data)</span>\n';
+  h+='<span class="cm">#   WITHOUT IT: No experiment tracking, no model serving, no REST API.</span>\n';
+  h+='mlflow>=2.15\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm"># PACKAGE 4: numpy>=1.26</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   WHAT: Numerical computing.</span>\n';
+  h+='<span class="cm">#   WHY: Provides np.array, np.log1p (safe log), np.sqrt (for RMSE), np.abs (for z-scores).</span>\n';
+  h+='<span class="cm">#   USED IN: outlier_detection.py, feature_engineering.py, model_evaluator.py, predictor.py</span>\n';
+  h+='<span class="cm">#   EXAMPLE: np.log1p(df["SalePrice"]), np.sqrt(mse), np.abs(z_scores)</span>\n';
+  h+='<span class="cm">#   WITHOUT IT: No numerical operations beyond basic Python math.</span>\n';
+  h+='numpy>=1.26\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm"># PACKAGE 5: pandas>=2.1</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   WHAT: DataFrames.</span>\n';
+  h+='<span class="cm">#   WHY: Everything in this pipeline IS a DataFrame. Every step takes a DataFrame as input and returns a DataFrame as output.</span>\n';
+  h+='<span class="cm">#   USED IN: EVERY SINGLE FILE in the project</span>\n';
+  h+='<span class="cm">#   EXAMPLE: pd.read_csv(), df.select_dtypes(), df.dropna(), df.fillna(), df.to_json()</span>\n';
+  h+='<span class="cm">#   WITHOUT IT: No DataFrames. The entire pipeline collapses.</span>\n';
+  h+='pandas>=2.1\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm"># PACKAGE 6: scikit-learn>=1.4</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   WHAT: ML engine.</span>\n';
+  h+='<span class="cm">#   WHY: Provides: LinearRegression (model), Pipeline (chains preprocessor+model), ColumnTransformer (num vs cat treatments), SimpleImputer (fills NaN), OneHotEncoder (text->binary), StandardScaler (z-score), train_test_split, r2_score, mean_squared_error.</span>\n';
+  h+='<span class="cm">#   USED IN: model_building_step.py, data_splitter.py, model_evaluator.py, feature_engineering.py</span>\n';
+  h+='<span class="cm">#   EXAMPLE: Pipeline([...]), ColumnTransformer([...]), train_test_split()</span>\n';
+  h+='<span class="cm">#   WITHOUT IT: No models. No preprocessing. No evaluation. No ML at all.</span>\n';
+  h+='scikit-learn>=1.4\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm"># PACKAGE 7: seaborn>=0.13</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   WHAT: Statistical viz.</span>\n';
+  h+='<span class="cm">#   WHY: Creates beautiful statistical plots with ONE line: heatmaps (missing values, correlations), histograms with KDE, box plots (outliers), count plots (categorical).</span>\n';
+  h+='<span class="cm">#   USED IN: Phase 5C EDA (all 5 analysis files)</span>\n';
+  h+='<span class="cm">#   EXAMPLE: sns.heatmap(df.isnull()), sns.histplot(df["SalePrice"], kde=True)</span>\n';
+  h+='<span class="cm">#   WITHOUT IT: You would need 20+ lines of matplotlib for each plot.</span>\n';
+  h+='seaborn>=0.13\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm"># PACKAGE 8: statsmodels>=0.14</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   WHAT: Statistical modeling.</span>\n';
+  h+='<span class="cm">#   WHY: Provides statistical tests (p-values, confidence intervals) beyond scikit-learn.</span>\n';
+  h+='<span class="cm">#   USED IN: EDA (statistical analysis of feature relationships)</span>\n';
+  h+='<span class="cm">#   EXAMPLE: Statistical tests and regression diagnostics</span>\n';
+  h+='<span class="cm">#   WITHOUT IT: You lose advanced statistical testing capabilities.</span>\n';
+  h+='statsmodels>=0.14\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm"># PACKAGE 9: zenml>=0.66</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   WHAT: MLOps orchestrator.</span>\n';
+  h+='<span class="cm">#   WHY: THE CONDUCTOR. It: 1) Runs pipeline steps in ORDER (DAG). 2) Tracks artifacts between steps. 3) Connects to MLflow. 4) Manages Model Registry. 5) Provides a dashboard.</span>\n';
+  h+='<span class="cm">#   USED IN: EVERY pipeline file, every @step, every @pipeline</span>\n';
+  h+='<span class="cm">#   EXAMPLE: @step, @pipeline, Model(name="prices_predictor"), Client()</span>\n';
+  h+='<span class="cm">#   WITHOUT IT: No pipeline orchestration. You would write your own DAG runner from scratch.</span>\n';
+  h+='zenml>=0.66\n';
+  h+='<span class="cm">#</span>\n';
+  h+='</div>';
+
+  h+='<div class="beginner-box"><strong>🧑‍🏫 BEGINNER CONCEPT — What does ">=" mean in requirements.txt?</strong><br>It means "this version OR newer." <code>pandas>=2.1</code> = "install pandas version 2.1 or anything newer." This is called <strong>version pinning</strong>. You set the MINIMUM you tested with. If pandas releases 2.2 with new features, pip installs that. Most projects use <code>>=</code> for production — you want security patches and bug fixes without manual updates.</div>';
+
+  // ===== 2. config.yaml =====
+  h+='<h4 style="color:var(--violet);font-size:0.72rem;margin:1.2rem 0 0.2rem">📦 2. config.yaml — ZenML Model Control Plane Configuration</h4>';
+  h+='<p style="color:var(--tdim);font-size:0.65rem;margin-bottom:0.3rem">YAML is a human-readable config format. <strong>Indentation matters</strong> — 2 spaces per level (NEVER tabs). This file tells ZenML about your model and which integrations you need. ZenML reads this automatically when you run any pipeline.</p>';
+
+  h+='<h4 style="color:var(--violet);font-size:0.68rem;margin:0.6rem 0 0.15rem">🔬 COMPLETE Anatomy — Every line explained</h4>';
+  h+='<div class="code-box" style="font-size:0.6rem;line-height:1.75;text-align:left">';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm"># SECTION 1: PIPELINE-LEVEL SETTINGS</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># enable_cache: False</span>\n';
+  h+='<span class="cm">#   ZenML normally CACHES step results — reuses old output if same inputs.</span>\n';
+  h+='<span class="cm">#   False = always re-run. For dev: False. For prod: True (save time).</span>\n';
+  h+='<span class="cm">#   Override per-step with @step(enable_cache=True/False).</span>\n';
+  h+='enable_cache: False\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm"># SECTION 2: DOCKER SETTINGS</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># settings: — Top-level key for environment configuration.</span>\n';
+  h+='settings:\n';
+  h+='<span class="cm">#   docker: — Docker-specific config for containerized pipeline runs.</span>\n';
+  h+='  docker:\n';
+  h+='<span class="cm">#     required_integrations: — Must-have ZenML plugins in Docker image.</span>\n';
+  h+='    required_integrations:\n';
+  h+='<span class="cm">#       - mlflow — The ONLY integration needed. ZenML integrations are</span>\n';
+  h+='<span class="cm">#         plugins adding support for tools (mlflow, kubeflow, airflow).</span>\n';
+  h+='      - mlflow\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm"># SECTION 3: MODEL REGISTRY CONFIGURATION</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># model: — Model Control Plane. Every trained version is registered here.</span>\n';
+  h+='<span class="cm">#   ZenML tracks versions: v1, v2, v3... with metrics and artifacts each.</span>\n';
+  h+='model:\n';
+  h+='<span class="cm">#   name: prices_predictor — UNIQUE IDENTIFIER in the registry.</span>\n';
+  h+='<span class="cm">#     Used in code: Model(name="prices_predictor", version="production")</span>\n';
+  h+='  name: prices_predictor\n';
+  h+='<span class="cm">#   license: Apache 2.0 — Open-source metadata. Shows in ZenML dashboard.</span>\n';
+  h+='  license: Apache 2.0\n';
+  h+='<span class="cm">#   description — Human-readable. Write for your FUTURE SELF.</span>\n';
+  h+='  description: Predictor of housing prices.\n';
+  h+='<span class="cm">#   tags — Searchable labels. Filter models by tag in ZenML dashboard.</span>\n';
+  h+='<span class="cm">#     ["regression"] = ML task type, ["housing"] = domain,</span>\n';
+  h+='<span class="cm">#     ["price_prediction"] = specific target</span>\n';
+  h+='  tags: ["regression", "housing", "price_prediction"]\n';
+  h+='</div>';
+
+  h+='<div class="beginner-box"><strong>🧑‍🏫 BEGINNER CONCEPT — What is YAML and why indentation?</strong><br>YAML is like a tree: parent → child → grandchild. The indentation (2 spaces) DEFINES the hierarchy. <code>model:</code> (parent) → <code>name:</code> (child under model) → <code>prices_predictor</code> (value). If you use 3 spaces instead of 2, YAML breaks. If you mix tabs and spaces, YAML breaks. <strong>Rule: 2 spaces per level, never tabs.</strong></div>';
+
+  // ===== 3. ZenML CLI =====
+  h+='<h4 style="color:var(--violet);font-size:0.72rem;margin:1.2rem 0 0.2rem">📦 3. ZenML CLI Setup — 5 Commands That Build Your Stack</h4>';
+  h+='<p style="color:var(--tdim);font-size:0.65rem;margin-bottom:0.3rem">These 5 terminal commands create the infrastructure your Python code depends on. <strong>Run them once, in this exact order.</strong></p>';
+
+  h+='<h4 style="color:var(--violet);font-size:0.68rem;margin:0.6rem 0 0.15rem">🔬 COMPLETE Anatomy — Every command, every flag explained</h4>';
+  h+='<div class="code-box" style="font-size:0.6rem;line-height:1.75;text-align:left">';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm"># COMMAND 1: zenml init...</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   WHAT: Creates a .zen/ folder in your project root with config, SQLite DB, and stack configs.</span>\n';
+  h+='<span class="cm">#   WHEN: ONCE per project. The very first command.</span>\n';
+  h+='<span class="cm">#   WITHOUT IT: zenml commands error — "Not a ZenML repository."</span>\n';
+  h+='<span class="cm">#   ANALOGY: git init for your ML project.</span>\n';
+  h+='zenml init\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm"># COMMAND 2: zenml experiment-tracker register mlflow_tracker --flavor=ml...</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   WHAT: Registers an "experiment tracker" stack component. --flavor=mlflow = "this IS MLflow." Used in code: Client().active_stack.experiment_tracker. Enables: mlflow.sklearn.autolog().</span>\n';
+  h+='<span class="cm">#   WHEN: After zenml init.</span>\n';
+  h+='<span class="cm">#   WITHOUT IT: @step(experiment_tracker=...) will fail — no tracker registered.</span>\n';
+  h+='<span class="cm">#   ANALOGY: Installing a GPU in your computer — adds MLflow tracking capability.</span>\n';
+  h+='zenml experiment-tracker register mlflow_tracker --flavor=mlflow\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm"># COMMAND 3: zenml model-deployer register mlflow_deployer --flavor=mlflo...</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   WHAT: Registers a "model deployer" stack component. --flavor=mlflow = "use MLflow for serving." Used in code: MLFlowModelDeployer.get_active_model_deployer(). Enables: mlflow_model_deployer_step().</span>\n';
+  h+='<span class="cm">#   WHEN: After experiment tracker.</span>\n';
+  h+='<span class="cm">#   WITHOUT IT: No model deployment. No localhost:8000. No REST API.</span>\n';
+  h+='<span class="cm">#   ANALOGY: Installing a network card — adds model serving capability.</span>\n';
+  h+='zenml model-deployer register mlflow_deployer --flavor=mlflow\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm"># COMMAND 4: zenml stack register mlops_stack -a default -o default -e ml...</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   WHAT: Creates a NAMED STACK bundling all components. -a=artifact store, -o=orchestrator, -e=experiment tracker, -d=model deployer. This IS the assembled computer.</span>\n';
+  h+='<span class="cm">#   WHEN: After registering all components.</span>\n';
+  h+='<span class="cm">#   WITHOUT IT: No stack exists — pipelines have nowhere to run.</span>\n';
+  h+='<span class="cm">#   ANALOGY: Assembling a computer — you pick CPU (-o), hard drive (-a), GPU (-e), network (-d).</span>\n';
+  h+='zenml stack register mlops_stack -a default -o default -e mlflow_tracker -d mlflow_deployer\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm"># COMMAND 5: zenml stack set mlops_stack...</span>\n';
+  h+='<span class="cm"># ============================================================================</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   WHAT: ACTIVATES the stack. "Use THIS stack for all pipelines from now on." Every @pipeline you run will use these 4 components.</span>\n';
+  h+='<span class="cm">#   WHEN: After stack registration.</span>\n';
+  h+='<span class="cm">#   WITHOUT IT: Pipelines run with wrong/old stack or error out.</span>\n';
+  h+='<span class="cm">#   ANALOGY: Plugging in the power cord — the computer is now ON.</span>\n';
+  h+='zenml stack set mlops_stack\n';
+  h+='<span class="cm">#</span>\n';
+  h+='</div>';
+
+  h+='<div class="beginner-box"><strong>🧑‍🏫 BEGINNER CONCEPT — What IS a ZenML Stack?</strong><br>Think of a stack like a <strong>toolbox</strong> with 4 drawers:<br><br><strong>Drawer 1 — Artifact Store (-a):</strong> "Where to save data and models?" → Local disk (default), S3, GCS.<br><strong>Drawer 2 — Orchestrator (-o):</strong> "How to run pipeline steps?" → Local (default), Kubeflow, Airflow.<br><strong>Drawer 3 — Experiment Tracker (-e):</strong> "How to track experiments?" → MLflow, Weights & Biases, Neptune.<br><strong>Drawer 4 — Model Deployer (-d):</strong> "How to serve models?" → MLflow, Seldon, BentoML.<br><br>You can have MULTIPLE stacks (dev_stack, prod_stack) and switch with <code>zenml stack set</code>. Change infrastructure without changing pipeline code.</div>';
+
+  h+='<div class="callout"><strong>🔑 THE SETUP FLOW (Trace the dependency):</strong><br><br><code>requirements.txt</code> → <code>pip install -r requirements.txt</code> installs all 9 packages<br>→ <code>zenml init</code> creates the .zen/ repository<br>→ <code>zenml experiment-tracker register</code> adds MLflow tracking<br>→ <code>zenml model-deployer register</code> adds MLflow serving<br>→ <code>zenml stack register</code> bundles all 4 components into one stack<br>→ <code>zenml stack set</code> activates it<br><br><strong>After these 5 commands, your Python code can use:</strong><br>• <code>@step</code> — tracked pipeline steps<br>• <code>@pipeline</code> — orchestrating functions<br>• <code>Client().active_stack.experiment_tracker</code> — MLflow connection<br>• <code>MLFlowModelDeployer.get_active_model_deployer()</code> — model serving<br><br><strong>Every other tab (Ingest → Sample) depends on these 3 setup files being done first.</strong></div>';
+
+  return h;
+};
+
+// ====== TAB: INGESTION ======
+builders.ingest=function(){
+  var h='';
+  h+='<h3 style="color:var(--cyan);font-size:1.05rem;margin-bottom:0.2rem">📥 Data Ingestion — ZIP to DataFrame</h3>';
+  h+='<p style="color:var(--tdim);font-size:0.75rem;margin-bottom:0.4rem">2 files. <strong>Pattern:</strong> Factory + Strategy combined. This is the FIRST module in the pipeline — everything downstream depends on the DataFrame it produces. <strong>2930 rows × 82 columns</strong> from the Ames Housing dataset.</p>';
+  h+='<div class="flow-row"><div class="flow-box in">src/ingest_data.py</div><span class="flow-arrow">→</span><div class="flow-box out">steps/data_ingestion_step.py</div></div>';
+
+  // ===== FILE 1: src/ingest_data.py =====
+  h+='<h4 style="color:var(--violet);font-size:0.72rem;margin:0.8rem 0 0.2rem">📦 FILE 1: src/ingest_data.py — 73 lines</h4>';
+  h+='<p style="color:var(--tdim);font-size:0.65rem;margin-bottom:0.3rem">This file defines <strong>3 classes</strong> working together. The ABC defines the contract. The concrete class does the actual unzip+read work. The Factory decides WHICH concrete class to create based on file extension. <strong>This is the exact 4-layer pattern used in all 7 modules.</strong></p>';
+
+  // SECTION 1: IMPORTS
+  h+='<h4 style="color:var(--violet);font-size:0.68rem;margin:0.6rem 0 0.15rem">🔬 SECTION 1: IMPORTS — Lines 1-5</h4>';
+  h+='<div class="code-box" style="font-size:0.6rem;line-height:1.7;text-align:left">';
+  h+='<span class="cm"># ┌── os: operating system operations — listing files, building paths</span>\n';
+  h+='<span class="cm"># │   os.listdir("folder") → ["file1.csv", "file2.txt"]  (list all files)</span>\n';
+  h+='<span class="cm"># │   os.path.join("a", "b") → "a/b"  (cross-platform path building)</span>\n';
+  h+='<span class="kw">import</span> os\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ┌── zipfile: reads and extracts .zip archives</span>\n';
+  h+='<span class="cm"># │   zipfile.ZipFile("data.zip", "r") → opens the zip for reading</span>\n';
+  h+='<span class="cm"># │   .extractall("folder") → unzips everything into "folder"</span>\n';
+  h+='<span class="kw">import</span> zipfile\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ┌── abc: Abstract Base Classes — Python\'s way of saying "you MUST write this method"</span>\n';
+  h+='<span class="cm"># │   ABC = the parent class for all abstract classes</span>\n';
+  h+='<span class="cm"># │   @abstractmethod = decorator marking methods subclasses MUST implement</span>\n';
+  h+='<span class="cm"># │   Think: ABC = contract template, @abstractmethod = required signature</span>\n';
+  h+='<span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ┌── pandas: THE data structure library. Everything in this pipeline is a DataFrame.</span>\n';
+  h+='<span class="cm"># │   pd.read_csv("file.csv") → DataFrame (table with rows and columns)</span>\n';
+  h+='<span class="cm"># │   "as pd" = standard alias — everyone uses it, follow the convention</span>\n';
+  h+='<span class="kw">import</span> pandas <span class="kw">as</span> pd\n';
+  h+='</div>';
+
+  // SECTION 2: ABC
+  h+='<h4 style="color:var(--violet);font-size:0.68rem;margin:0.6rem 0 0.15rem">🔬 SECTION 2: ABC — The CONTRACT — Lines 8-13</h4>';
+  h+='<div class="code-box" style="font-size:0.6rem;line-height:1.7;text-align:left">';
+  h+='<span class="cm"># ┌── class DataIngestor(ABC):</span>\n';
+  h+='<span class="cm"># │   "DataIngestor" = the name. (ABC) = "this is an abstract base class"</span>\n';
+  h+='<span class="cm"># │   You CANNOT create a DataIngestor directly: DataIngestor() → ERROR</span>\n';
+  h+='<span class="cm"># │   You MUST create a SUBCLASS: ZipDataIngestor(DataIngestor) → OK</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">DataIngestor</span>(ABC):\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   ┌── @abstractmethod: "Any subclass of DataIngestor MUST write an ingest() method."</span>\n';
+  h+='<span class="cm">#   │   If a subclass forgets to write ingest() → Python throws an error at class creation time.</span>\n';
+  h+='<span class="cm">#   │   This is the ENFORCEMENT mechanism — the contract is not optional.</span>\n';
+  h+='    <span class="deco">@abstractmethod</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   ┌── def ingest(self, file_path: str) -> pd.DataFrame:</span>\n';
+  h+='<span class="cm">#   │   self = "this specific object" (Python passes it automatically)</span>\n';
+  h+='<span class="cm">#   │   file_path: str = "I expect a string — the path to your data file"</span>\n';
+  h+='<span class="cm">#   │   -> pd.DataFrame = "I promise to return a pandas DataFrame"</span>\n';
+  h+='<span class="cm">#   │   These are TYPE HINTS — they do NOT enforce types at runtime,</span>\n';
+  h+='<span class="cm">#   │   but tools like mypy/pylance use them to catch bugs before you run.</span>\n';
+  h+='    <span class="kw">def</span> <span class="fn">ingest</span>(self, file_path: str) -> pd.DataFrame:\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#       ┌── pass: "I\'m intentionally empty. Subclasses fill this in."</span>\n';
+  h+='<span class="cm">#       │   Without pass → SyntaxError: Python requires at least one statement.</span>\n';
+  h+='        <span class="kw">pass</span>\n';
+  h+='</div>';
+
+  // SECTION 3: CONCRETE
+  h+='<h4 style="color:var(--violet);font-size:0.68rem;margin:0.6rem 0 0.15rem">🔬 SECTION 3: CONCRETE STRATEGY — ZipDataIngestor — Lines 17-42</h4>';
+  h+='<div class="code-box" style="font-size:0.6rem;line-height:1.7;text-align:left">';
+  h+='<span class="cm"># ┌── class ZipDataIngestor(DataIngestor):</span>\n';
+  h+='<span class="cm"># │   "ZipDataIngestor IS A DataIngestor" — this is INHERITANCE.</span>\n';
+  h+='<span class="cm"># │   It PROMISES to implement the ingest() method defined in the ABC.</span>\n';
+  h+='<span class="cm"># │   zipfile.ZipFile(file_path, "r") → opens the zip in READ mode</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">ZipDataIngestor</span>(DataIngestor):\n';
+  h+='    <span class="kw">def</span> <span class="fn">ingest</span>(self, file_path: str) -> pd.DataFrame:\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#       ┌── GUARD CLAUSE: Validate input before doing any work.</span>\n';
+  h+='<span class="cm">#       │   .endswith(".zip") = "does the filename end with .zip?"</span>\n';
+  h+='<span class="cm">#       │   if NOT → raise ValueError immediately with a clear message.</span>\n';
+  h+='<span class="cm">#       │   This is DEFENSIVE PROGRAMMING: fail fast, fail loud.</span>\n';
+  h+='        <span class="kw">if not</span> file_path.endswith(<span class="str">".zip"</span>):\n';
+  h+='            <span class="kw">raise</span> ValueError(<span class="str">"The provided file is not a .zip file."</span>)\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#       ┌── CONTEXT MANAGER: "with X as name:" = auto-cleanup.</span>\n';
+  h+='<span class="cm">#       │   zipfile.ZipFile(file_path, "r") → OPEN the zip for reading</span>\n';
+  h+='<span class="cm">#       │   as zip_ref → give me a REFERENCE called "zip_ref"</span>\n';
+  h+='<span class="cm">#       │   When the "with" block ends → zip file is AUTO-CLOSED (even on error!)</span>\n';
+  h+='        <span class="kw">with</span> zipfile.ZipFile(file_path, <span class="str">"r"</span>) <span class="kw">as</span> zip_ref:\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#           ┌── .extractall("extracted_data") → unzip EVERYTHING into that folder.</span>\n';
+  h+='<span class="cm">#           │   Creates "extracted_data/" if it doesn\'t exist.</span>\n';
+  h+='<span class="cm">#           │   Result: extracted_data/AmesHousing.csv (the actual data file)</span>\n';
+  h+='            zip_ref.extractall(<span class="str">"extracted_data"</span>)\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#       ┌── LIST COMPREHENSION: [f for f in list if condition]</span>\n';
+  h+='<span class="cm">#       │   os.listdir("extracted_data") → ["AmesHousing.csv"]  (all files in folder)</span>\n';
+  h+='<span class="cm">#       │   for f in os.listdir(...) → iterate each file</span>\n';
+  h+='<span class="cm">#       │   if f.endswith(".csv") → keep ONLY .csv files</span>\n';
+  h+='<span class="cm">#       │   Result: ["AmesHousing.csv"]  (filtered list)</span>\n';
+  h+='        extracted_files = os.listdir(<span class="str">"extracted_data"</span>)\n';
+  h+='        csv_files = [f <span class="kw">for</span> f <span class="kw">in</span> extracted_files <span class="kw">if</span> f.endswith(<span class="str">".csv"</span>)]\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#       ┌── GUARD: Fail clearly if no CSV found (empty zip? wrong file?)</span>\n';
+  h+='<span class="cm">#       │   len(csv_files) == 0 → the list is empty</span>\n';
+  h+='        <span class="kw">if</span> len(csv_files) == 0:\n';
+  h+='            <span class="kw">raise</span> FileNotFoundError(<span class="str">"No CSV file found in the extracted data."</span>)\n';
+  h+='<span class="cm">#       ┌── GUARD: Fail if MULTIPLE CSVs found (ambiguous — which one?)</span>\n';
+  h+='        <span class="kw">if</span> len(csv_files) > 1:\n';
+  h+='            <span class="kw">raise</span> ValueError(<span class="str">"Multiple CSV files found. Please specify which one."</span>)\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#       ┌── BUILD the full path: "extracted_data" + "/" + "AmesHousing.csv"</span>\n';
+  h+='<span class="cm">#       │   os.path.join = cross-platform (works on Windows \ AND Unix /)</span>\n';
+  h+='        csv_file_path = os.path.join(<span class="str">"extracted_data"</span>, csv_files[0])\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#       ┌── THE MOMENT: CSV file → pandas DataFrame</span>\n';
+  h+='<span class="cm">#       │   pd.read_csv() does ALL the parsing: commas, quotes, headers, dtypes</span>\n';
+  h+='<span class="cm">#       │   Result: 2930 rows x 82 columns of Ames housing data</span>\n';
+  h+='        df = pd.read_csv(csv_file_path)\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#       ┌── RETURN the DataFrame to whoever called ingest().</span>\n';
+  h+='<span class="cm">#       │   In the pipeline: returned to data_ingestion_step → ZenML passes it to the next step.</span>\n';
+  h+='        <span class="kw">return</span> df\n';
+  h+='</div>';
+
+  // SECTION 4: FACTORY
+  h+='<h4 style="color:var(--violet);font-size:0.68rem;margin:0.6rem 0 0.15rem">🔬 SECTION 4: FACTORY — DataIngestorFactory — Lines 46-53</h4>';
+  h+='<div class="code-box" style="font-size:0.6rem;line-height:1.7;text-align:left">';
+  h+='<span class="cm"># ┌── class DataIngestorFactory:</span>\n';
+  h+='<span class="cm"># │   The Factory Pattern: "I decide WHICH concrete class to create."</span>\n';
+  h+='<span class="cm"># │   The caller says ".zip" → factory returns ZipDataIngestor()</span>\n';
+  h+='<span class="cm"># │   Later: add ".csv" → factory returns CsvDataIngestor()  (swap factory, not pipeline!)</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">DataIngestorFactory</span>:\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   ┌── @staticmethod: "You can call this WITHOUT creating a Factory object."</span>\n';
+  h+='<span class="cm">#   │   Normal:  f = DataIngestorFactory();  f.get_data_ingestor(".zip")</span>\n';
+  h+='<span class="cm">#   │   Static:  DataIngestorFactory.get_data_ingestor(".zip")  ← cleaner, simpler</span>\n';
+  h+='<span class="cm">#   │   No "self" parameter — the method doesn\'t need instance data.</span>\n';
+  h+='    <span class="deco">@staticmethod</span>\n';
+  h+='    <span class="kw">def</span> <span class="fn">get_data_ingestor</span>(file_extension: str) -> DataIngestor:\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#       ┌── THE DECISION: Map file extension → concrete class.</span>\n';
+  h+='<span class="cm">#       │   ".zip" → ZipDataIngestor()  (create a NEW instance)</span>\n';
+  h+='        <span class="kw">if</span> file_extension == <span class="str">".zip"</span>:\n';
+  h+='            <span class="kw">return</span> ZipDataIngestor()\n';
+  h+='<span class="cm">#       ┌── DEFAULT: If we don\'t recognize the extension → raise error.</span>\n';
+  h+='<span class="cm">#       │   f-string: f"...{file_extension}"  → inserts the variable value into the message.</span>\n';
+  h+='        <span class="kw">else</span>:\n';
+  h+='            <span class="kw">raise</span> ValueError(<span class="str">f"No ingestor available for file extension: {file_extension}"</span>)\n';
+  h+='</div>';
+
+  h+='<div class="beginner-box"><strong>🧑‍🏫 BEGINNER CONCEPT — What is @staticmethod?</strong><br>Normal methods need <code>self</code> — you must create an object first: <code>f = Factory(); f.method()</code>. A <strong>@staticmethod</strong> belongs to the CLASS itself, not instances. You call it directly: <code>Factory.method()</code>. No object creation needed. Use it when the method doesn\'t need any per-object data — it just takes inputs and returns a result. Think: "utility function that lives inside a class for organization."</div>';
+
+  // ===== FILE 2: steps/data_ingestion_step.py =====
+  h+='<h4 style="color:var(--violet);font-size:0.72rem;margin:1rem 0 0.2rem">📦 FILE 2: steps/data_ingestion_step.py — 18 lines — Layer 4: The @step Wrapper</h4>';
+  h+='<p style="color:var(--tdim);font-size:0.65rem;margin-bottom:0.3rem">This is Layer 4 of the pattern. It bridges the Strategy Pattern code (src/) with ZenML\'s pipeline orchestrator. <strong>Without @step, ZenML doesn\'t know this function exists.</strong></p>';
+
+  h+='<h4 style="color:var(--violet);font-size:0.68rem;margin:0.6rem 0 0.15rem">🔬 COMPLETE Anatomy — Every line explained</h4>';
+  h+='<div class="code-box" style="font-size:0.6rem;line-height:1.75;text-align:left">';
+  h+='<span class="cm"># ┌── import pandas as pd</span>\n';
+  h+='<span class="cm"># │   Needed for the TYPE HINT: -> pd.DataFrame</span>\n';
+  h+='<span class="kw">import</span> pandas <span class="kw">as</span> pd\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ┌── from src.ingest_data import DataIngestorFactory</span>\n';
+  h+='<span class="cm"># │   "from" = look in the src/ folder</span>\n';
+  h+='<span class="cm"># │   "import DataIngestorFactory" = bring in the Factory class we just built</span>\n';
+  h+='<span class="cm"># │   This is how Python modules connect — import what you need from other files.</span>\n';
+  h+='<span class="kw">from</span> src.ingest_data <span class="kw">import</span> DataIngestorFactory\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ┌── from zenml import step</span>\n';
+  h+='<span class="cm"># │   "step" is a DECORATOR — a function that wraps another function.</span>\n';
+  h+='<span class="cm"># │   When you put @step above a function, ZenML registers it in the pipeline DAG.</span>\n';
+  h+='<span class="kw">from</span> zenml <span class="kw">import</span> step\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ╔══════════════════════════════════════════════════════════════╗</span>\n';
+  h+='<span class="cm"># ║  THE @step DECORATOR — This is what makes it a ZenML step  ║</span>\n';
+  h+='<span class="cm"># ╚══════════════════════════════════════════════════════════════╝</span>\n';
+  h+='<span class="cm"># ┌── @step = "ZenML, please track this function."</span>\n';
+  h+='<span class="cm"># │   Without @step: normal Python function, invisible to ZenML.</span>\n';
+  h+='<span class="cm"># │   With @step: ZenML watches inputs, outputs, timing, caching, errors.</span>\n';
+  h+='<span class="cm"># │   @step is a DECORATOR — syntactic sugar for: step(data_ingestion_step)</span>\n';
+  h+='<span class="deco">@step</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ┌── def data_ingestion_step(file_path: str) -> pd.DataFrame:</span>\n';
+  h+='<span class="cm"># │   def = "define a function"</span>\n';
+  h+='<span class="cm"># │   data_ingestion_step = the function name (ZenML shows this in the dashboard)</span>\n';
+  h+='<span class="cm"># │   file_path: str = "I take ONE parameter — a path to the data file"</span>\n';
+  h+='<span class="cm"># │   -> pd.DataFrame = "I WILL return a pandas DataFrame"</span>\n';
+  h+='<span class="kw">def</span> <span class="fn">data_ingestion_step</span>(file_path: str) -> pd.DataFrame:\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   ┌── Docstring: A string describing what the function does.</span>\n';
+  h+='<span class="cm">#   │   Triple-quoted so it can span multiple lines.</span>\n';
+  h+='<span class="cm">#   │   ZenML displays this in the dashboard and CLI.</span>\n';
+  h+='    <span class="str">"""Ingest data from a ZIP file using the appropriate DataIngestor."""</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   ┌── Hard-coded because we KNOW our data is in a .zip file.</span>\n';
+  h+='<span class="cm">#   │   In a more flexible system, this could be passed as a parameter.</span>\n';
+  h+='    file_extension = <span class="str">".zip"</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   ┌── THE FACTORY CALL: "Give me the right ingestor for .zip files."</span>\n';
+  h+='<span class="cm">#   │   DataIngestorFactory = the class (blueprint)</span>\n';
+  h+='<span class="cm">#   │   .get_data_ingestor = the static method (no instance needed)</span>\n';
+  h+='<span class="cm">#   │   (".zip") = the argument: "I have a .zip file"</span>\n';
+  h+='<span class="cm">#   │   RETURNS: ZipDataIngestor() — a fresh instance ready to unzip</span>\n';
+  h+='    data_ingestor = DataIngestorFactory.get_data_ingestor(file_extension)\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   ┌── DELEGATION: "You handle the details. Just give me the DataFrame."</span>\n';
+  h+='<span class="cm">#   │   data_ingestor = the ZipDataIngestor object</span>\n';
+  h+='<span class="cm">#   │   .ingest(file_path) = call its ingest() method with our file path</span>\n';
+  h+='<span class="cm">#   │   Internally: unzips → finds CSV → reads CSV → returns DataFrame</span>\n';
+  h+='<span class="cm">#   │   This step does NOT know HOW ingestion works — it just delegates.</span>\n';
+  h+='    df = data_ingestor.ingest(file_path)\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   ┌── RETURN: Give the DataFrame back to ZenML.</span>\n';
+  h+='<span class="cm">#   │   ZenML stores it as a pipeline ARTIFACT (versioned, tracked, cachable).</span>\n';
+  h+='<span class="cm">#   │   The NEXT step in the pipeline receives this exact DataFrame as input.</span>\n';
+  h+='<span class="cm">#   │   Chain: data_ingestion_step → handle_missing_values_step(df)</span>\n';
+  h+='    <span class="kw">return</span> df\n';
+  h+='</div>';
+
+  h+='<div class="beginner-box"><strong>🧑‍🏫 BEGINNER CONCEPT — What is a Decorator (@)?</strong><br>A decorator is a function that takes ANOTHER function and wraps it with extra behavior. Think: gift wrapping. The gift (your function) stays the same, but the wrapping (ZenML tracking, caching, error handling) adds functionality. <code>@step</code> is short for <code>data_ingestion_step = step(data_ingestion_step)</code> — ZenML\'s <code>step()</code> function takes your function, adds pipeline tracking capabilities, and returns the enhanced version. Every module in this project uses @step on its step file.</div>';
+
+  h+='<div class="callout"><strong>🔑 THE COMPLETE FLOW (Trace a single call):</strong><br><br><code>data_ingestion_step("data/archive.zip")</code><br>→ <code>DataIngestorFactory.get_data_ingestor(".zip")</code><br>→ returns <code>ZipDataIngestor()</code><br>→ <code>ZipDataIngestor.ingest("data/archive.zip")</code><br>→ <code>zipfile.ZipFile(...).extractall("extracted_data")</code><br>→ <code>os.listdir("extracted_data")</code> → finds <code>AmesHousing.csv</code><br>→ <code>pd.read_csv("extracted_data/AmesHousing.csv")</code><br>→ returns DataFrame: <strong>2930 rows × 82 columns</strong><br>→ ZenML saves it as an artifact → passes to <code>handle_missing_values_step(df)</code><br><br><strong>This same delegation pattern (Factory → Strategy → Context → @step) repeats in EVERY module that follows.</strong></div>';
+
+  return h;
+};
+
+// ====== TAB: MISSING VALUES ======
+builders.missing=function(){
+  var h='';
+  h+='<h3 style="color:var(--amber);font-size:1.05rem;margin-bottom:0.2rem">🩹 Handle Missing Values — Strategy Pattern</h3>';
+  h+='<p style="color:var(--tdim);font-size:0.75rem;margin-bottom:0.4rem">2 files. Two strategies: <strong>Drop</strong> rows with NaN, or <strong>Fill</strong> them (mean/median/mode/constant). The Context lets you swap strategies at runtime without changing pipeline code. <strong>This is the Strategy Pattern in its purest form.</strong></p>';
+  h+='<div class="flow-row"><div class="flow-box in">src/handle_missing_values.py</div><span class="flow-arrow">→</span><div class="flow-box out">steps/handle_missing_values_step.py</div></div>';
+
+  // ===== FILE 1: src/handle_missing_values.py =====
+  h+='<h4 style="color:var(--violet);font-size:0.72rem;margin:0.8rem 0 0.2rem">📦 FILE 1: src/handle_missing_values.py — 152 lines</h4>';
+  h+='<p style="color:var(--tdim);font-size:0.65rem;margin-bottom:0.3rem">This file defines <strong>4 classes</strong> in the Strategy Pattern: 1 ABC (contract), 2 concrete strategies (Drop and Fill), 1 Context class (delegates). The Context holds a reference to whichever strategy is currently active and delegates <code>handle()</code> calls to it. The <code>set_strategy()</code> method lets you SWAP strategies at runtime — the essence of the Strategy Pattern.</p>';
+
+  // SECTION 1: ABC
+  h+='<h4 style="color:var(--violet);font-size:0.68rem;margin:0.6rem 0 0.15rem">🔬 SECTION 1: ABC — The CONTRACT — Lines 11-23</h4>';
+  h+='<div class="code-box" style="font-size:0.6rem;line-height:1.75;text-align:left">';
+  h+='<span class="cm"># ┌── class MissingValueHandlingStrategy(ABC):</span>\n';
+  h+='<span class="cm"># │   "MissingValueHandlingStrategy" = the contract name.</span>\n';
+  h+='<span class="cm"># │   (ABC) = "this IS an abstract base class — you CANNOT instantiate it."</span>\n';
+  h+='<span class="cm"># │   The name tells you EXACTLY what it does: handles missing values.</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">MissingValueHandlingStrategy</span>(ABC):\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   ┌── @abstractmethod: "Subclasses — you MUST write this method!"</span>\n';
+  h+='<span class="cm">#   │   Python enforces this: if a subclass forgets handle(), it crashes at</span>\n';
+  h+='<span class="cm">#   │   CLASS DEFINITION time — before you even call the method.</span>\n';
+  h+='<span class="cm">#   │   This is STRONGER than documentation — it is a compiler-enforced rule.</span>\n';
+  h+='    <span class="deco">@abstractmethod</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   ┌── def handle(self, df: pd.DataFrame) -> pd.DataFrame:</span>\n';
+  h+='<span class="cm">#   │   self = the instance (passed automatically by Python)</span>\n';
+  h+='<span class="cm">#   │   df: pd.DataFrame = "I take a DataFrame as input"</span>\n';
+  h+='<span class="cm">#   │   -> pd.DataFrame = "I RETURN a DataFrame as output"</span>\n';
+  h+='<span class="cm">#   │   KEY DESIGN CHOICE: Input and output are BOTH DataFrames.</span>\n';
+  h+='<span class="cm">#   │   This means strategies are COMPOSABLE — output of one feeds input of next.</span>\n';
+  h+='    <span class="kw">def</span> <span class="fn">handle</span>(self, df: pd.DataFrame) -> pd.DataFrame:\n';
+  h+='<span class="cm">#       ┌── pass: placeholder. "I am intentionally empty — subclasses fill this."</span>\n';
+  h+='        <span class="kw">pass</span>\n';
+  h+='</div>';
+
+  // SECTION 2: DROP STRATEGY
+  h+='<h4 style="color:var(--violet);font-size:0.68rem;margin:0.6rem 0 0.15rem">🔬 SECTION 2: Concrete Strategy A — DropMissingValues — Lines 27-52</h4>';
+  h+='<div class="code-box" style="font-size:0.6rem;line-height:1.75;text-align:left">';
+  h+='<span class="cm"># ┌── class DropMissingValuesStrategy(MissingValueHandlingStrategy):</span>\n';
+  h+='<span class="cm"># │   "DropMissingValuesStrategy IS A MissingValueHandlingStrategy."</span>\n';
+  h+='<span class="cm"># │   This is INHERITANCE — it promises to implement handle().</span>\n';
+  h+='<span class="cm"># │   Strategy: "Delete any row or column that has NaN values."</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">DropMissingValuesStrategy</span>(MissingValueHandlingStrategy):\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   ┌── def __init__(self, axis=0, thresh=None):</span>\n';
+  h+='<span class="cm">#   │   CONSTRUCTOR — runs when you create: DropMissingValuesStrategy(axis=1)</span>\n';
+  h+='<span class="cm">#   │   axis=0 → default: drop ROWS with NaN</span>\n';
+  h+='<span class="cm">#   │   axis=1 → drop COLUMNS with NaN (rare — you lose features)</span>\n';
+  h+='<span class="cm">#   │   thresh=None → no minimum threshold. thresh=3 → keep if 3+ non-NaN values</span>\n';
+  h+='    <span class="kw">def</span> <span class="fn">__init__</span>(self, axis=0, thresh=None):\n';
+  h+='<span class="cm">#       ┌── self.axis = axis — "store the axis value on THIS instance"</span>\n';
+  h+='<span class="cm">#       │   self = "this specific DropMissingValuesStrategy object"</span>\n';
+  h+='<span class="cm">#       │   .axis = create an ATTRIBUTE called "axis" on self</span>\n';
+  h+='<span class="cm">#       │   = axis — assign the parameter value (0 or 1)</span>\n';
+  h+='        self.axis = axis\n';
+  h+='<span class="cm">#       ┌── self.thresh = thresh — store the threshold (or None)</span>\n';
+  h+='        self.thresh = thresh\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   ┌── def handle(self, df): — "I PROMISE to implement this (the ABC demanded it)"</span>\n';
+  h+='    <span class="kw">def</span> <span class="fn">handle</span>(self, df: pd.DataFrame) -> pd.DataFrame:\n';
+  h+='<span class="cm">#       ┌── df.dropna(): pandas built-in. Does ALL the hard work.</span>\n';
+  h+='<span class="cm">#       │   axis=self.axis: use the axis WE stored during __init__</span>\n';
+  h+='<span class="cm">#       │   thresh=self.thresh: use the threshold WE stored during __init__</span>\n';
+  h+='<span class="cm">#       │   THIS is why __init__ matters — it saves configuration for later use.</span>\n';
+  h+='        <span class="kw">return</span> df.dropna(axis=self.axis, thresh=self.thresh)\n';
+  h+='</div>';
+
+  // SECTION 3: FILL STRATEGY
+  h+='<h4 style="color:var(--violet);font-size:0.68rem;margin:0.6rem 0 0.15rem">🔬 SECTION 3: Concrete Strategy B — FillMissingValues — Lines 56-100</h4>';
+  h+='<div class="code-box" style="font-size:0.6rem;line-height:1.75;text-align:left">';
+  h+='<span class="cm"># ┌── class FillMissingValuesStrategy(MissingValueHandlingStrategy):</span>\n';
+  h+='<span class="cm"># │   Alternative strategy: "Fill NaN with a calculated value instead of deleting."</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">FillMissingValuesStrategy</span>(MissingValueHandlingStrategy):\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   ┌── def __init__(self, method="mean", fill_value=None):</span>\n';
+  h+='<span class="cm">#   │   method="mean" → default: fill with column average</span>\n';
+  h+='<span class="cm">#   │   fill_value=None → used only when method="constant" (e.g., fill_value=0)</span>\n';
+  h+='    <span class="kw">def</span> <span class="fn">__init__</span>(self, method=<span class="str">"mean"</span>, fill_value=None):\n';
+  h+='        self.method = method\n';
+  h+='        self.fill_value = fill_value\n';
+  h+='<span class="cm">#</span>\n';
+  h+='    <span class="kw">def</span> <span class="fn">handle</span>(self, df: pd.DataFrame) -> pd.DataFrame:\n';
+  h+='<span class="cm">#       ┌── SELECT numeric columns only (mean/median make no sense for "Neighborhood")</span>\n';
+  h+='<span class="cm">#       │   df.select_dtypes(include="number") → returns only int64/float64 columns</span>\n';
+  h+='<span class="cm">#       │   .columns → returns just the column NAMES (list of strings)</span>\n';
+  h+='        numeric_columns = df.select_dtypes(include=<span class="str">"number"</span>).columns\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#       ┌── BRANCH 1: method == "mean"</span>\n';
+  h+='<span class="cm">#       │   df[nums].fillna(df[nums].mean()) → replace every NaN with the column average</span>\n';
+  h+='<span class="cm">#       │   Ex: LotFrontage NaN → filled with 70.0 (average of all LotFrontage values)</span>\n';
+  h+='        <span class="kw">if</span> self.method == <span class="str">"mean"</span>:\n';
+  h+='            df[numeric_columns] = df[numeric_columns].fillna(df[numeric_columns].mean())\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#       ┌── BRANCH 2: method == "median" — uses middle value instead of average.</span>\n';
+  h+='<span class="cm">#       │   Median is ROBUST to outliers: a $2M house does not shift the median</span>\n';
+  h+='<span class="cm">#       │   nearly as much as it shifts the mean. Better for skewed data.</span>\n';
+  h+='        <span class="kw">elif</span> self.method == <span class="str">"median"</span>:\n';
+  h+='            df[numeric_columns] = df[numeric_columns].fillna(df[numeric_columns].median())\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#       ┌── BRANCH 3: method == "mode" — most FREQUENT value.</span>\n';
+  h+='<span class="cm">#       │   .mode().iloc[0] → mode returns a SERIES (multiple modes possible),</span>\n';
+  h+='<span class="cm">#       │   .iloc[0] takes the FIRST mode if there are ties.</span>\n';
+  h+='        <span class="kw">elif</span> self.method == <span class="str">"mode"</span>:\n';
+  h+='            <span class="kw">for</span> column <span class="kw">in</span> df.columns:\n';
+  h+='                df[column].fillna(df[column].mode().iloc[0], inplace=<span class="kw">True</span>)\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#       ┌── BRANCH 4: method == "constant" — fill with a FIXED value.</span>\n';
+  h+='<span class="cm">#       │   fill_value=0 → all NaN become 0. fill_value="Unknown" → all NaN become "Unknown".</span>\n';
+  h+='        <span class="kw">elif</span> self.method == <span class="str">"constant"</span>:\n';
+  h+='            df = df.fillna(self.fill_value)\n';
+  h+='<span class="cm">#       ┌── GUARD: Unknown method → log warning, return unchanged.</span>\n';
+  h+='        <span class="kw">else</span>:\n';
+  h+='            logging.warning(f<span class="str">"Unknown method: {self.method}"</span>)\n';
+  h+='        <span class="kw">return</span> df\n';
+  h+='</div>';
+
+  h+='<div class="beginner-box"><strong>🧑‍🏫 BEGINNER CONCEPT — Mean vs Median: When does it matter?</strong><br>Imagine 5 houses: $100K, $120K, $130K, $140K, $2M (a mansion).<br><strong>Mean:</strong> (100+120+130+140+2000)/5 = $498K — heavily skewed by the mansion.<br><strong>Median:</strong> sort → $100K, $120K, <strong>$130K</strong>, $140K, $2M → median = $130K — represents the "typical" house.<br><br>If your data is SKEWED (most houses are average, a few are mansions), use <strong>median</strong> for filling NaN. If normally distributed, <strong>mean</strong> is fine. The Strategy Pattern lets you swap between them with ONE argument change: <code>strategy="median"</code> vs <code>strategy="mean"</code>.</div>';
+
+  // SECTION 4: CONTEXT
+  h+='<h4 style="color:var(--violet);font-size:0.68rem;margin:0.6rem 0 0.15rem">🔬 SECTION 4: Context — MissingValueHandler — Lines 103-135</h4>';
+  h+='<div class="code-box" style="font-size:0.6rem;line-height:1.75;text-align:left">';
+  h+='<span class="cm"># ┌── class MissingValueHandler:</span>\n';
+  h+='<span class="cm"># │   NOT a subclass of the ABC! This is the CONTEXT — it holds a strategy.</span>\n';
+  h+='<span class="cm"># │   Key distinction: Strategy handles "how." Context handles "which strategy."</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">MissingValueHandler</span>:\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   ┌── def __init__(self, strategy: MissingValueHandlingStrategy):</span>\n';
+  h+='<span class="cm">#   │   THE KEY: the strategy parameter is TYPED as MissingValueHandlingStrategy.</span>\n';
+  h+='<span class="cm">#   │   This means ANY concrete strategy (Drop OR Fill) can be passed in.</span>\n';
+  h+='<span class="cm">#   │   The type hint ensures type-checkers catch mistakes at dev time.</span>\n';
+  h+='    <span class="kw">def</span> <span class="fn">__init__</span>(self, strategy: MissingValueHandlingStrategy):\n';
+  h+='<span class="cm">#       ┌── self._strategy = strategy — STORE the strategy on this instance.</span>\n';
+  h+='<span class="cm">#       │   The underscore (_strategy) is a CONVENTION: "this is internal — do not</span>\n';
+  h+='<span class="cm">#       │   access it directly from outside the class." Python does NOT enforce this,</span>\n';
+  h+='<span class="cm">#       │   but respectful developers follow the convention.</span>\n';
+  h+='        self._strategy = strategy\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   ┌── set_strategy(): THE Strategy Pattern superpower — SWAP at runtime!</span>\n';
+  h+='<span class="cm">#   │   handler.set_strategy(FillMissingValuesStrategy(method="median"))</span>\n';
+  h+='<span class="cm">#   │   → handler now uses median filling instead of whatever it used before.</span>\n';
+  h+='<span class="cm">#   │   The handle_missing_values() method does NOT change — only the strategy does.</span>\n';
+  h+='    <span class="kw">def</span> <span class="fn">set_strategy</span>(self, strategy: MissingValueHandlingStrategy):\n';
+  h+='        logging.info(<span class="str">"Switching missing value handling strategy."</span>)\n';
+  h+='        self._strategy = strategy\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   ┌── handle_missing_values(): THE DELEGATION — "I do not know HOW — ask the strategy."</span>\n';
+  h+='<span class="cm">#   │   self._strategy.handle(df)</span>\n';
+  h+='<span class="cm">#   │   self._strategy → whichever strategy is currently active</span>\n';
+  h+='<span class="cm">#   │   .handle(df) → call ITS handle() method</span>\n';
+  h+='<span class="cm">#   │   If strategy is DropMissingValues → calls DropMissingValues.handle()</span>\n';
+  h+='<span class="cm">#   │   If strategy is FillMissingValues → calls FillMissingValues.handle()</span>\n';
+  h+='<span class="cm">#   │   The Context does NOT have an if/elif chain — it delegates to a single line.</span>\n';
+  h+='    <span class="kw">def</span> <span class="fn">handle_missing_values</span>(self, df: pd.DataFrame) -> pd.DataFrame:\n';
+  h+='        <span class="kw">return</span> self._strategy.handle(df)\n';
+  h+='</div>';
+
+  // ===== FILE 2: steps/handle_missing_values_step.py =====
+  h+='<h4 style="color:var(--violet);font-size:0.72rem;margin:1rem 0 0.2rem">📦 FILE 2: steps/handle_missing_values_step.py — 23 lines — Layer 4: The @step Wrapper</h4>';
+  h+='<p style="color:var(--tdim);font-size:0.65rem;margin-bottom:0.3rem">Bridges the Strategy Pattern code (src/) with ZenML. The <strong>strategy parameter</strong> lets the pipeline choose Drop vs Fill at runtime — passed from training_pipeline.py as a string argument. <strong>This is where user intent (strategy="median") meets the Strategy Pattern code.</strong></p>';
+
+  h+='<h4 style="color:var(--violet);font-size:0.68rem;margin:0.6rem 0 0.15rem">🔬 COMPLETE Anatomy — Every line explained</h4>';
+  h+='<div class="code-box" style="font-size:0.6rem;line-height:1.75;text-align:left">';
+  h+='<span class="cm"># ┌── Import the Strategy Pattern classes from our src/ module.</span>\n';
+  h+='<span class="cm"># │   Three imports: two concrete strategies + one context class.</span>\n';
+  h+='<span class="cm"># │   DropMissingValuesStrategy = delete rows with NaN</span>\n';
+  h+='<span class="cm"># │   FillMissingValuesStrategy = replace NaN with a calculated value</span>\n';
+  h+='<span class="cm"># │   MissingValueHandler = context that holds and delegates to a strategy</span>\n';
+  h+='<span class="kw">from</span> src.handle_missing_values <span class="kw">import</span> DropMissingValuesStrategy, FillMissingValuesStrategy, MissingValueHandler\n';
+  h+='<span class="kw">from</span> zenml <span class="kw">import</span> step\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm"># ╔══════════════════════════════════════════════════════════════╗</span>\n';
+  h+='<span class="cm"># ║  THE @step — This is what makes it a ZenML pipeline step    ║</span>\n';
+  h+='<span class="cm"># ╚══════════════════════════════════════════════════════════════╝</span>\n';
+  h+='<span class="deco">@step</span>\n';
+  h+='<span class="kw">def</span> <span class="fn">handle_missing_values_step</span>(df: pd.DataFrame, strategy: str = <span class="str">"mean"</span>) -> pd.DataFrame:\n';
+  h+='<span class="cm">#   df: pd.DataFrame — the DataFrame from the PREVIOUS step (data_ingestion_step)</span>\n';
+  h+='<span class="cm">#   strategy: str = "mean" — "which strategy should we use?" DEFAULT is mean.</span>\n';
+  h+='<span class="cm">#   -> pd.DataFrame — "I will return a cleaned DataFrame to the NEXT step."</span>\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   ┌── STRATEGY MAP: string → concrete strategy object.</span>\n';
+  h+='<span class="cm">#   │   "drop" → DropMissingValuesStrategy (delete NaN rows)</span>\n';
+  h+='<span class="cm">#   │   axis=0 means "drop rows" (not columns)</span>\n';
+  h+='    <span class="kw">if</span> strategy == <span class="str">"drop"</span>:\n';
+  h+='        handler = MissingValueHandler(DropMissingValuesStrategy(axis=0))\n';
+  h+='<span class="cm">#   ┌── "mean" OR "median" OR "mode" OR "constant" → FillMissingValuesStrategy</span>\n';
+  h+='<span class="cm">#   │   method=strategy → passes the string directly as the fill method.</span>\n';
+  h+='<span class="cm">#   │   The strategy object stores it in self.method for later use.</span>\n';
+  h+='    <span class="kw">elif</span> strategy <span class="kw">in</span> [<span class="str">"mean"</span>, <span class="str">"median"</span>, <span class="str">"mode"</span>, <span class="str">"constant"</span>]:\n';
+  h+='        handler = MissingValueHandler(FillMissingValuesStrategy(method=strategy))\n';
+  h+='<span class="cm">#   ┌── GUARD: Unknown strategy string → clear error message.</span>\n';
+  h+='    <span class="kw">else</span>:\n';
+  h+='        <span class="kw">raise</span> ValueError(f<span class="str">"Unsupported missing value handling strategy: {strategy}"</span>)\n';
+  h+='<span class="cm">#</span>\n';
+  h+='<span class="cm">#   ┌── DELEGATE: handler.handle_missing_values(df)</span>\n';
+  h+='<span class="cm">#   │   handler → the MissingValueHandler we just created</span>\n';
+  h+='<span class="cm">#   │   .handle_missing_values(df) → delegates to the active strategy\'s handle()</span>\n';
+  h+='<span class="cm">#   │   Returns: cleaned DataFrame → passes to feature_engineering_step</span>\n';
+  h+='    <span class="kw">return</span> handler.handle_missing_values(df)\n';
+  h+='</div>';
+
+  h+='<div class="beginner-box"><strong>🧑‍🏫 BEGINNER CONCEPT — How the Strategy String Flows from Pipeline to Code:</strong><br><br>1. <code>training_pipeline.py</code> calls: <code>handle_missing_values_step(raw_data, strategy="median")</code><br>2. ZenML enters the @step function with <code>strategy="median"</code><br>3. The if/elif chain matches <code>"median"</code> → creates <code>FillMissingValuesStrategy(method="median")</code><br>4. The <code>MissingValueHandler</code> stores this strategy as <code>self._strategy</code><br>5. <code>handler.handle_missing_values(df)</code> → calls <code>self._strategy.handle(df)</code><br>6. <code>FillMissingValuesStrategy.handle()</code> runs → <code>self.method == "median"</code> → fills with median<br>7. Returns cleaned DataFrame<br><br><strong>The pipeline changes behavior by changing ONE STRING: "mean" → "median".</strong></div>';
+
+  h+='<div class="callout"><strong>🔑 THE COMPLETE MISSING VALUES FLOW (Trace a single call):</strong><br><br><code>handle_missing_values_step(df, strategy="mean")</code><br>→ strategy == "mean" → in ["mean","median","mode","constant"] → TRUE<br>→ <code>FillMissingValuesStrategy(method="mean")</code> — creates strategy, stores method="mean" on self<br>→ <code>MissingValueHandler(strategy)</code> — stores strategy as self._strategy<br>→ <code>handler.handle_missing_values(df)</code> — delegates to self._strategy.handle(df)<br>→ <code>FillMissingValuesStrategy.handle(df)</code> — self.method == "mean" → fills numeric NaN with column averages<br>→ returns cleaned DataFrame → ZenML passes to <code>feature_engineering_step</code><br><br><strong>Want to change to median? Call: handle_missing_values_step(df, strategy="median"). ONE string change. Everything else is automatic.</strong></div>';
+
+  return h;
+};
+
+// ====== TAB: FEATURE ENGINEERING ======
+builders.feature=function(){
+  var h='';
+  h+='<h3 style="color:var(--amber);font-size:1.05rem;margin-bottom:0.2rem">🔧 Feature Engineering — 4 Strategies (Log, Standard, MinMax, OneHot)</h3>';
+  h+='<p style="color:var(--tdim);font-size:0.75rem;margin-bottom:0.4rem">2 files. 4 concrete strategies for transforming features.</p>';
+  h+='<div class="flow-row"><div class="flow-box in">src/feature_engineering.py</div><span class="flow-arrow">→</span><div class="flow-box out">steps/feature_engineering_step.py</div></div>';
+
+  h+='<h4 style="color:var(--violet);font-size:0.7rem;margin:0.7rem 0 0.2rem">📦 src/feature_engineering.py — 223 lines</h4>';
+  h+='<div class="code-box">';
+  h+='<span class="cm"># LAYER 1: ABC</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">FeatureEngineeringStrategy</span>(ABC):\n';
+  h+='    <span class="deco">@abstractmethod</span>\n';
+  h+='    <span class="kw">def</span> <span class="fn">apply_transformation</span>(self, df: pd.DataFrame) -> pd.DataFrame: <span class="kw">pass</span>\n\n';
+  h+='<span class="cm"># LAYER 2a: Log — for skewed features (e.g., SalePrice, Gr Liv Area)</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">LogTransformation</span>(FeatureEngineeringStrategy):\n';
+  h+='    <span class="kw">def</span> <span class="fn">__init__</span>(self, features): self.features = features\n';
+  h+='    <span class="kw">def</span> <span class="fn">apply_transformation</span>(self, df):\n';
+  h+='        <span class="kw">for</span> f <span class="kw">in</span> self.features:\n';
+  h+='            df[f] = np.log1p(df[f])  <span class="cm">// log(1+x) — safe for x=0</span>\n';
+  h+='        <span class="kw">return</span> df\n\n';
+  h+='<span class="cm"># LAYER 2b: Standard Scaling — z-score (mean=0, std=1)</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">StandardScaling</span>(FeatureEngineeringStrategy):\n';
+  h+='    <span class="kw">def</span> <span class="fn">__init__</span>(self, features): self.scaler = StandardScaler()\n';
+  h+='    <span class="kw">def</span> <span class="fn">apply_transformation</span>(self, df):\n';
+  h+='        df[self.features] = self.scaler.fit_transform(df[self.features])\n';
+  h+='        <span class="kw">return</span> df\n\n';
+  h+='<span class="cm"># LAYER 2c: MinMax — scale to [0,1] range</span>\n';
+  h+='<span class="cm"># (Same structure, uses MinMaxScaler)</span>\n\n';
+  h+='<span class="cm"># LAYER 2d: OneHot — categorical to binary columns</span>\n';
+  h+='<span class="cm"># (Same structure, uses OneHotEncoder: "Downtown" → [1,0,0,...])</span>\n\n';
+  h+='<span class="cm"># LAYER 3: Context</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">FeatureEngineer</span>:\n';
+  h+='    <span class="kw">def</span> <span class="fn">__init__</span>(self, strategy): self._strategy = strategy\n';
+  h+='    <span class="kw">def</span> <span class="fn">set_strategy</span>(self, strategy): self._strategy = strategy  <span class="cm">// SWAP!</span>\n';
+  h+='    <span class="kw">def</span> <span class="fn">apply_feature_engineering</span>(self, df):\n';
+  h+='        <span class="kw">return</span> self._strategy.apply_transformation(df)  <span class="cm">// DELEGATE</span>\n';
+  h+='</div>';
+  h+='<div class="beginner-box"><strong>np.log1p() — why?</strong> House prices and living areas are right-skewed (most houses are average, a few are mansions). Log compresses: log($100K)≈11.5, log($1M)≈13.8 — more bell-shaped, which LinearRegression handles better. <code>log1p(x)=log(1+x)</code> prevents log(0) errors.</div>';
+  return h;
+};
+
+// ====== TAB: OUTLIERS ======
+builders.outlier=function(){
+  var h='';
+  h+='<h3 style="color:var(--amber);font-size:1.05rem;margin-bottom:0.2rem">🎯 Outlier Detection — Z-Score & IQR</h3>';
+  h+='<p style="color:var(--tdim);font-size:0.75rem;margin-bottom:0.4rem">2 files. Two strategies. Context: <code>OutlierDetector</code> — detect + handle + visualize.</p>';
+  h+='<div class="flow-row"><div class="flow-box in">src/outlier_detection.py</div><span class="flow-arrow">→</span><div class="flow-box out">steps/outlier_detection_step.py</div></div>';
+
+  h+='<h4 style="color:var(--violet);font-size:0.7rem;margin:0.7rem 0 0.2rem">📦 src/outlier_detection.py — 126 lines</h4>';
+  h+='<div class="code-box">';
+  h+='<span class="cm"># LAYER 1: ABC</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">OutlierDetectionStrategy</span>(ABC):\n';
+  h+='    <span class="deco">@abstractmethod</span>\n';
+  h+='    <span class="kw">def</span> <span class="fn">detect_outliers</span>(self, df) -> pd.DataFrame: <span class="kw">pass</span>  <span class="cm">// Returns boolean DF</span>\n\n';
+  h+='<span class="cm"># LAYER 2a: Z-Score — "How many std deviations from mean?"</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">ZScoreOutlierDetection</span>(OutlierDetectionStrategy):\n';
+  h+='    <span class="kw">def</span> <span class="fn">__init__</span>(self, threshold=3): self.threshold = threshold\n';
+  h+='    <span class="kw">def</span> <span class="fn">detect_outliers</span>(self, df):\n';
+  h+='        z_scores = np.abs((df - df.mean()) / df.std())  <span class="cm">// Z-score formula</span>\n';
+  h+='        <span class="kw">return</span> z_scores > self.threshold  <span class="cm">// True where Z > 3</span>\n\n';
+  h+='<span class="cm"># LAYER 2b: IQR — "Beyond 1.5x the interquartile range?"</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">IQROutlierDetection</span>(OutlierDetectionStrategy):\n';
+  h+='    <span class="kw">def</span> <span class="fn">detect_outliers</span>(self, df):\n';
+  h+='        Q1, Q3 = df.quantile(0.25), df.quantile(0.75)\n';
+  h+='        IQR = Q3 - Q1\n';
+  h+='        <span class="kw">return</span> (df < (Q1 - 1.5*IQR)) | (df > (Q3 + 1.5*IQR))\n\n';
+  h+='<span class="cm"># LAYER 3: Context — detect + handle</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">OutlierDetector</span>:\n';
+  h+='    <span class="kw">def</span> <span class="fn">__init__</span>(self, strategy): self._strategy = strategy\n';
+  h+='    <span class="kw">def</span> <span class="fn">detect_outliers</span>(self, df):\n';
+  h+='        <span class="kw">return</span> self._strategy.detect_outliers(df)  <span class="cm">// DELEGATE</span>\n';
+  h+='    <span class="kw">def</span> <span class="fn">handle_outliers</span>(self, df, method=<span class="str">"remove"</span>):\n';
+  h+='        outliers = self.detect_outliers(df)\n';
+  h+='        <span class="kw">if</span> method == <span class="str">"remove"</span>:\n';
+  h+='            <span class="kw">return</span> df[(~outliers).all(axis=1)]  <span class="cm">// Keep rows with NO outliers</span>\n';
+  h+='        <span class="kw">elif</span> method == <span class="str">"cap"</span>:\n';
+  h+='            <span class="kw">return</span> df.clip(lower=df.quantile(0.01), upper=df.quantile(0.99))  <span class="cm">// Cap at 1%/99%</span>\n';
+  h+='</div>';
+  h+='<div class="beginner-box"><strong>Z-Score analogy:</strong> Classroom heights: avg=5\'6", std=4". Someone 7\'0" = (84-66)/4 = 4.5 std devs away. Z>3? Outlier. Same logic for $2M house in $200K neighborhood.</div>';
+  return h;
+};
+
+// ====== TAB: SPLIT ======
+builders.split=function(){
+  var h='';
+  h+='<h3 style="color:var(--amber);font-size:1.05rem;margin-bottom:0.2rem">✂️ Data Splitter — Train/Test Split (80/20)</h3>';
+  h+='<p style="color:var(--tdim);font-size:0.75rem;margin-bottom:0.4rem">2 files. <strong>random_state=42</strong> makes splits reproducible.</p>';
+  h+='<div class="flow-row"><div class="flow-box in">src/data_splitter.py</div><span class="flow-arrow">→</span><div class="flow-box out">steps/data_splitter_step.py</div></div>';
+
+  h+='<h4 style="color:var(--violet);font-size:0.7rem;margin:0.7rem 0 0.2rem">📦 src/data_splitter.py — 116 lines</h4>';
+  h+='<div class="code-box">';
+  h+='<span class="cm"># LAYER 1: ABC</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">DataSplittingStrategy</span>(ABC):\n';
+  h+='    <span class="deco">@abstractmethod</span>\n';
+  h+='    <span class="kw">def</span> <span class="fn">split_data</span>(self, df, target_column): <span class="kw">pass</span>\n\n';
+  h+='<span class="cm"># LAYER 2: Concrete Strategy — Simple Train/Test</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">SimpleTrainTestSplitStrategy</span>(DataSplittingStrategy):\n';
+  h+='    <span class="kw">def</span> <span class="fn">__init__</span>(self, test_size=0.2, random_state=42):\n';
+  h+='        self.test_size = test_size          <span class="cm">// 20% test | 80% train</span>\n';
+  h+='        self.random_state = random_state    <span class="cm">// Fixed seed → same split every run</span>\n';
+  h+='    <span class="kw">def</span> <span class="fn">split_data</span>(self, df, target_column):\n';
+  h+='        X = df.drop(columns=[target_column])  <span class="cm">// Features (all EXCEPT SalePrice)</span>\n';
+  h+='        y = df[target_column]                  <span class="cm">// Target (SalePrice ONLY)</span>\n';
+  h+='        X_train, X_test, y_train, y_test = train_test_split(\n';
+  h+='            X, y, test_size=self.test_size, random_state=self.random_state)\n';
+  h+='        <span class="kw">return</span> X_train, X_test, y_train, y_test  <span class="cm">// The famous 4-tuple</span>\n\n';
+  h+='<span class="cm"># LAYER 3: Context</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">DataSplitter</span>:\n';
+  h+='    <span class="kw">def</span> <span class="fn">__init__</span>(self, strategy): self._strategy = strategy\n';
+  h+='    <span class="kw">def</span> <span class="fn">split</span>(self, df, target):\n';
+  h+='        <span class="kw">return</span> self._strategy.split_data(df, target)  <span class="cm">// DELEGATE</span>\n';
+  h+='</div>';
+  h+='<div class="beginner-box"><strong>Why random_state=42?</strong> Without it, every run assigns DIFFERENT rows to train/test. R² could be 0.87 one run, 0.82 the next — impossible to know if changes helped or you got lucky. 42 is a convention (from Hitchhiker\'s Guide).</div>';
+  return h;
+};
+
+// ====== TAB: MODEL BUILD ======
+builders.build=function(){
+  var h='';
+  h+='<h3 style="color:var(--green);font-size:1.05rem;margin-bottom:0.2rem">🧠 Model Building + MLflow — THE KEY FILE</h3>';
+  h+='<p style="color:var(--tdim);font-size:0.75rem;margin-bottom:0.4rem">2 files. ColumnTransformer handles preprocessing inside the Pipeline. MLflow autolog captures everything automatically.</p>';
+  h+='<div class="flow-row"><div class="flow-box in">src/model_building.py</div><span class="flow-arrow">→</span><div class="flow-box out">steps/model_building_step.py</div></div>';
+
+  h+='<h4 style="color:var(--violet);font-size:0.7rem;margin:0.7rem 0 0.2rem">📦 src/model_building.py — 117 lines — Strategy Pattern</h4>';
+  h+='<div class="code-box">';
+  h+='<span class="cm"># LAYER 1: ABC</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">ModelBuildingStrategy</span>(ABC):\n';
+  h+='    <span class="deco">@abstractmethod</span>\n';
+  h+='    <span class="kw">def</span> <span class="fn">build_and_train_model</span>(self, X_train, y_train) -> RegressorMixin: <span class="kw">pass</span>\n\n';
+  h+='<span class="cm"># LAYER 2: Concrete — LinearRegression with Scaler in Pipeline</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">LinearRegressionStrategy</span>(ModelBuildingStrategy):\n';
+  h+='    <span class="kw">def</span> <span class="fn">build_and_train_model</span>(self, X_train, y_train) -> Pipeline:\n';
+  h+='        pipeline = Pipeline([\n';
+  h+='            (<span class="str">"scaler"</span>, StandardScaler()),      <span class="cm">// Step 1: z-score normalize</span>\n';
+  h+='            (<span class="str">"model"</span>, LinearRegression()),      <span class="cm">// Step 2: learn coefficients</span>\n';
+  h+='        ])\n';
+  h+='        pipeline.fit(X_train, y_train)  <span class="cm">// TRAIN both steps!</span>\n';
+  h+='        <span class="kw">return</span> pipeline\n\n';
+  h+='<span class="cm"># LAYER 3: Context</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">ModelBuilder</span>:\n';
+  h+='    <span class="kw">def</span> <span class="fn">__init__</span>(self, strategy): self._strategy = strategy\n';
+  h+='    <span class="kw">def</span> <span class="fn">build_model</span>(self, X_train, y_train):\n';
+  h+='        <span class="kw">return</span> self._strategy.build_and_train_model(X_train, y_train)\n';
+  h+='</div>';
+
+  h+='<h4 style="color:var(--violet);font-size:0.7rem;margin:0.7rem 0 0.2rem">🔗 steps/model_building_step.py — 105 lines — COMPLETE ANATOMY</h4>';
+  h+='<div class="code-box">';
+  h+='<span class="cm"># ====== SECTION 1: IMPORTS & ZENML SETUP ======</span>\n';
+  h+='<span class="kw">import</span> mlflow                                    <span class="cm">// MLflow experiment tracking</span>\n';
+  h+='<span class="kw">import</span> pandas <span class="kw">as</span> pd\n';
+  h+='<span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> LinearRegression\n';
+  h+='<span class="kw">from</span> sklearn.pipeline <span class="kw">import</span> Pipeline\n';
+  h+='<span class="kw">from</span> sklearn.compose <span class="kw">import</span> ColumnTransformer   <span class="cm">// THE KEY import!</span>\n';
+  h+='<span class="kw">from</span> sklearn.impute <span class="kw">import</span> SimpleImputer         <span class="cm">// Fill NaN values</span>\n';
+  h+='<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> OneHotEncoder  <span class="cm">// Text → binary columns</span>\n';
+  h+='<span class="kw">from</span> zenml <span class="kw">import</span> step, ArtifactConfig, Model\n';
+  h+='<span class="kw">from</span> zenml.client <span class="kw">import</span> Client\n\n';
+  h+='<span class="cm">// Register model in ZenML Model Registry</span>\n';
+  h+='model = Model(name=<span class="str">"prices_predictor"</span>, version=None)\n';
+  h+='<span class="cm">// Connect to MLflow via ZenML stack</span>\n';
+  h+='experiment_tracker = Client().active_stack.experiment_tracker\n\n';
+  h+='<span class="cm">// ====== THE @step (Layer 4) ======</span>\n';
+  h+='<span class="deco">@step</span>(enable_cache=False, experiment_tracker=experiment_tracker.name, model=model)\n';
+  h+='<span class="kw">def</span> <span class="fn">model_building_step</span>(X_train, y_train) -> Pipeline:\n\n';
+  h+='    <span class="cm">// ---- PHASE 1: INPUT VALIDATION ----</span>\n';
+  h+='    <span class="kw">if not</span> isinstance(X_train, pd.DataFrame): <span class="kw">raise</span> TypeError(...)\n';
+  h+='    <span class="kw">if not</span> isinstance(y_train, pd.Series): <span class="kw">raise</span> TypeError(...)\n\n';
+  h+='    <span class="cm">// ---- PHASE 2: SPLIT COLUMNS BY TYPE ----</span>\n';
+  h+='    cat_cols = X_train.select_dtypes(include=[<span class="str">"object"</span>]).columns  <span class="cm">// Text cols</span>\n';
+  h+='    num_cols = X_train.select_dtypes(exclude=[<span class="str">"object"</span>]).columns  <span class="cm">// Number cols</span>\n\n';
+  h+='    <span class="cm">// ---- PHASE 3: BUILD ColumnTransformer ----</span>\n';
+  h+='    preprocessor = ColumnTransformer([\n';
+  h+='        (<span class="str">"num"</span>, SimpleImputer(strategy=<span class="str">"mean"</span>), num_cols),\n';
+  h+='        <span class="cm">// ↑ Numerical: fill NaN with column average</span>\n';
+  h+='        (<span class="str">"cat"</span>, Pipeline([\n';
+  h+='            SimpleImputer(strategy=<span class="str">"most_frequent"</span>),\n';
+  h+='            <span class="cm">// ↑ Categorical: fill NaN with most common value</span>\n';
+  h+='            OneHotEncoder(handle_unknown=<span class="str">"ignore"</span>)\n';
+  h+='            <span class="cm">// ↑ "Downtown" → [1,0,0,...] (binary columns)</span>\n';
+  h+='            <span class="cm">//   handle_unknown="ignore": new category → all zeros!</span>\n';
+  h+='        ]), cat_cols)\n';
+  h+='    ])\n\n';
+  h+='    <span class="cm">// ---- PHASE 4: FULL PIPELINE = PREPROCESS + MODEL ----</span>\n';
+  h+='    <span class="cm">// THIS single object guarantees train/serve parity!</span>\n';
+  h+='    pipeline = Pipeline([\n';
+  h+='        (<span class="str">"preprocessor"</span>, preprocessor),  <span class="cm">// Step 1: impute + encode</span>\n';
+  h+='        (<span class="str">"model"</span>, LinearRegression())    <span class="cm">// Step 2: predict price</span>\n';
+  h+='    ])\n\n';
+  h+='    <span class="cm">// ---- PHASE 5: MLflow TRACKING + TRAINING ----</span>\n';
+  h+='    <span class="kw">if not</span> mlflow.active_run(): mlflow.start_run()\n';
+  h+='    <span class="kw">try</span>:\n';
+  h+='        mlflow.sklearn.autolog()  <span class="cm">// ← THE MAGIC LINE! Auto-tracks everything!</span>\n';
+  h+='        pipeline.fit(X_train, y_train)  <span class="cm">// TRAIN: impute + encode + model</span>\n';
+  h+='    <span class="kw">except</span> Exception <span class="kw">as</span> e:\n';
+  h+='        logging.error(f<span class="str">"Error: {e}"</span>); <span class="kw">raise</span> e\n';
+  h+='    <span class="kw">finally</span>: mlflow.end_run()  <span class="cm">// ALWAYS close the run</span>\n\n';
+  h+='    <span class="kw">return</span> pipeline  <span class="cm">// Saved by MLflow as model.pkl</span>\n';
+  h+='</div>';
+  h+='<div class="beginner-box"><strong>What does autolog() actually do?</strong> Before training: starts MLflow run. During: logs every sklearn parameter (fit_intercept, n_jobs, imputer_strategy...). After: logs training metrics + saves model.pkl + conda.yaml + requirements.txt. <strong>All from ONE line. Zero manual logging.</strong></div>';
+  return h;
+};
+
+// ====== TAB: EVALUATION ======
+builders.eval=function(){
+  var h='';
+  h+='<h3 style="color:var(--green);font-size:1.05rem;margin-bottom:0.2rem">📈 Model Evaluation — R², MSE, North Star + Guardrails</h3>';
+  h+='<p style="color:var(--tdim);font-size:0.75rem;margin-bottom:0.4rem">2 files. Strategy calculates R²/MSE. @step applies SAME preprocessing to test data, then delegates.</p>';
+  h+='<div class="flow-row"><div class="flow-box in">src/model_evaluator.py</div><span class="flow-arrow">→</span><div class="flow-box out">steps/model_evaluator_step.py</div></div>';
+
+  h+='<h4 style="color:var(--violet);font-size:0.7rem;margin:0.7rem 0 0.2rem">📦 src/model_evaluator.py — 228 lines</h4>';
+  h+='<div class="code-box">';
+  h+='<span class="cm"># LAYER 1: ABC</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">ModelEvaluationStrategy</span>(ABC):\n';
+  h+='    <span class="deco">@abstractmethod</span>\n';
+  h+='    <span class="kw">def</span> <span class="fn">evaluate_model</span>(self, model, X_test, y_test) -> dict: <span class="kw">pass</span>\n\n';
+  h+='<span class="cm"># LAYER 2: Concrete — Regression metrics</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">RegressionModelEvaluationStrategy</span>(ModelEvaluationStrategy):\n';
+  h+='    <span class="kw">def</span> <span class="fn">evaluate_model</span>(self, model, X_test, y_test) -> dict:\n';
+  h+='        y_pred = model.predict(X_test)  <span class="cm">// ← THE PREDICTION: 584 houses</span>\n';
+  h+='        mse = mean_squared_error(y_test, y_pred)\n';
+  h+='        r2 = r2_score(y_test, y_pred)  <span class="cm">// "What % of variance is explained?"</span>\n';
+  h+='        <span class="kw">return</span> {<span class="str">"Mean Squared Error"</span>: mse, <span class="str">"R-Squared"</span>: r2}\n\n';
+  h+='<span class="cm"># LAYER 3: Context</span>\n';
+  h+='<span class="kw">class</span> <span class="cls">ModelEvaluator</span>:\n';
+  h+='    <span class="kw">def</span> <span class="fn">__init__</span>(self, strategy): self._strategy = strategy\n';
+  h+='    <span class="kw">def</span> <span class="fn">evaluate</span>(self, model, X_test, y_test):\n';
+  h+='        <span class="kw">return</span> self._strategy.evaluate_model(model, X_test, y_test)  <span class="cm">// DELEGATE</span>\n';
+  h+='</div>';
+
+  h+='<h4 style="color:var(--violet);font-size:0.7rem;margin:0.7rem 0 0.2rem">🔗 steps/model_evaluator_step.py — 49 lines — Full Anatomy</h4>';
+  h+='<div class="code-box">';
+  h+='<span class="deco">@step</span>(enable_cache=False)\n';
+  h+='<span class="kw">def</span> <span class="fn">model_evaluator_step</span>(trained_model: Pipeline, X_test, y_test):\n';
+  h+='    <span class="cm">// Apply the SAME preprocessing that training used</span>\n';
+  h+='    <span class="cm">// trained_model.named_steps["preprocessor"] = the ColumnTransformer</span>\n';
+  h+='    <span class="cm">// .transform() = apply it (NO .fit() — already fitted during training!)</span>\n';
+  h+='    X_test_processed = trained_model.named_steps[<span class="str">"preprocessor"</span>].transform(X_test)\n\n';
+  h+='    <span class="cm">// Create evaluator with regression strategy</span>\n';
+  h+='    evaluator = ModelEvaluator(strategy=RegressionModelEvaluationStrategy())\n\n';
+  h+='    <span class="cm">// Evaluate just the MODEL on preprocessed data</span>\n';
+  h+='    evaluation_metrics = evaluator.evaluate(\n';
+  h+='        trained_model.named_steps[<span class="str">"model"</span>],  <span class="cm">// Just LinearRegression</span>\n';
+  h+='        X_test_processed, y_test)\n';
+  h+='    <span class="kw">return</span> evaluation_metrics, evaluation_metrics.get(<span class="str">"Mean Squared Error"</span>)\n';
+  h+='</div>';
+  h+='<div class="beginner-box"><strong>Why named_steps["preprocessor"].transform() and NOT .predict()?</strong> The pipeline\'s .predict() would run preprocessor+model in one call. But here we need the preprocessed X_test separately — the strategy\'s evaluate_model() expects already-preprocessed data and just the model. This gives more control over measurement.</div>';
+  return h;
+};
+
+// ====== TAB: TRAINING PIPELINE ======
+builders.trainpipe=function(){
+  var h='';
+  h+='<h3 style="color:var(--green);font-size:1.05rem;margin-bottom:0.2rem">🔗 Training Pipeline + Run Script — All 7 Steps Wired</h3>';
+  h+='<p style="color:var(--tdim);font-size:0.75rem;margin-bottom:0.4rem">2 files. <strong>This is where everything connects.</strong> The @pipeline defines the 7-step DAG.</p>';
+  h+='<div class="flow-row"><div class="flow-box in">pipelines/training_pipeline.py</div><span class="flow-arrow">→</span><div class="flow-box out">run_pipeline.py</div></div>';
+
+  h+='<h4 style="color:var(--violet);font-size:0.7rem;margin:0.7rem 0 0.2rem">🔗 pipelines/training_pipeline.py — 53 lines — THE ORCHESTRATOR</h4>';
+  h+='<div class="code-box">';
+  h+='<span class="cm">// IMPORTS: All 7 step files</span>\n';
+  h+='<span class="kw">from</span> steps.data_ingestion_step <span class="kw">import</span> data_ingestion_step\n';
+  h+='<span class="kw">from</span> steps.handle_missing_values_step <span class="kw">import</span> handle_missing_values_step\n';
+  h+='<span class="kw">from</span> steps.feature_engineering_step <span class="kw">import</span> feature_engineering_step\n';
+  h+='<span class="kw">from</span> steps.outlier_detection_step <span class="kw">import</span> outlier_detection_step\n';
+  h+='<span class="kw">from</span> steps.data_splitter_step <span class="kw">import</span> data_splitter_step\n';
+  h+='<span class="kw">from</span> steps.model_building_step <span class="kw">import</span> model_building_step\n';
+  h+='<span class="kw">from</span> steps.model_evaluator_step <span class="kw">import</span> model_evaluator_step\n';
+  h+='<span class="kw">from</span> zenml <span class="kw">import</span> Model, pipeline\n\n';
+  h+='<span class="deco">@pipeline</span>(model=Model(name=<span class="str">"prices_predictor"</span>))\n';
+  h+='<span class="kw">def</span> <span class="fn">ml_pipeline</span>():\n';
+  h+='    <span class="cm">// Step 1: ZIP → DataFrame (2930 rows x 82 cols)</span>\n';
+  h+='    raw_data = data_ingestion_step(file_path=<span class="str">"data/archive.zip"</span>)\n\n';
+  h+='    <span class="cm">// Step 2: Fill NaN with column mean</span>\n';
+  h+='    filled_data = handle_missing_values_step(raw_data)\n\n';
+  h+='    <span class="cm">// Step 3: Log-transform Gr Liv Area + SalePrice</span>\n';
+  h+='    engineered_data = feature_engineering_step(\n';
+  h+='        filled_data, strategy=<span class="str">"log"</span>, features=[<span class="str">"Gr Liv Area"</span>, <span class="str">"SalePrice"</span>])\n\n';
+  h+='    <span class="cm">// Step 4: Remove Z-score > 3 outliers</span>\n';
+  h+='    clean_data = outlier_detection_step(engineered_data, column_name=<span class="str">"SalePrice"</span>)\n\n';
+  h+='    <span class="cm">// Step 5: 80/20 train-test split</span>\n';
+  h+='    X_train, X_test, y_train, y_test = data_splitter_step(clean_data, target_column=<span class="str">"SalePrice"</span>)\n\n';
+  h+='    <span class="cm">// Step 6: Build ColumnTransformer + LinearRegression + MLflow autolog</span>\n';
+  h+='    model = model_building_step(X_train=X_train, y_train=y_train)\n\n';
+  h+='    <span class="cm">// Step 7: Evaluate — R², MSE vs North Star + guardrails</span>\n';
+  h+='    evaluation_metrics, mse = model_evaluator_step(trained_model=model, X_test=X_test, y_test=y_test)\n\n';
+  h+='    <span class="kw">return</span> model\n';
+  h+='</div>';
+
+  h+='<h4 style="color:var(--violet);font-size:0.7rem;margin:0.7rem 0 0.2rem">▶️ run_pipeline.py — 27 lines — CLI Trigger</h4>';
+  h+='<div class="code-box">';
+  h+='<span class="kw">import</span> click\n';
+  h+='<span class="kw">from</span> pipelines.training_pipeline <span class="kw">import</span> ml_pipeline\n\n';
+  h+='<span class="deco">@click.command</span>()\n';
+  h+='<span class="kw">def</span> <span class="fn">main</span>():\n';
+  h+='    run = ml_pipeline()  <span class="cm">// ← EXECUTES ALL 7 STEPS!</span>\n';
+  h+='    print(<span class="str">"Now run: mlflow ui --backend-store-uri ..."</span>)\n\n';
+  h+='<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>: main()  <span class="cm">// python run_pipeline.py</span>\n';
+  h+='</div>';
+  h+='<div class="callout"><strong>WHAT HAPPENS:</strong> <code>python run_pipeline.py</code> → ZenML executes all 7 steps → MLflow tracks everything → model saved to Registry → MLflow UI at <strong>localhost:5000</strong>. ~2336 training rows → R² ~0.87 on test.</div>';
+  return h;
+};
+
+// ====== TAB: IMPORTER ======
+builders.importer=function(){
+  var h='';
+  h+='<h3 style="color:var(--red);font-size:1.05rem;margin-bottom:0.2rem">📥 dynamic_importer.py — Simulates Incoming Data</h3>';
+  h+='<p style="color:var(--tdim);font-size:0.75rem;margin-bottom:0.4rem">1 file (57 lines). Hard-coded sample houses → returns JSON string. Replace with real API/DB in production.</p>';
+  h+='<div class="code-box">';
+  h+='<span class="kw">import</span> pandas <span class="kw">as</span> pd\n';
+  h+='<span class="kw">from</span> zenml <span class="kw">import</span> step\n\n';
+  h+='<span class="deco">@step</span>\n';
+  h+='<span class="kw">def</span> <span class="fn">dynamic_importer</span>() -> str:  <span class="cm">// Returns JSON string</span>\n';
+  h+='    data = {\n';
+  h+='        <span class="str">"Order"</span>: [1, 2], <span class="str">"PID"</span>: [526301100, 526301101],\n';
+  h+='        <span class="str">"Gr Liv Area"</span>: [1710, 1262], <span class="str">"Overall Qual"</span>: [7, 6],\n';
+  h+='        <span class="str">"Year Built"</span>: [2003, 1976], <span class="cm">// ... 33 more cols ...</span>\n';
+  h+='        <span class="str">"Yr Sold"</span>: [2008, 2007],\n';
+  h+='    }\n';
+  h+='    df = pd.DataFrame(data)\n';
+  h+='    <span class="kw">return</span> df.to_json(orient=<span class="str">"split"</span>)  <span class="cm">// DataFrame → JSON → predictor</span>\n\n';
+  h+='<span class="cm">// PRODUCTION: Replace dict with:</span>\n';
+  h+='<span class="cm">//   requests.get("https://api.houses.com/listings")  ← real API</span>\n';
+  h+='<span class="cm">//   pd.read_sql("SELECT * FROM houses", conn)        ← database</span>\n';
+  h+='</div>';
+  return h;
+};
+
+// ====== TAB: SERVICE LOADER ======
+builders.srvloader=function(){
+  var h='';
+  h+='<h3 style="color:var(--red);font-size:1.05rem;margin-bottom:0.2rem">🔌 prediction_service_loader.py — Find Running Server</h3>';
+  h+='<p style="color:var(--tdim);font-size:0.75rem;margin-bottom:0.4rem">1 file (28 lines). Searches ZenML deployer for active MLflow server by pipeline+step name.</p>';
+  h+='<div class="code-box">';
+  h+='<span class="kw">from</span> zenml.integrations.mlflow.model_deployers <span class="kw">import</span> MLFlowModelDeployer\n';
+  h+='<span class="kw">from</span> zenml.integrations.mlflow.services <span class="kw">import</span> MLFlowDeploymentService\n\n';
+  h+='<span class="deco">@step</span>(enable_cache=False)\n';
+  h+='<span class="kw">def</span> <span class="fn">prediction_service_loader</span>(pipeline_name, step_name) -> MLFlowDeploymentService:\n';
+  h+='    <span class="cm">// Get the deployer from active ZenML stack</span>\n';
+  h+='    model_deployer = MLFlowModelDeployer.get_active_model_deployer()\n';
+  h+='    <span class="cm">// Search by pipeline_name + step_name = unique key</span>\n';
+  h+='    existing_services = model_deployer.find_model_server(\n';
+  h+='        pipeline_name=pipeline_name, pipeline_step_name=step_name)\n';
+  h+='    <span class="kw">if not</span> existing_services: <span class="kw">raise</span> RuntimeError(<span class="str">"No prediction service running!"</span>)\n';
+  h+='    <span class="kw">return</span> existing_services[0]  <span class="cm">// MLFlowDeploymentService = remote control</span>\n';
+  h+='</div>';
+  h+='<div class="beginner-box"><strong>What is MLFlowDeploymentService?</strong> An object wrapping the running MLflow server. Knows server URL, how to start/stop, and how to <code>service.predict(data)</code>. Like a TV remote — you press "predict" and it handles the HTTP call internally.</div>';
+  return h;
+};
+
+// ====== TAB: PREDICTOR ======
+builders.predictor=function(){
+  var h='';
+  h+='<h3 style="color:var(--red);font-size:1.05rem;margin-bottom:0.2rem">🎯 predictor.py — Send Data, Get Prediction</h3>';
+  h+='<p style="color:var(--tdim);font-size:0.75rem;margin-bottom:0.4rem">1 file (87 lines). <strong>Where inference actually happens.</strong> JSON→DataFrame→server.predict()→numpy array.</p>';
+  h+='<div class="code-box">';
+  h+='<span class="kw">import</span> json, numpy <span class="kw">as</span> np, pandas <span class="kw">as</span> pd\n';
+  h+='<span class="kw">from</span> zenml.integrations.mlflow.services <span class="kw">import</span> MLFlowDeploymentService\n\n';
+  h+='<span class="deco">@step</span>(enable_cache=False)\n';
+  h+='<span class="kw">def</span> <span class="fn">predictor</span>(service: MLFlowDeploymentService, input_data: str) -> np.ndarray:\n';
+  h+='    <span class="cm">// PHASE 1: Ensure server is ready</span>\n';
+  h+='    service.start(timeout=10)  <span class="cm">// NOP if already running</span>\n\n';
+  h+='    <span class="cm">// PHASE 2: Parse JSON input</span>\n';
+  h+='    data = json.loads(input_data)  <span class="cm">// JSON string → Python dict</span>\n';
+  h+='    data.pop(<span class="str">"columns"</span>, None); data.pop(<span class="str">"index"</span>, None)  <span class="cm">// Remove metadata</span>\n\n';
+  h+='    <span class="cm">// PHASE 3: Build DataFrame with 37 expected columns</span>\n';
+  h+='    expected_columns = [<span class="str">"Order"</span>,<span class="str">"PID"</span>,<span class="str">"MS SubClass"</span>,...<span class="str">"Yr Sold"</span>]  <span class="cm">// 37 cols</span>\n';
+  h+='    df = pd.DataFrame(data[<span class="str">"data"</span>], columns=expected_columns)\n\n';
+  h+='    <span class="cm">// PHASE 4: Convert to MLflow format (list of dicts)</span>\n';
+  h+='    json_list = json.loads(json.dumps(list(df.T.to_dict().values())))\n';
+  h+='    data_array = np.array(json_list)\n\n';
+  h+='    <span class="cm">// PHASE 5: THE ACTUAL PREDICTION</span>\n';
+  h+='    <span class="cm">// service.predict() → POST localhost:8000/invocations</span>\n';
+  h+='    prediction = service.predict(data_array)\n';
+  h+='    <span class="kw">return</span> prediction  <span class="cm">// numpy array: [185000.0, 142000.0]</span>\n';
+  h+='</div>';
+  h+='<div class="beginner-box"><strong>Why the weird df.T→dict→json→array conversion?</strong> MLflow expects data as a list of dicts: <code>[{"Order":1,...}, {"Order":2,...}]</code>. But DataFrame is a table: 2 rows × 37 cols. We TRANSPOSE (swap rows/cols) → dict → extract values. Bridge between "table thinking" (pandas) and "record thinking" (MLflow API).</div>';
+  return h;
+};
+
+// ====== TAB: DEPLOYMENT PIPELINE ======
+builders.deploypipe=function(){
+  var h='';
+  h+='<h3 style="color:var(--red);font-size:1.05rem;margin-bottom:0.2rem">🚀 pipelines/deployment_pipeline.py — TWO Pipelines</h3>';
+  h+='<p style="color:var(--tdim);font-size:0.75rem;margin-bottom:0.4rem">1 file (38 lines). Pipeline 1 trains+deploys as REST API. Pipeline 2 loads data+predicts.</p>';
+  h+='<div class="code-box">';
+  h+='<span class="kw">from</span> pipelines.training_pipeline <span class="kw">import</span> ml_pipeline  <span class="cm">// The 7-step training pipeline</span>\n';
+  h+='<span class="kw">from</span> steps.dynamic_importer <span class="kw">import</span> dynamic_importer\n';
+  h+='<span class="kw">from</span> steps.prediction_service_loader <span class="kw">import</span> prediction_service_loader\n';
+  h+='<span class="kw">from</span> steps.predictor <span class="kw">import</span> predictor\n';
+  h+='<span class="kw">from</span> zenml.integrations.mlflow.steps <span class="kw">import</span> mlflow_model_deployer_step\n';
+  h+='    <span class="cm">// ← THE MAGIC: pre-built step wrapping model as REST API!</span>\n\n';
+  h+='<span class="cm">// PIPELINE 1: Train + Deploy</span>\n';
+  h+='<span class="deco">@pipeline</span>\n';
+  h+='<span class="kw">def</span> <span class="fn">continuous_deployment_pipeline</span>():\n';
+  h+='    trained_model = ml_pipeline()  <span class="cm">// Run all 7 training steps</span>\n';
+  h+='    mlflow_model_deployer_step(workers=3, deploy_decision=True, model=trained_model)\n';
+  h+='    <span class="cm">// ↑ Wraps model as REST API @ localhost:8000</span>\n\n';
+  h+='<span class="cm">// PIPELINE 2: Batch Inference</span>\n';
+  h+='<span class="deco">@pipeline</span>(enable_cache=False)\n';
+  h+='<span class="kw">def</span> <span class="fn">inference_pipeline</span>():\n';
+  h+='    batch_data = dynamic_importer()  <span class="cm">// Get data</span>\n';
+  h+='    server = prediction_service_loader(\n';
+  h+='        pipeline_name=<span class="str">"continuous_deployment_pipeline"</span>,\n';
+  h+='        step_name=<span class="str">"mlflow_model_deployer_step"</span>)  <span class="cm">// Find server</span>\n';
+  h+='    predictor(service=server, input_data=batch_data)  <span class="cm">// Predict!</span>\n';
+  h+='</div>';
+  h+='<div class="callout"><strong>THE MAGIC:</strong> <code>mlflow_model_deployer_step</code> takes ANY trained sklearn Pipeline → wraps as prediction server on <strong>localhost:8000</strong> → exposes <strong>POST /invocations</strong>. No Flask/FastAPI code — ZenML+MLflow handle the entire server.</div>';
+  return h;
+};
+
+// ====== TAB: RUN DEPLOYMENT ======
+builders.rundeploy=function(){
+  var h='';
+  h+='<h3 style="color:var(--red);font-size:1.05rem;margin-bottom:0.2rem">▶️ run_deployment.py — The Deployment CLI</h3>';
+  h+='<p style="color:var(--tdim);font-size:0.75rem;margin-bottom:0.4rem">1 file (75 lines). Click CLI with --stop-service flag. Runs both pipelines.</p>';
+  h+='<div class="code-box">';
+  h+='<span class="kw">import</span> click\n';
+  h+='<span class="kw">from</span> pipelines.deployment_pipeline <span class="kw">import</span> continuous_deployment_pipeline, inference_pipeline\n';
+  h+='<span class="kw">from</span> zenml.integrations.mlflow.model_deployers.mlflow_model_deployer <span class="kw">import</span> MLFlowModelDeployer\n\n';
+  h+='<span class="deco">@click.command</span>()\n';
+  h+='<span class="deco">@click.option</span>(<span class="str">"--stop-service"</span>, is_flag=True, default=False)\n';
+  h+='<span class="kw">def</span> <span class="fn">run_main</span>(stop_service: bool):\n';
+  h+='    <span class="kw">if</span> stop_service:\n';
+  h+='        deployer = MLFlowModelDeployer.get_active_model_deployer()\n';
+  h+='        services = deployer.find_model_server(...)\n';
+  h+='        <span class="kw">if</span> services: services[0].stop(timeout=10)  <span class="cm">// Graceful shutdown</span>\n';
+  h+='        <span class="kw">return</span>\n\n';
+  h+='    <span class="cm">// Normal path: deploy + infer</span>\n';
+  h+='    continuous_deployment_pipeline()  <span class="cm">// Train + deploy as API</span>\n';
+  h+='    inference_pipeline()              <span class="cm">// Batch inference test</span>\n';
+  h+='    print(f<span class="str">"Server at: {service[0].prediction_url}"</span>)\n\n';
+  h+='<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>: run_main()\n';
+  h+='</div>';
+  return h;
+};
+
+// ====== TAB: SAMPLE PREDICT ======
+builders.sample=function(){
+  var h='';
+  h+='<h3 style="color:var(--red);font-size:1.05rem;margin-bottom:0.2rem">🧪 sample_predict.py — Raw HTTP Test, NO ZenML Required</h3>';
+  h+='<p style="color:var(--tdim);font-size:0.75rem;margin-bottom:0.4rem">1 file (73 lines). <strong>Standalone proof your API works.</strong> Uses Python requests to POST JSON → gets prediction.</p>';
+  h+='<div class="code-box">';
+  h+='<span class="kw">import</span> json, requests  <span class="cm">// requests = Python HTTP library</span>\n\n';
+  h+='url = <span class="str">"http://127.0.0.1:8000/invocations"</span>  <span class="cm">// MLflow prediction endpoint</span>\n\n';
+  h+='<span class="cm">// One sample house with 38 features</span>\n';
+  h+='input_data = {\n';
+  h+='    <span class="str">"dataframe_records"</span>: [{  <span class="cm">// MLflow sklearn serving format</span>\n';
+  h+='        <span class="str">"Order"</span>: 1, <span class="str">"PID"</span>: 5286, <span class="str">"MS SubClass"</span>: 20,\n';
+  h+='        <span class="str">"Lot Area"</span>: 9600, <span class="str">"Overall Qual"</span>: 5,\n';
+  h+='        <span class="str">"Gr Liv Area"</span>: 1710.0, <span class="str">"Year Built"</span>: 1961,\n';
+  h+='        <span class="str">"Garage Cars"</span>: 2, <span class="str">"Garage Area"</span>: 500.0,\n';
+  h+='        <span class="cm">// ... 33 more features ...</span>\n';
+  h+='        <span class="str">"Yr Sold"</span>: 2010,\n';
+  h+='    }]\n';
+  h+='}\n\n';
+  h+='response = requests.post(url, json=input_data)  <span class="cm">// POST with JSON body</span>\n\n';
+  h+='<span class="kw">if</span> response.status_code == 200:  <span class="cm">// HTTP 200 = OK</span>\n';
+  h+='    print(response.json())  <span class="cm">// {"predictions": [185000.50]}</span>\n';
+  h+='<span class="kw">else</span>: print(f<span class="str">"Error: {response.status_code}"</span>)\n';
+  h+='</div>';
+
+  h+='<h4 style="color:var(--violet);font-size:0.7rem;margin:0.8rem 0 0.3rem">🔌 Calling Your Model From ANY Language</h4>';
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;margin:0.6rem 0;font-size:0.5rem">';
+  h+='<div style="background:#1e1e1e;border:2px solid var(--violet);border-radius:8px;padding:0.5rem;font-family:\'JetBrains Mono\',monospace;color:#d4d4d4">';
+  h+='<span class="cm">// JavaScript / Node.js</span>\n';
+  h+='<span class="kw">const</span> resp = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">\'http://localhost:8000/invocations\'</span>, {method: <span class="str">\'POST\'</span>, body: <span class="fn">JSON</span>.stringify(data)});\n';
+  h+='<span class="kw">const</span> result = <span class="kw">await</span> resp.json();\n';
+  h+='</div>';
+  h+='<div style="background:#1e1e1e;border:2px solid var(--green);border-radius:8px;padding:0.5rem;font-family:\'JetBrains Mono\',monospace;color:#d4d4d4">';
+  h+='<span class="cm"># cURL (command line)</span>\n';
+  h+='curl -X POST http://localhost:8000/invocations \\\n';
+  h+='  -H <span class="str">"Content-Type: application/json"</span> \\\n';
+  h+='  -d <span class="str">\'{"dataframe_records": [...]}\'</span>\n';
+  h+='</div>';
+  h+='<div style="background:#1e1e1e;border:2px solid var(--amber);border-radius:8px;padding:0.5rem;font-family:\'JetBrains Mono\',monospace;color:#d4d4d4">';
+  h+='<span class="cm">// Go</span>\n';
+  h+='resp, _ := http.<span class="fn">Post</span>(<span class="str">"http://localhost:8000/invocations"</span>, <span class="str">"application/json"</span>, body)\n';
+  h+='<span class="kw">var</span> result Prediction\n';
+  h+='json.<span class="fn">NewDecoder</span>(resp.Body).<span class="fn">Decode</span>(&result)\n';
+  h+='</div></div>';
+
+  h+='<div style="background:var(--green-bg);border:2px solid var(--green);border-radius:10px;padding:0.8rem;margin:0.8rem 0;text-align:center">';
+  h+='<h4 style="color:var(--green);font-size:0.68rem;margin-bottom:0.3rem">🎉 THE COMPLETE 15-STEP FLOW</h4>';
+  h+='<div class="flow-row" style="flex-direction:column;gap:0.15rem;font-size:0.48rem">';
+  h+='<div class="flow-row"><div class="flow-box in">SETUP</div><span class="flow-arrow">→</span><div class="flow-box proc">INGEST</div><span class="flow-arrow">→</span><div class="flow-box proc">MISSING</div><span class="flow-arrow">→</span><div class="flow-box proc">FEATURES</div><span class="flow-arrow">→</span><div class="flow-box proc">OUTLIERS</div><span class="flow-arrow">→</span><div class="flow-box proc">SPLIT</div><span class="flow-arrow">→</span><div class="flow-box proc">BUILD</div><span class="flow-arrow">→</span><div class="flow-box proc">EVAL</div><span class="flow-arrow">→</span><div class="flow-box proc">TRAIN_PIPE</div></div>';
+  h+='<div class="flow-row"><div class="flow-box out">IMPORTER</div><span class="flow-arrow">→</span><div class="flow-box out">SRV_LOAD</div><span class="flow-arrow">→</span><div class="flow-box out">PREDICT</div><span class="flow-arrow">→</span><div class="flow-box out">DEPLOY_PIPE</div><span class="flow-arrow">→</span><div class="flow-box out">RUN_DEPLOY</div><span class="flow-arrow">→</span><div class="flow-box" style="border-color:var(--cyan);background:var(--cyan-bg)">SAMPLE ✅</div></div>';
+  h+='</div></div>';
+  return h;
+};
+
+// ====== INITIAL RENDER ======
+document.getElementById('content').innerHTML = builders.setup();
+
+</script>
+</body>
+</html>

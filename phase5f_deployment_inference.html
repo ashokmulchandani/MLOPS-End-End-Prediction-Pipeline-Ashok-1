@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 5F: Deployment Pipeline + Inference — Interactive Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f8f9fc;--card:#fff;--raised:#eef0f5;--border:#dde0e6;--text:#1a1d23;--tdim:#4a4f5b;--tmut:#8b909b;--violet:#5b3aa8;--vbg:#f3effc;--cyan:#007a99;--cyan-bg:#e6f4f7;--amber:#b87000;--amber-bg:#fff6e5;--green:#1a6e34;--green-bg:#e6f4ea;--red:#c62828;--magenta:#9e2a6b}
+body.dark{--bg:#06090f;--card:#0d1117;--raised:#161b22;--border:#21262d;--text:#e6edf3;--tdim:#8b949e;--tmut:#484f58;--violet:#a371f7;--vbg:#a371f710;--cyan:#39d2ff;--cyan-bg:#39d2ff10;--amber:#ffb347;--amber-bg:#ffb34710;--green:#3fb950;--green-bg:#3fb95010;--red:#f85149;--magenta:#ff6ec7}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.65;min-height:100vh;transition:background 0.3s,color 0.3s}
+.theme-btn{position:fixed;top:1rem;right:1rem;z-index:10;background:var(--raised);border:1px solid var(--border);color:var(--text);padding:0.5rem 0.9rem;border-radius:8px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-size:0.75rem;font-weight:600}
+.theme-btn:hover{border-color:var(--violet);color:var(--violet)}
+.app{max-width:950px;margin:0 auto;padding:1.5rem}
+.header{text-align:center;padding:1rem 0 0.3rem}
+.header h1{font-family:'Space Grotesk',sans-serif;font-size:1.4rem;font-weight:700;color:var(--violet)}
+.header p{color:var(--tdim);font-size:0.85rem;margin-top:0.2rem}
+.tabs{display:flex;gap:0.35rem;justify-content:center;margin:0.8rem 0;flex-wrap:wrap}
+.tab{font-family:'Space Grotesk',sans-serif;font-size:0.58rem;font-weight:600;padding:0.5em 1em;border-radius:100px;border:1.5px solid var(--border);background:var(--card);color:var(--tdim);cursor:pointer;transition:0.15s}
+.tab:hover{border-color:var(--violet);color:var(--violet)}
+.tab.active{background:var(--violet);border-color:var(--violet);color:#fff}
+.content{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin:0.6rem 0}
+.code-box{background:#1e1e1e;border:1px solid #333;border-left:4px solid var(--violet);border-radius:8px;padding:0.8rem 1rem;font-family:'JetBrains Mono',monospace;font-size:0.66rem;line-height:1.7;color:#d4d4d4;white-space:pre-wrap;overflow-x:auto;margin:0.6rem 0}
+.code-box .kw{color:#569cd6}.code-box .str{color:#ce9178}.code-box .cm{color:#6a9955}.code-box .fn{color:#c586c0}.code-box .cls{color:#4ec9b0}.code-box .num{color:#b5cea8}.code-box .deco{color:#c586c0}
+.callout{background:var(--vbg);border:1px solid rgba(91,58,168,0.15);border-radius:8px;padding:0.6rem 1rem;margin:0.6rem 0;font-size:0.78rem;text-align:center}
+.viz-row{display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;justify-content:center;margin:0.8rem 0;font-size:0.62rem}
+.viz-box{background:var(--card);border:2px solid var(--border);border-radius:8px;padding:0.5rem 0.7rem;text-align:center;min-width:80px}
+.viz-box.in{border-color:var(--amber);background:var(--amber-bg)}.viz-box.proc{border-color:var(--violet);background:var(--vbg)}.viz-box.out{border-color:var(--green);background:var(--green-bg)}
+.viz-arrow{font-size:1rem;color:var(--violet)}
+.beginner-box{background:var(--amber-bg);border:2px solid var(--amber);border-radius:8px;padding:0.6rem 0.8rem;margin:0.6rem 0;font-size:0.68rem}
+.beginner-box strong{color:var(--amber)}
+.anatomy-subtab{font-family:'Space Grotesk',sans-serif;font-size:0.52rem;font-weight:600;padding:0.4em 0.8em;border-radius:100px;border:1.5px solid var(--border);background:var(--card);color:var(--tdim);cursor:pointer;transition:0.15s}
+.anatomy-subtab:hover{border-color:var(--violet);color:var(--violet)}
+.anatomy-subtab.active{background:var(--violet);border-color:var(--violet);color:#fff}
+.table-wrap{overflow-x:auto;margin:0.6rem 0}
+.table-wrap table{width:100%;border-collapse:collapse;font-size:0.6rem;font-family:Inter,sans-serif;text-align:left}
+.table-wrap th{border-bottom:2px solid var(--violet);padding:0.3rem;color:var(--violet)}
+.table-wrap td{padding:0.3rem}
+.table-wrap tr:nth-child(even){background:var(--raised)}
+</style>
+</head>
+<body>
+<button class="theme-btn" onclick="toggleTheme()">🌙 Dark</button>
+<div class="app">
+<header class="header">
+  <h1>Phase 5F: Deployment Pipeline + Inference</h1>
+  <p>From trained model to REST API to real predictions. The final piece of the MLOps puzzle.</p>
+</header>
+
+<div class="tabs" id="main-tabs">
+  <button class="tab active" onclick="showTab('overview',event)">🗺️ Overview</button>
+  <button class="tab" onclick="showTab('deploy',event)">🚀 Deployment Pipeline</button>
+  <button class="tab" onclick="showTab('infer',event)">🧠 Inference Pipeline</button>
+  <button class="tab" onclick="showTab('anatomy',event)">🔬 Code Anatomy</button>
+  <button class="tab" onclick="showTab('usage',event)">▶️ How to Use</button>
+  <button class="tab" onclick="showTab('structure',event)">📁 Project Structure</button>
+</div>
+<div class="content" id="content"></div>
+</div>
+<script>
+"use strict";
+
+// ============================================================================
+// THEME TOGGLE
+// ============================================================================
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  document.querySelector('.theme-btn').textContent = document.body.classList.contains('dark') ? '☀️ Light' : '🌙 Dark';
+  localStorage.setItem('p5f-theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+}
+if(localStorage.getItem('p5f-theme') === 'dark'){
+  document.body.classList.add('dark');
+  document.querySelector('.theme-btn').textContent = '☀️ Light';
+}
+
+// ============================================================================
+// VS CODE SYNTAX HIGHLIGHTING — applies colors to code boxes
+// ============================================================================
+function highlightCode(html){
+  // Replace placeholder tokens with colored spans
+  return html
+    .replace(/\[\[KW:(.*?)\]\]/g, '<span class="kw">$1</span>')
+    .replace(/\[\[STR:(.*?)\]\]/g, '<span class="str">$1</span>')
+    .replace(/\[\[CM:(.*?)\]\]/g, '<span class="cm">$1</span>')
+    .replace(/\[\[FN:(.*?)\]\]/g, '<span class="fn">$1</span>')
+    .replace(/\[\[CLS:(.*?)\]\]/g, '<span class="cls">$1</span>')
+    .replace(/\[\[NUM:(.*?)\]\]/g, '<span class="num">$1</span>')
+    .replace(/\[\[DECO:(.*?)\]\]/g, '<span class="deco">$1</span>');
+}
+
+// ============================================================================
+// MAIN TAB SWITCHER
+// ============================================================================
+function showTab(p, evt){
+  var tabs = document.querySelectorAll('#main-tabs .tab');
+  for(var i = 0; i < tabs.length; i++){ tabs[i].classList.remove('active'); }
+  if(evt && evt.target){ evt.target.classList.add('active'); }
+  else { tabs[0].classList.add('active'); }
+
+  var c = document.getElementById('content');
+  if(!c){ return; }
+
+  if(p === 'overview'){ c.innerHTML = buildOverview(); }
+  else if(p === 'deploy'){ c.innerHTML = buildDeploy(); }
+  else if(p === 'infer'){ c.innerHTML = buildInfer(); }
+  else if(p === 'anatomy'){ c.innerHTML = buildAnatomy(); }
+  else if(p === 'usage'){ c.innerHTML = buildUsage(); }
+  else if(p === 'structure'){ c.innerHTML = buildStructure(); }
+}
+
+// ============================================================================
+// OVERVIEW TAB
+// ============================================================================
+function buildOverview(){
+  var h = '';
+  h += '<h3 style="font-family:\'Space Grotesk\',sans-serif;font-size:1.1rem;color:var(--violet);margin-bottom:0.3rem">🗺️ Where Deployment Fits in the MLOps Pipeline</h3>';
+  h += '<p style="color:var(--tdim);font-size:0.85rem;margin-bottom:1rem">After training and evaluating a model (Phase 5E), the <strong>deployment pipeline</strong> wraps it as a REST API so external systems can send data and get predictions back. This closes the loop: <strong>data → train → evaluate → deploy → predict</strong>.</p>';
+
+  // Two-pipeline architecture
+  h += '<div style="background:var(--vbg);border:2px solid var(--violet);border-radius:12px;padding:1rem;margin:1rem 0">';
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.72rem;color:var(--violet);margin-bottom:0.6rem;text-align:center">🏗️ TWO Pipelines Working Together</h4>';
+  h += '<div class="viz-row" style="flex-direction:column;gap:0.6rem">';
+  h += '<div class="viz-row">';
+  h += '<div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.5rem 0.7rem;text-align:center;font-size:0.6rem"><strong>PIPELINE 1</strong><br>Training Pipeline<br><span style="color:var(--tmut)">7 steps</span><br><span style="color:var(--tmut)">data → model</span></div>';
+  h += '<span class="viz-arrow">→</span>';
+  h += '<div class="viz-box proc" style="font-size:0.6rem"><strong>PIPELINE 2</strong><br>Deployment Pipeline<br><span style="color:var(--tmut)">train → deploy → infer</span></div>';
+  h += '<span class="viz-arrow">→</span>';
+  h += '<div class="viz-box out" style="font-size:0.6rem"><strong>RESULT</strong><br>REST API @<br><span style="color:var(--green)">localhost:8000</span></div>';
+  h += '</div></div></div>';
+
+  // What deployment means
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.75rem;color:var(--violet);margin:0.8rem 0 0.3rem">🎯 What "Deployment" Means in This System</h4>';
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;margin:0.6rem 0;font-size:0.6rem">';
+  h += '<div style="background:var(--vbg);border:2px solid var(--violet);border-radius:8px;padding:0.6rem;text-align:center"><div style="font-size:1.3rem">📦</div><strong>MLflow Model Server</strong><br><span style="color:var(--tmut)">MLflow wraps the trained Pipeline as a REST server. Port 8000. JSON in, prediction out.</span></div>';
+  h += '<div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:8px;padding:0.6rem;text-align:center"><div style="font-size:1.3rem">🔄</div><strong>Continuous Deployment</strong><br><span style="color:var(--tmut)">Every time you retrain, the model is automatically redeployed. No manual copy-paste of files.</span></div>';
+  h += '<div style="background:var(--green-bg);border:2px solid var(--green);border-radius:8px;padding:0.6rem;text-align:center"><div style="font-size:1.3rem">🔌</div><strong>Inference Anywhere</strong><br><span style="color:var(--tmut)">Any app (web, mobile, another service) can send a POST request and get a price prediction.</span></div>';
+  h += '</div>';
+
+  // Beginner analogy
+  h += '<div class="beginner-box"><strong>🧑‍🏫 BEGINNER ANALOGY — What is "Deployment"?</strong><br>';
+  h += 'Training = you practicing cooking in your kitchen.<br>';
+  h += 'Deployment = you open a <strong>restaurant</strong> (the API). Customers (apps) walk in, place orders (send data), and get food (predictions).<br>';
+  h += 'You keep improving your recipes (retrain), and the restaurant automatically starts serving the new dishes (continuous deployment).';
+  h += '</div>';
+
+  // File inventory table
+  h += '<div style="background:var(--card);border:2px solid var(--violet);border-radius:10px;padding:1rem;margin:1rem 0">';
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.72rem;color:var(--violet);margin-bottom:0.6rem;text-align:center">📁 All Files Involved in Deployment — Phase 5F</h4>';
+  h += '<div class="table-wrap"><table>';
+  h += '<tr><th>File</th><th>Role</th><th>Type</th></tr>';
+  h += '<tr><td style="font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--violet)">pipelines/deployment_pipeline.py</td><td>Orchestrates BOTH pipelines (deploy + inference)</td><td style="color:var(--amber)">ZenML @pipeline</td></tr>';
+  h += '<tr><td style="font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--violet)">run_deployment.py</td><td>CLI entry point — "python run_deployment.py"</td><td style="color:var(--amber)">Click CLI</td></tr>';
+  h += '<tr><td style="font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--violet)">steps/dynamic_importer.py</td><td>Simulates incoming data (replace with real API)</td><td style="color:var(--violet)">ZenML @step</td></tr>';
+  h += '<tr><td style="font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--violet)">steps/prediction_service_loader.py</td><td>Finds the running MLflow prediction server</td><td style="color:var(--violet)">ZenML @step</td></tr>';
+  h += '<tr><td style="font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--violet)">steps/predictor.py</td><td>Sends data to server, gets prediction back</td><td style="color:var(--violet)">ZenML @step</td></tr>';
+  h += '<tr><td style="font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--violet)">sample_predict.py</td><td>Test: raw HTTP call to the deployed server</td><td style="color:var(--green)">Plain Python</td></tr>';
+  h += '<tr><td style="font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--violet)">steps/model_loader.py</td><td>Loads production model from ZenML registry</td><td style="color:var(--violet)">ZenML @step</td></tr>';
+  h += '<tr><td style="font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--violet)">config.yaml</td><td>Model registry config (name, license, tags)</td><td style="color:var(--tmut)">YAML config</td></tr>';
+  h += '</table></div></div>';
+
+  h += '<div class="callout"><strong>🧠 KEY:</strong> Phase 5F = TWO pipelines. <strong>Pipeline 1 (continuous_deployment):</strong> trains → deploys model as REST API. <strong>Pipeline 2 (inference):</strong> loads data → finds server → predicts. The <strong>MLflow Model Deployer</strong> is the bridge — it takes any trained model and wraps it as a prediction server.</div>';
+  return h;
+}
+
+// ============================================================================
+// DEPLOY TAB
+// ============================================================================
+function buildDeploy(){
+  var h = '';
+  h += '<h3 style="font-family:\'Space Grotesk\',sans-serif;font-size:1.1rem;color:var(--cyan);margin-bottom:0.3rem">🚀 The Deployment Pipeline</h3>';
+  h += '<p style="color:var(--tdim);font-size:0.85rem;margin-bottom:0.8rem"><strong>File:</strong> <code>pipelines/deployment_pipeline.py</code>. This file defines TWO pipelines. Pipeline 1 trains AND deploys the model as a live REST API in one shot.</p>';
+
+  // Flow diagram
+  h += '<div style="background:var(--cyan-bg);border:2px solid var(--cyan);border-radius:12px;padding:1rem;margin:1rem 0">';
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.72rem;color:var(--cyan);margin-bottom:0.5rem;text-align:center">🚀 Pipeline 1: continuous_deployment_pipeline</h4>';
+  h += '<div class="viz-row">';
+  h += '<div class="viz-box in"><strong>STEP 1</strong><br>ml_pipeline()<br><span style="color:var(--tmut)">Full 7-step train</span></div>';
+  h += '<span class="viz-arrow">→</span>';
+  h += '<div class="viz-box proc"><strong>STEP 2</strong><br>mlflow_model_deployer_step<br><span style="color:var(--tmut)">Wrap as REST API</span></div>';
+  h += '<span class="viz-arrow">→</span>';
+  h += '<div class="viz-box out"><strong>OUTPUT</strong><br>Live server @<br><span style="color:var(--green)">localhost:8000</span></div>';
+  h += '</div></div>';
+
+  // Beginner: what is @pipeline
+  h += '<div class="beginner-box"><strong>🧑‍🏫 What is @pipeline?</strong><br>';
+  h += '<code>@pipeline</code> is a ZenML <strong>decorator</strong>. Think of it like a wrapper: "ZenML, please watch everything this function calls, track all the steps, and log them." Without <code>@pipeline</code> it\'s just a normal Python function. <strong>With</strong> <code>@pipeline</code>, ZenML knows this is a pipeline and tracks every <code>@step</code>-decorated function called inside it.</div>';
+
+  // deployment_pipeline.py code
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.72rem;color:var(--violet);margin:0.8rem 0 0.3rem">📝 The Deployment Pipeline Code — Line by Line</h4>';
+  h += '<div class="code-box">';
+  h += '<span class="cm"># FILE: pipelines/deployment_pipeline.py (38 lines)</span>\n';
+  h += '<span class="cm">#</span>\n';
+  h += '<span class="cm"># ╔══════════════════════════════════════════════════╗</span>\n';
+  h += '<span class="cm"># ║  IMPORTS                                          ║</span>\n';
+  h += '<span class="cm"># ╚══════════════════════════════════════════════════╝</span>\n\n';
+  h += '<span class="kw">import</span> os\n\n';
+  h += '<span class="cm">#  ┌── TRAINING pipeline — the 7-step pipeline from Phase 5E</span>\n';
+  h += '<span class="kw">from</span> pipelines.training_pipeline <span class="kw">import</span> ml_pipeline\n\n';
+  h += '<span class="cm">#  ┌── DEPLOYMENT steps — each is a @step-decorated function</span>\n';
+  h += '<span class="kw">from</span> steps.dynamic_importer <span class="kw">import</span> dynamic_importer      <span class="cm"># Simulates incoming data</span>\n';
+  h += '<span class="kw">from</span> steps.model_loader <span class="kw">import</span> model_loader                <span class="cm"># Loads model from registry</span>\n';
+  h += '<span class="kw">from</span> steps.prediction_service_loader <span class="kw">import</span> prediction_service_loader  <span class="cm"># Finds running server</span>\n';
+  h += '<span class="kw">from</span> steps.predictor <span class="kw">import</span> predictor                    <span class="cm"># Sends data, gets prediction</span>\n\n';
+  h += '<span class="cm">#  ┌── ZenML core</span>\n';
+  h += '<span class="kw">from</span> zenml <span class="kw">import</span> pipeline\n\n';
+  h += '<span class="cm">#  ┌── THE KEY IMPORT — MLflow\'s built-in deploy step!</span>\n';
+  h += '<span class="cm">#  │   This is NOT something we wrote. It comes from ZenML\'s MLflow integration.</span>\n';
+  h += '<span class="cm">#  │   It takes a trained model and wraps it as a live prediction server.</span>\n';
+  h += '<span class="kw">from</span> zenml.integrations.mlflow.steps <span class="kw">import</span> mlflow_model_deployer_step\n';
+  h += '</div>';
+
+  // Pipeline 1
+  h += '<div class="code-box">';
+  h += '<span class="cm"># ╔══════════════════════════════════════════════════╗</span>\n';
+  h += '<span class="cm"># ║  PIPELINE 1: Continuous Deployment               ║</span>\n';
+  h += '<span class="cm"># ╚══════════════════════════════════════════════════╝</span>\n\n';
+  h += '<span class="deco">@pipeline</span>\n';
+  h += '<span class="kw">def</span> <span class="fn">continuous_deployment_pipeline</span>():\n';
+  h += '    <span class="str">"""Run a training job and deploy an MLflow model deployment."""</span>\n\n';
+  h += '    <span class="cm"># STEP 1: Run the ENTIRE 7-step training pipeline</span>\n';
+  h += '    <span class="cm"># ml_pipeline() = ingest → impute → feature → outlier → split → model → eval</span>\n';
+  h += '    <span class="cm"># Returns: the trained sklearn Pipeline (preprocessor + model)</span>\n';
+  h += '    trained_model = ml_pipeline()\n\n';
+  h += '    <span class="cm"># STEP 2: Deploy the trained model as a REST API</span>\n';
+  h += '    <span class="cm"># workers=3 → 3 parallel workers for handling requests</span>\n';
+  h += '    <span class="cm"># deploy_decision=True → ALWAYS deploy (no approval gate)</span>\n';
+  h += '    <span class="cm"># model=trained_model → the model we just trained</span>\n';
+  h += '    mlflow_model_deployer_step(workers=<span class="num">3</span>, deploy_decision=<span class="kw">True</span>, model=trained_model)\n';
+  h += '</div>';
+
+  // Pipeline 2
+  h += '<div class="code-box">';
+  h += '<span class="cm"># ╔══════════════════════════════════════════════════╗</span>\n';
+  h += '<span class="cm"># ║  PIPELINE 2: Batch Inference                      ║</span>\n';
+  h += '<span class="cm"># ╚══════════════════════════════════════════════════╝</span>\n\n';
+  h += '<span class="cm"># enable_cache=False = "ALWAYS re-run — do not reuse old results"</span>\n';
+  h += '<span class="deco">@pipeline</span>(enable_cache=<span class="kw">False</span>)\n';
+  h += '<span class="kw">def</span> <span class="fn">inference_pipeline</span>():\n';
+  h += '    <span class="str">"""Run a batch inference job with data loaded from an API."""</span>\n\n';
+  h += '    <span class="cm"># STEP 1: Get data (simulated API call / DB query)</span>\n';
+  h += '    batch_data = dynamic_importer()\n\n';
+  h += '    <span class="cm"># STEP 2: Find the running prediction server</span>\n';
+  h += '    <span class="cm"># Searches by pipeline_name + step_name = unique identifier</span>\n';
+  h += '    model_deployment_service = prediction_service_loader(\n';
+  h += '        pipeline_name=<span class="str">"continuous_deployment_pipeline"</span>,\n';
+  h += '        step_name=<span class="str">"mlflow_model_deployer_step"</span>,\n';
+  h += '    )\n\n';
+  h += '    <span class="cm"># STEP 3: Send data → receive predictions</span>\n';
+  h += '    predictor(service=model_deployment_service, input_data=batch_data)\n';
+  h += '</div>';
+
+  // Key bridge
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.72rem;color:var(--violet);margin:0.8rem 0 0.3rem">🔑 The KEY Bridge: mlflow_model_deployer_step</h4>';
+  h += '<div style="background:var(--card);border:2px solid var(--cyan);border-radius:10px;padding:0.8rem;margin:0.6rem 0">';
+  h += '<div style="font-size:0.62rem;color:var(--tdim);line-height:1.8">';
+  h += '<strong style="color:var(--cyan)">This ONE function</strong> takes ANY trained sklearn Pipeline and:';
+  h += '<ul style="margin:0.4rem 0 0.4rem 1.2rem;font-size:0.58rem">';
+  h += '<li>Wraps it in an MLflow model server</li>';
+  h += '<li>Starts it on port <strong style="color:var(--violet)">8000</strong></li>';
+  h += '<li>Exposes a <strong style="color:var(--violet)">REST API endpoint</strong>: POST /invocations</li>';
+  h += '<li>Makes it discoverable by <code>prediction_service_loader</code></li>';
+  h += '</ul>';
+  h += '<span style="color:var(--tmut)">It\'s a pre-built ZenML+MLflow integration. We didn\'t write the server code — ZenML and MLflow handle that for us.</span>';
+  h += '</div></div>';
+
+  h += '<div class="beginner-box"><strong>🧑‍🏫 What are "workers" and why 3?</strong><br>';
+  h += 'Imagine a restaurant with 1 waiter (worker=1). If 10 customers arrive at once, 9 wait. With 3 waiters (workers=3), you serve 3 customers simultaneously. In ML: 3 parallel prediction requests at a time. For a learning project, 3 is plenty.</div>';
+
+  h += '<div class="callout"><strong>🔑 TWO pipelines, ONE file:</strong> <code>continuous_deployment_pipeline()</code> trains + deploys. <code>inference_pipeline()</code> loads + predicts. The magic: <code>mlflow_model_deployer_step</code> wraps the model as a live server automatically. <strong>You do not write any Flask/FastAPI code — MLflow does it for you.</strong></div>';
+  return h;
+}
+
+// ============================================================================
+// INFER TAB
+// ============================================================================
+function buildInfer(){
+  var h = '';
+  h += '<h3 style="font-family:\'Space Grotesk\',sans-serif;font-size:1.1rem;color:var(--amber);margin-bottom:0.3rem">🧠 The Inference Pipeline — 3 Steps to a Prediction</h3>';
+  h += '<p style="color:var(--tdim);font-size:0.85rem;margin-bottom:0.8rem">The inference pipeline is a <strong>batch prediction</strong> system. It loads data, finds the deployed model server, and sends predictions. <strong>3 files, 3 steps, 1 prediction.</strong></p>';
+
+  // 3-step flow
+  h += '<div style="background:var(--amber-bg);border:2px solid var(--amber);border-radius:12px;padding:1rem;margin:1rem 0">';
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.72rem;color:var(--amber);margin-bottom:0.5rem;text-align:center">🧠 The 3-Step Inference Flow</h4>';
+  h += '<div class="viz-row">';
+  h += '<div class="viz-box in"><strong>STEP 1</strong><br>dynamic_importer<br><span style="color:var(--tmut)">Get raw data</span><br><span style="color:var(--tmut)">→ JSON string</span></div>';
+  h += '<span class="viz-arrow">→</span>';
+  h += '<div class="viz-box proc"><strong>STEP 2</strong><br>prediction_service_loader<br><span style="color:var(--tmut)">Find live server</span><br><span style="color:var(--tmut)">→ Service object</span></div>';
+  h += '<span class="viz-arrow">→</span>';
+  h += '<div class="viz-box out"><strong>STEP 3</strong><br>predictor<br><span style="color:var(--tmut)">Send → Predict</span><br><span style="color:var(--tmut)">→ price array</span></div>';
+  h += '</div></div>';
+
+  // Step 1: dynamic_importer
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.72rem;color:var(--violet);margin:0.8rem 0 0.3rem">📝 Step 1: dynamic_importer.py — "Where does inference data come from?"</h4>';
+  h += '<div class="code-box">';
+  h += '<span class="cm"># FILE: steps/dynamic_importer.py</span>\n';
+  h += '<span class="kw">import</span> pandas <span class="kw">as</span> pd\n';
+  h += '<span class="kw">from</span> zenml <span class="kw">import</span> step\n\n';
+  h += '<span class="deco">@step</span>\n';
+  h += '<span class="kw">def</span> <span class="fn">dynamic_importer</span>() -> <span class="cls">str</span>:\n';
+  h += '    <span class="str">"""Dynamically imports data for testing out the model."""</span>\n';
+  h += '    <span class="cm"># HERE: we hard-code 2 sample houses for testing.</span>\n';
+  h += '    <span class="cm"># IN REAL LIFE: this would be an API call, DB query, or file read.</span>\n';
+  h += '    data = {\n';
+  h += '        <span class="str">"Order"</span>: [<span class="num">1</span>, <span class="num">2</span>],\n';
+  h += '        <span class="str">"PID"</span>: [<span class="num">526301100</span>, <span class="num">526301101</span>],\n';
+  h += '        <span class="cm"># ... 36 more columns with house features ...</span>\n';
+  h += '        <span class="str">"Gr Liv Area"</span>: [<span class="num">1710</span>, <span class="num">1262</span>],\n';
+  h += '        <span class="str">"Overall Qual"</span>: [<span class="num">7</span>, <span class="num">6</span>],\n';
+  h += '        <span class="str">"Yr Sold"</span>: [<span class="num">2008</span>, <span class="num">2007</span>],\n';
+  h += '    }\n';
+  h += '    df = pd.DataFrame(data)\n';
+  h += '    <span class="cm"># Convert to JSON string — the format the predictor expects</span>\n';
+  h += '    json_data = df.to_json(orient=<span class="str">"split"</span>)\n';
+  h += '    <span class="kw">return</span> json_data\n';
+  h += '</div>';
+
+  h += '<div class="beginner-box"><strong>🧑‍🏫 Why "dynamic" importer?</strong><br>In a production system, data flows in dynamically — from an API, a database, a message queue. This step is a <strong>placeholder</strong> that simulates that. Later you replace the hard-coded dictionary with a real API call. The rest of the pipeline doesn\'t change — it just needs a JSON string.</div>';
+
+  // Step 2: prediction_service_loader
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.72rem;color:var(--violet);margin:0.8rem 0 0.3rem">📝 Step 2: prediction_service_loader.py — "Find the running server"</h4>';
+  h += '<div class="code-box">';
+  h += '<span class="cm"># FILE: steps/prediction_service_loader.py</span>\n';
+  h += '<span class="kw">from</span> zenml <span class="kw">import</span> step\n';
+  h += '<span class="kw">from</span> zenml.integrations.mlflow.model_deployers <span class="kw">import</span> MLFlowModelDeployer\n';
+  h += '<span class="kw">from</span> zenml.integrations.mlflow.services <span class="kw">import</span> MLFlowDeploymentService\n\n';
+  h += '<span class="deco">@step</span>(enable_cache=<span class="kw">False</span>)\n';
+  h += '<span class="kw">def</span> <span class="fn">prediction_service_loader</span>(\n';
+  h += '    pipeline_name: <span class="cls">str</span>,       <span class="cm"># "continuous_deployment_pipeline"</span>\n';
+  h += '    step_name: <span class="cls">str</span>             <span class="cm"># "mlflow_model_deployer_step"</span>\n';
+  h += ') -> MLFlowDeploymentService:\n';
+  h += '    <span class="str">"""Get the prediction service started by the deployment pipeline."""</span>\n\n';
+  h += '    <span class="cm"># Get MLflow\'s deployer from the active ZenML stack</span>\n';
+  h += '    model_deployer = MLFlowModelDeployer.get_active_model_deployer()\n\n';
+  h += '    <span class="cm"># SEARCH for running servers matching these identifiers</span>\n';
+  h += '    existing_services = model_deployer.find_model_server(\n';
+  h += '        pipeline_name=pipeline_name,\n';
+  h += '        pipeline_step_name=step_name,\n';
+  h += '    )\n\n';
+  h += '    <span class="cm"># CRASH if no server found (can\'t predict without one)</span>\n';
+  h += '    <span class="kw">if not</span> existing_services:\n';
+  h += '        <span class="kw">raise</span> RuntimeError(\n';
+  h += '            <span class="str">f"No MLflow prediction service deployed"</span>\n';
+  h += '        )\n\n';
+  h += '    <span class="cm"># Return the FIRST matching server</span>\n';
+  h += '    <span class="kw">return</span> existing_services[<span class="num">0</span>]\n';
+  h += '</div>';
+
+  h += '<div class="beginner-box"><strong>🧑‍🏫 What is MLFlowDeploymentService?</strong><br>It\'s a ZenML object that wraps a running MLflow server. It knows the server\'s URL, how to start/stop it, and how to send predictions. You don\'t need to know the URL yourself — the service object handles that. Think of it like a <strong>remote control</strong> for the prediction server.</div>';
+
+  // Step 3: predictor
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.72rem;color:var(--violet);margin:0.8rem 0 0.3rem">📝 Step 3: predictor.py — "Send data, get prediction"</h4>';
+  h += '<div class="code-box">';
+  h += '<span class="cm"># FILE: steps/predictor.py (87 lines)</span>\n';
+  h += '<span class="kw">import</span> json\n';
+  h += '<span class="kw">import</span> numpy <span class="kw">as</span> np\n';
+  h += '<span class="kw">import</span> pandas <span class="kw">as</span> pd\n';
+  h += '<span class="kw">from</span> zenml <span class="kw">import</span> step\n';
+  h += '<span class="kw">from</span> zenml.integrations.mlflow.services <span class="kw">import</span> MLFlowDeploymentService\n\n';
+  h += '<span class="deco">@step</span>(enable_cache=<span class="kw">False</span>)\n';
+  h += '<span class="kw">def</span> <span class="fn">predictor</span>(\n';
+  h += '    service: MLFlowDeploymentService,   <span class="cm"># The running server (from step 2)</span>\n';
+  h += '    input_data: <span class="cls">str</span>,                  <span class="cm"># JSON string (from step 1)</span>\n';
+  h += ') -> np.ndarray:\n';
+  h += '    <span class="str">"""Run an inference request against a prediction service."""</span>\n\n';
+  h += '    <span class="cm"># PHASE 1: Start the service (NOP if already running)</span>\n';
+  h += '    service.start(timeout=<span class="num">10</span>)\n\n';
+  h += '    <span class="cm"># PHASE 2: Parse the JSON input</span>\n';
+  h += '    data = json.loads(input_data)\n';
+  h += '    data.pop(<span class="str">"columns"</span>, <span class="kw">None</span>)\n';
+  h += '    data.pop(<span class="str">"index"</span>, <span class="kw">None</span>)\n\n';
+  h += '    <span class="cm"># PHASE 3: Build the DataFrame with 37 expected columns</span>\n';
+  h += '    expected_columns = [\n';
+  h += '        <span class="str">"Order"</span>, <span class="str">"PID"</span>, <span class="str">"MS SubClass"</span>, <span class="str">"Lot Frontage"</span>,\n';
+  h += '        <span class="str">"Lot Area"</span>, <span class="str">"Overall Qual"</span>, <span class="cm"># ... 32 more cols ...</span>\n';
+  h += '        <span class="str">"Yr Sold"</span>,\n';
+  h += '    ]\n';
+  h += '    df = pd.DataFrame(data[<span class="str">"data"</span>], columns=expected_columns)\n\n';
+  h += '    <span class="cm"># PHASE 4: Convert to format MLflow expects</span>\n';
+  h += '    json_list = json.loads(json.dumps(list(df.T.to_dict().values())))\n';
+  h += '    data_array = np.array(json_list)\n\n';
+  h += '    <span class="cm"># PHASE 5: THE ACTUAL PREDICTION</span>\n';
+  h += '    <span class="cm"># service.predict() sends data to localhost:8000/invocations</span>\n';
+  h += '    prediction = service.predict(data_array)\n';
+  h += '    <span class="kw">return</span> prediction\n';
+  h += '</div>';
+
+  h += '<div class="callout"><strong>🔑 THE CRITICAL CHAIN:</strong> dynamic_importer → prediction_service_loader → predictor. Each step passes one piece of the puzzle. Step 1 provides the DATA. Step 2 provides the SERVER. Step 3 COMBINES them: server + data = prediction. <strong>If any link breaks, the whole chain fails.</strong></div>';
+  return h;
+}
+
+// ============================================================================
+// ANATOMY TAB — with sub-tab navigation
+// ============================================================================
+var currentAnatomy = '';
+
+function buildAnatomy(){
+  currentAnatomy = 'run';
+  var h = '';
+  h += '<h3 style="font-family:\'Space Grotesk\',sans-serif;font-size:1.1rem;color:var(--violet);margin-bottom:0.3rem">🔬 Complete Code Anatomy — Every File, Every Line</h3>';
+  h += '<p style="color:var(--tdim);font-size:0.85rem;margin-bottom:0.6rem">Deep-dive into all 7 deployment files with line-by-line explanations. Beginner concepts explained inline.</p>';
+  h += '<div style="display:flex;gap:0.3rem;justify-content:center;margin:0.6rem 0;flex-wrap:wrap" id="subtab-nav">';
+  h += '<button class="anatomy-subtab active" onclick="switchAnatomy(\'run\',event)">▶️ run_deployment.py</button>';
+  h += '<button class="anatomy-subtab" onclick="switchAnatomy(\'dep\',event)">🚀 deployment_pipeline.py</button>';
+  h += '<button class="anatomy-subtab" onclick="switchAnatomy(\'imp\',event)">📥 dynamic_importer.py</button>';
+  h += '<button class="anatomy-subtab" onclick="switchAnatomy(\'srv\',event)">🔌 service_loader.py</button>';
+  h += '<button class="anatomy-subtab" onclick="switchAnatomy(\'pred\',event)">🎯 predictor.py</button>';
+  h += '<button class="anatomy-subtab" onclick="switchAnatomy(\'sample\',event)">🧪 sample_predict.py</button>';
+  h += '<button class="anatomy-subtab" onclick="switchAnatomy(\'loader\',event)">📦 model_loader.py</button>';
+  h += '</div>';
+  h += '<div id="sub-content"></div>';
+  return h;
+}
+
+function switchAnatomy(sub, evt){
+  currentAnatomy = sub;
+  var tabs = document.querySelectorAll('#subtab-nav .anatomy-subtab');
+  for(var i = 0; i < tabs.length; i++){ tabs[i].classList.remove('active'); }
+  if(evt && evt.target){ evt.target.classList.add('active'); }
+
+  var sc = document.getElementById('sub-content');
+  if(!sc){ return; }
+  sc.innerHTML = getAnatomyContent(sub);
+
+  // Also update main content area if we're on the anatomy tab
+  var mainContent = document.getElementById('content');
+  if(mainContent){
+    // Rebuild anatomy header + sub-tabs + content
+    var rebuilt = buildAnatomyHeader();
+    rebuilt += getAnatomyContent(sub);
+    mainContent.innerHTML = rebuilt;
+  }
+}
+
+function buildAnatomyHeader(){
+  var h = '';
+  h += '<h3 style="font-family:\'Space Grotesk\',sans-serif;font-size:1.1rem;color:var(--violet);margin-bottom:0.3rem">🔬 Complete Code Anatomy — Every File, Every Line</h3>';
+  h += '<p style="color:var(--tdim);font-size:0.85rem;margin-bottom:0.6rem">Deep-dive into all 7 deployment files with line-by-line explanations. Beginner concepts explained inline.</p>';
+  h += '<div style="display:flex;gap:0.3rem;justify-content:center;margin:0.6rem 0;flex-wrap:wrap" id="subtab-nav">';
+  h += '<button class="anatomy-subtab' + (currentAnatomy === 'run' ? ' active' : '') + '" onclick="switchAnatomy(\'run\',event)">▶️ run_deployment.py</button>';
+  h += '<button class="anatomy-subtab' + (currentAnatomy === 'dep' ? ' active' : '') + '" onclick="switchAnatomy(\'dep\',event)">🚀 deployment_pipeline.py</button>';
+  h += '<button class="anatomy-subtab' + (currentAnatomy === 'imp' ? ' active' : '') + '" onclick="switchAnatomy(\'imp\',event)">📥 dynamic_importer.py</button>';
+  h += '<button class="anatomy-subtab' + (currentAnatomy === 'srv' ? ' active' : '') + '" onclick="switchAnatomy(\'srv\',event)">🔌 service_loader.py</button>';
+  h += '<button class="anatomy-subtab' + (currentAnatomy === 'pred' ? ' active' : '') + '" onclick="switchAnatomy(\'pred\',event)">🎯 predictor.py</button>';
+  h += '<button class="anatomy-subtab' + (currentAnatomy === 'sample' ? ' active' : '') + '" onclick="switchAnatomy(\'sample\',event)">🧪 sample_predict.py</button>';
+  h += '<button class="anatomy-subtab' + (currentAnatomy === 'loader' ? ' active' : '') + '" onclick="switchAnatomy(\'loader\',event)">📦 model_loader.py</button>';
+  h += '</div>';
+  h += '<div id="sub-content">';
+  return h;
+}
+
+function getAnatomyContent(sub){
+  var h = '';
+  if(sub === 'run'){ h = getAnatomyRun(); }
+  else if(sub === 'dep'){ h = getAnatomyDep(); }
+  else if(sub === 'imp'){ h = getAnatomyImp(); }
+  else if(sub === 'srv'){ h = getAnatomySrv(); }
+  else if(sub === 'pred'){ h = getAnatomyPred(); }
+  else if(sub === 'sample'){ h = getAnatomySample(); }
+  else if(sub === 'loader'){ h = getAnatomyLoader(); }
+  else { h = '<p style="color:var(--tdim);font-size:0.8rem;text-align:center;padding:1rem">Click a file tab above to see its detailed line-by-line anatomy.</p>'; }
+  return h;
+}
+
+// Individual anatomy functions — each returns HTML for one file
+function getAnatomyRun(){
+  var h = '';
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.75rem;color:var(--violet);margin:1rem 0 0.4rem">🔬 Anatomy of run_deployment.py — The CLI Entry Point</h4>';
+  h += '<p style="color:var(--tdim);font-size:0.72rem;margin-bottom:0.4rem"><strong>File:</strong> <code>run_deployment.py</code> (75 lines). The "start button" — runs both pipelines and provides a CLI for starting/stopping the prediction server.</p>';
+
+  h += '<div class="code-box" style="font-size:0.65rem;line-height:1.75;text-align:left">';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># SECTION 1: IMPORTS (lines 1-9)</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n\n';
+  h += '<span class="cm"># LINE 1: click — framework for building CLI (Command Line Interface) tools</span>\n';
+  h += '<span class="cm">#   Think: "click lets you turn a Python function into a terminal command."</span>\n';
+  h += '<span class="kw">import</span> click\n\n';
+  h += '<span class="cm"># LINES 2-5: Import the TWO pipelines from deployment_pipeline.py</span>\n';
+  h += '<span class="kw">from</span> pipelines.deployment_pipeline <span class="kw">import</span> (\n';
+  h += '    continuous_deployment_pipeline,\n';
+  h += '    inference_pipeline,\n';
+  h += ')\n\n';
+  h += '<span class="cm"># LINE 6: rich.print — prettier console output (colors, formatting)</span>\n';
+  h += '<span class="kw">from</span> rich <span class="kw">import</span> print\n\n';
+  h += '<span class="cm"># LINE 7: get_tracking_uri — "What URL is MLflow running at?"</span>\n';
+  h += '<span class="kw">from</span> zenml.integrations.mlflow.mlflow_utils <span class="kw">import</span> get_tracking_uri\n\n';
+  h += '<span class="cm"># LINES 8-9: MLFlowModelDeployer — class for managing deployed servers</span>\n';
+  h += '<span class="kw">from</span> zenml.integrations.mlflow.model_deployers.mlflow_model_deployer <span class="kw">import</span> (\n';
+  h += '    MLFlowModelDeployer,\n';
+  h += ')\n';
+  h += '</div>';
+
+  h += '<div class="code-box" style="font-size:0.65rem;line-height:1.75;text-align:left">';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># SECTION 2: THE CLI COMMAND (lines 13-55)</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n\n';
+  h += '<span class="cm"># @click.command() = "This function is a CLI command."</span>\n';
+  h += '<span class="cm">#   Without @click, run_main() is just a function.</span>\n';
+  h += '<span class="cm">#   WITH @click, you can call it from terminal: python run_deployment.py</span>\n';
+  h += '<span class="deco">@click.command</span>()\n\n';
+  h += '<span class="cm"># @click.option = adds a command-line FLAG</span>\n';
+  h += '<span class="cm">#   is_flag=True → on/off switch (no value needed)</span>\n';
+  h += '<span class="cm">#   Usage: python run_deployment.py --stop-service</span>\n';
+  h += '<span class="deco">@click.option</span>(\n';
+  h += '    <span class="str">"--stop-service"</span>,\n';
+  h += '    is_flag=<span class="kw">True</span>,\n';
+  h += '    default=<span class="kw">False</span>,\n';
+  h += '    help=<span class="str">"Stop the prediction service when done"</span>,\n';
+  h += ')\n\n';
+  h += '<span class="kw">def</span> <span class="fn">run_main</span>(stop_service: <span class="cls">bool</span>):\n\n';
+  h += '    model_name = <span class="str">"prices_predictor"</span>\n\n';
+  h += '    <span class="cm"># STOP BRANCH — only runs when --stop-service is passed</span>\n';
+  h += '    <span class="kw">if</span> stop_service:\n';
+  h += '        model_deployer = MLFlowModelDeployer.get_active_model_deployer()\n';
+  h += '        existing_services = model_deployer.find_model_server(\n';
+  h += '            pipeline_name=<span class="str">"continuous_deployment_pipeline"</span>,\n';
+  h += '            pipeline_step_name=<span class="str">"mlflow_model_deployer_step"</span>,\n';
+  h += '            model_name=model_name,\n';
+  h += '            running=<span class="kw">True</span>,\n';
+  h += '        )\n';
+  h += '        <span class="kw">if</span> existing_services:\n';
+  h += '            existing_services[<span class="num">0</span>].stop(timeout=<span class="num">10</span>)\n';
+  h += '        <span class="kw">return</span>\n\n';
+  h += '    <span class="cm"># NORMAL PATH — Run both pipelines</span>\n';
+  h += '    continuous_deployment_pipeline()  <span class="cm"># Train + Deploy</span>\n';
+  h += '    inference_pipeline()              <span class="cm"># Batch prediction test</span>\n\n';
+  h += '    <span class="cm"># Find and report the deployed server URL</span>\n';
+  h += '    service = model_deployer.find_model_server(\n';
+  h += '        pipeline_name=<span class="str">"continuous_deployment_pipeline"</span>,\n';
+  h += '        pipeline_step_name=<span class="str">"mlflow_model_deployer_step"</span>,\n';
+  h += '    )\n';
+  h += '    <span class="kw">if</span> service[<span class="num">0</span>]:\n';
+  h += '        print(<span class="str">f"The MLflow prediction server is running\\n"</span>\n';
+  h += '              <span class="str">f"and accepts inference requests at:\\n"</span>\n';
+  h += '              <span class="str">f"    {service[0].prediction_url}"</span>)\n';
+  h += '</div>';
+
+  h += '<div class="code-box" style="font-size:0.65rem;line-height:1.75;text-align:left">';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># SECTION 3: THE GUARD — Python convention (lines 73-75)</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n\n';
+  h += '<span class="cm"># "Only run if THIS file is executed directly (not imported)"</span>\n';
+  h += '<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>:\n';
+  h += '    run_main()\n';
+  h += '<span class="cm"># python run_deployment.py → __name__ = "__main__" → RUN</span>\n';
+  h += '<span class="cm"># from run_deployment import run_main → __name__ = "run_deployment" → SKIP</span>\n';
+  h += '</div>';
+
+  h += '<div class="beginner-box"><strong>🧑‍🏫 What is @click.command and @click.option?</strong><br>';
+  h += '<strong>@click.command</strong> = decorator that says "this function is a terminal command." Like <code>@step</code> tells ZenML "track this," <code>@click.command</code> tells Click "make this runnable from the command line."<br>';
+  h += '<strong>@click.option</strong> = adds a command-line flag. Think <code>--stop-service</code>. When you type <code>python run_deployment.py --stop-service</code>, Click sets <code>stop_service=True</code>.<br>';
+  h += '<strong>Analogy:</strong> Click is like a menu at a restaurant. You say what you want with flags (--stop-service) and Click translates that into function arguments.</div>';
+
+  return h;
+}
+
+function getAnatomyDep(){
+  var h = '';
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.75rem;color:var(--violet);margin:1rem 0 0.4rem">🔬 Anatomy of deployment_pipeline.py — ALL 38 Lines</h4>';
+  h += '<p style="color:var(--tdim);font-size:0.72rem;margin-bottom:0.4rem"><strong>File:</strong> <code>pipelines/deployment_pipeline.py</code>. TWO @pipeline functions. This is the orchestration layer that connects training, deployment, and inference.</p>';
+
+  h += '<div class="code-box" style="font-size:0.65rem;line-height:1.75;text-align:left">';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># SECTION 1: TRAINING PIPELINE IMPORT</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="kw">import</span> os\n';
+  h += '<span class="kw">from</span> pipelines.training_pipeline <span class="kw">import</span> ml_pipeline\n';
+  h += '<span class="cm">#   This imports the 7-step pipeline (ingest → impute → ... → evaluate)</span>\n';
+  h += '<span class="cm">#   ml_pipeline is an @pipeline-decorated function from training_pipeline.py</span>\n\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># SECTION 2: DEPLOYMENT + INFERENCE STEPS</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="kw">from</span> steps.dynamic_importer <span class="kw">import</span> dynamic_importer\n';
+  h += '<span class="cm">#   Simulates getting data from an external source. Hard-coded sample data.</span>\n';
+  h += '<span class="cm">#   In production: replace with real API call or database query.</span>\n\n';
+  h += '<span class="kw">from</span> steps.model_loader <span class="kw">import</span> model_loader\n';
+  h += '<span class="cm">#   Loads a model from ZenML\'s Model Registry by name + version.</span>\n\n';
+  h += '<span class="kw">from</span> steps.prediction_service_loader <span class="kw">import</span> prediction_service_loader\n';
+  h += '<span class="cm">#   Finds a running MLflow prediction server by pipeline + step name.</span>\n\n';
+  h += '<span class="kw">from</span> steps.predictor <span class="kw">import</span> predictor\n';
+  h += '<span class="cm">#   Takes service + data = prediction.</span>\n\n';
+  h += '<span class="kw">from</span> zenml <span class="kw">import</span> pipeline\n';
+  h += '<span class="kw">from</span> zenml.integrations.mlflow.steps <span class="kw">import</span> mlflow_model_deployer_step\n';
+  h += '<span class="cm">#   THE MAGIC. A pre-built ZenML step that wraps ANY trained model as REST API.</span>\n';
+  h += '</div>';
+
+  h += '<div class="code-box" style="font-size:0.65rem;line-height:1.75;text-align:left">';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># PIPELINE 1: CONTINUOUS DEPLOYMENT</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n\n';
+  h += '<span class="deco">@pipeline</span>\n';
+  h += '<span class="kw">def</span> <span class="fn">continuous_deployment_pipeline</span>():\n';
+  h += '    <span class="str">"""Run a training job and deploy an MLflow model deployment."""</span>\n\n';
+  h += '    <span class="cm"># Step 1: TRAIN — run the full 7-step training pipeline</span>\n';
+  h += '    <span class="cm"># This is a PIPELINE CALLING ANOTHER PIPELINE!</span>\n';
+  h += '    <span class="cm"># Returns: trained sklearn Pipeline (preprocessor + model)</span>\n';
+  h += '    trained_model = ml_pipeline()\n\n';
+  h += '    <span class="cm"># Step 2: DEPLOY — wrap trained model as REST API</span>\n';
+  h += '    <span class="cm"># workers=3 → 3 simultaneous prediction threads</span>\n';
+  h += '    <span class="cm"># deploy_decision=True → always deploy (no manual approval)</span>\n';
+  h += '    mlflow_model_deployer_step(workers=<span class="num">3</span>, deploy_decision=<span class="kw">True</span>, model=trained_model)\n\n';
+  h += '<span class="cm"># AFTER this pipeline runs:</span>\n';
+  h += '<span class="cm"># - A model is trained (or retrained) using all 7 steps</span>\n';
+  h += '<span class="cm"># - MLflow wraps the model as a prediction server on localhost:8000</span>\n';
+  h += '<span class="cm"># - The server starts automatically and waits for requests</span>\n';
+  h += '</div>';
+
+  h += '<div class="code-box" style="font-size:0.65rem;line-height:1.75;text-align:left">';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># PIPELINE 2: BATCH INFERENCE</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n\n';
+  h += '<span class="cm"># enable_cache=False → "NEVER skip this with cached results."</span>\n';
+  h += '<span class="cm"># Why? Inference MUST use the NEWLY deployed model.</span>\n';
+  h += '<span class="deco">@pipeline</span>(enable_cache=<span class="kw">False</span>)\n';
+  h += '<span class="kw">def</span> <span class="fn">inference_pipeline</span>():\n';
+  h += '    <span class="str">"""Run a batch inference job with data loaded from an API."""</span>\n\n';
+  h += '    <span class="cm"># Step 1: GET DATA</span>\n';
+  h += '    batch_data = dynamic_importer()\n\n';
+  h += '    <span class="cm"># Step 2: FIND SERVER by pipeline + step name</span>\n';
+  h += '    model_deployment_service = prediction_service_loader(\n';
+  h += '        pipeline_name=<span class="str">"continuous_deployment_pipeline"</span>,\n';
+  h += '        step_name=<span class="str">"mlflow_model_deployer_step"</span>,\n';
+  h += '    )\n\n';
+  h += '    <span class="cm"># Step 3: PREDICT — service + data = predictions</span>\n';
+  h += '    predictor(service=model_deployment_service, input_data=batch_data)\n';
+  h += '</div>';
+
+  h += '<div class="beginner-box"><strong>🧑‍🏫 What does enable_cache=False mean?</strong><br>';
+  h += 'ZenML normally caches step results — if you run the same step with the same inputs, it reuses old outputs (fast!). But for INFERENCE, you MUST use the newly deployed model, not yesterday\'s cached predictions. <code>enable_cache=False</code> says "always re-run this pipeline, every time." Like a restaurant that MUST cook fresh for every order.</div>';
+
+  return h;
+}
+
+function getAnatomyImp(){
+  var h = '';
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.75rem;color:var(--violet);margin:1rem 0 0.4rem">🔬 Anatomy of dynamic_importer.py — ALL 57 Lines</h4>';
+  h += '<p style="color:var(--tdim);font-size:0.72rem;margin-bottom:0.4rem"><strong>File:</strong> <code>steps/dynamic_importer.py</code>. The data source for inference. Currently hard-coded sample data — <strong>replace with a real API call, database query, or file read</strong> in production.</p>';
+
+  h += '<div class="code-box" style="font-size:0.65rem;line-height:1.75;text-align:left">';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># SECTION 1: IMPORTS (lines 1-2)</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n\n';
+  h += '<span class="kw">import</span> pandas <span class="kw">as</span> pd\n';
+  h += '<span class="cm">#   pandas: DataFrame operations. pd.DataFrame() creates tables of data.</span>\n';
+  h += '<span class="kw">from</span> zenml <span class="kw">import</span> step\n';
+  h += '<span class="cm">#   @step: decorator that tells ZenML to track this function.</span>\n';
+  h += '</div>';
+
+  h += '<div class="code-box" style="font-size:0.65rem;line-height:1.75;text-align:left">';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># SECTION 2: THE @step FUNCTION (lines 5-57)</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n\n';
+  h += '<span class="deco">@step</span>\n';
+  h += '<span class="kw">def</span> <span class="fn">dynamic_importer</span>() -> <span class="cls">str</span>:\n';
+  h += '    <span class="str">"""Dynamically imports data for testing out the model."""</span>\n\n';
+  h += '<span class="cm">#   RIGHT NOW: We hard-code 2 sample houses as a Python dictionary.</span>\n';
+  h += '<span class="cm">#   PRODUCTION: Replace with:</span>\n';
+  h += '<span class="cm">#     - requests.get("https://api.example.com/new-listings") → real API</span>\n';
+  h += '<span class="cm">#     - pd.read_sql("SELECT * FROM houses WHERE ...") → database</span>\n';
+  h += '<span class="cm">#     - pd.read_csv("new_data.csv") → file</span>\n';
+  h += '<span class="cm">#   The REST of the pipeline doesn\'t change — it just needs a JSON string.</span>\n\n';
+  h += '    data = {\n';
+  h += '        <span class="str">"Order"</span>: [<span class="num">1</span>, <span class="num">2</span>],\n';
+  h += '        <span class="str">"PID"</span>: [<span class="num">526301100</span>, <span class="num">526301101</span>],\n';
+  h += '        <span class="cm"># ... 34 more columns defining each house\'s features ...</span>\n';
+  h += '        <span class="str">"Gr Liv Area"</span>: [<span class="num">1710</span>, <span class="num">1262</span>],\n';
+  h += '        <span class="cm">#   1st house: 1710 sqft, 2nd: 1262 sqft</span>\n';
+  h += '        <span class="str">"Overall Qual"</span>: [<span class="num">7</span>, <span class="num">6</span>],\n';
+  h += '        <span class="cm">#   1st house: quality 7/10, 2nd: 6/10</span>\n';
+  h += '        <span class="str">"Yr Sold"</span>: [<span class="num">2008</span>, <span class="num">2007</span>],\n';
+  h += '    }\n\n';
+  h += '    <span class="cm"># Create a DataFrame (table) from the dictionary</span>\n';
+  h += '    <span class="cm"># Each KEY = column name. Each LIST = column values.</span>\n';
+  h += '    df = pd.DataFrame(data)\n\n';
+  h += '    <span class="cm"># Convert DataFrame → JSON string</span>\n';
+  h += '    <span class="cm"># orient="split" = {columns:[...], data:[[...],[...]]} format</span>\n';
+  h += '    json_data = df.to_json(orient=<span class="str">"split"</span>)\n';
+  h += '    <span class="kw">return</span> json_data\n';
+  h += '</div>';
+
+  h += '<div class="code-box" style="font-size:0.65rem;line-height:1.75;text-align:left">';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># REAL PRODUCTION EXAMPLES (what you\'d replace the hard-coded dict with)</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm">#</span>\n';
+  h += '<span class="cm"># OPTION A: REST API call</span>\n';
+  h += '<span class="cm">#   import requests</span>\n';
+  h += '<span class="cm">#   response = requests.get("https://api.houses.com/new-listings")</span>\n';
+  h += '<span class="cm">#   return response.json()  ← JSON from the API</span>\n';
+  h += '<span class="cm">#</span>\n';
+  h += '<span class="cm"># OPTION B: Database query</span>\n';
+  h += '<span class="cm">#   import sqlite3</span>\n';
+  h += '<span class="cm">#   conn = sqlite3.connect("houses.db")</span>\n';
+  h += '<span class="cm">#   df = pd.read_sql("SELECT * FROM new_listings LIMIT 100", conn)</span>\n';
+  h += '<span class="cm">#   return df.to_json(orient="split")</span>\n';
+  h += '<span class="cm">#</span>\n';
+  h += '<span class="cm"># OPTION C: Message queue (Kafka, RabbitMQ)</span>\n';
+  h += '<span class="cm">#   consumer = KafkaConsumer("house-listings")</span>\n';
+  h += '<span class="cm">#   messages = consumer.poll(timeout_ms=5000)</span>\n';
+  h += '<span class="cm">#   return json.dumps(messages)</span>\n';
+  h += '</div>';
+
+  h += '<div class="beginner-box"><strong>🧑‍🏫 What is orient="split" in to_json()?</strong><br>';
+  h += 'pandas <code>to_json()</code> has several output formats. <code>orient="split"</code> creates: <code>{"columns": [...37 names...], "data": [[row1...], [row2...]]}</code>. This is the format MLflow\'s prediction server expects.</div>';
+
+  return h;
+}
+
+function getAnatomySrv(){
+  var h = '';
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.75rem;color:var(--violet);margin:1rem 0 0.4rem">🔬 Anatomy of prediction_service_loader.py — ALL 28 Lines</h4>';
+  h += '<p style="color:var(--tdim);font-size:0.72rem;margin-bottom:0.4rem"><strong>File:</strong> <code>steps/prediction_service_loader.py</code>. The bridge between pipeline definition and live server. Searches ZenML\'s deployer registry for a running prediction service.</p>';
+
+  h += '<div class="code-box" style="font-size:0.65rem;line-height:1.75;text-align:left">';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># SECTION 1: IMPORTS</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n\n';
+  h += '<span class="kw">from</span> zenml <span class="kw">import</span> step\n';
+  h += '<span class="cm">#   @step = makes this a tracked ZenML pipeline step</span>\n\n';
+  h += '<span class="kw">from</span> zenml.integrations.mlflow.model_deployers <span class="kw">import</span> MLFlowModelDeployer\n';
+  h += '<span class="cm">#   MLFlowModelDeployer = THE MANAGER for all deployed MLflow servers</span>\n';
+  h += '<span class="cm">#   Think: "phone book" for deployed prediction servers</span>\n\n';
+  h += '<span class="kw">from</span> zenml.integrations.mlflow.services <span class="kw">import</span> MLFlowDeploymentService\n';
+  h += '<span class="cm">#   TYPE ANNOTATION for a running server</span>\n';
+  h += '</div>';
+
+  h += '<div class="code-box" style="font-size:0.65rem;line-height:1.75;text-align:left">';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># SECTION 2: THE @step FUNCTION</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n\n';
+  h += '<span class="deco">@step</span>(enable_cache=<span class="kw">False</span>)\n';
+  h += '<span class="kw">def</span> <span class="fn">prediction_service_loader</span>(\n';
+  h += '    pipeline_name: <span class="cls">str</span>,   <span class="cm"># "continuous_deployment_pipeline"</span>\n';
+  h += '    step_name: <span class="cls">str</span>         <span class="cm"># "mlflow_model_deployer_step"</span>\n';
+  h += ') -> MLFlowDeploymentService:\n\n';
+  h += '    <span class="cm"># STEP A: Get the deployer from the active ZenML stack</span>\n';
+  h += '    model_deployer = MLFlowModelDeployer.get_active_model_deployer()\n\n';
+  h += '    <span class="cm"># STEP B: SEARCH for running servers by pipeline + step name</span>\n';
+  h += '    existing_services = model_deployer.find_model_server(\n';
+  h += '        pipeline_name=pipeline_name,\n';
+  h += '        pipeline_step_name=step_name,\n';
+  h += '    )\n\n';
+  h += '    <span class="cm"># STEP C: Error if no server found (can\'t predict without one)</span>\n';
+  h += '    <span class="kw">if not</span> existing_services:\n';
+  h += '        <span class="kw">raise</span> RuntimeError(<span class="str">"No MLflow prediction service running"</span>)\n\n';
+  h += '    <span class="cm"># STEP D: Return the first matching server</span>\n';
+  h += '    <span class="kw">return</span> existing_services[<span class="num">0</span>]\n';
+  h += '</div>';
+
+  h += '<div class="beginner-box"><strong>🧑‍🏫 What is a "stack component" and get_active_model_deployer()?</strong><br>';
+  h += 'A ZenML <strong>stack</strong> is a collection of configured components: orchestrator, artifact store, experiment tracker, and <strong>model deployer</strong>.<br>';
+  h += '<code>get_active_model_deployer()</code> = "look at my active ZenML stack → find the model_deployer component → give me the MLflow deployer." You registered it earlier with <code>zenml model-deployer register ...</code>.</div>';
+
+  return h;
+}
+
+function getAnatomyPred(){
+  var h = '';
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.75rem;color:var(--violet);margin:1rem 0 0.4rem">🔬 Complete Anatomy of predictor.py — ALL 87 Lines</h4>';
+  h += '<p style="color:var(--tdim);font-size:0.72rem;margin-bottom:0.4rem"><strong>File:</strong> <code>steps/predictor.py</code>. The final step: takes the deployed service + input data, sends data to the server, and returns predictions. <strong>This is where inference actually happens.</strong></p>';
+
+  h += '<div class="code-box" style="font-size:0.65rem;line-height:1.75;text-align:left">';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># SECTION 1: IMPORTS (lines 1-6)</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n\n';
+  h += '<span class="kw">import</span> json       <span class="cm"># Python ↔ JSON: json.loads() / json.dumps()</span>\n';
+  h += '<span class="kw">import</span> numpy <span class="kw">as</span> np  <span class="cm"># Numerical arrays: np.array()</span>\n';
+  h += '<span class="kw">import</span> pandas <span class="kw">as</span> pd  <span class="cm"># DataFrames: pd.DataFrame(data, columns=cols)</span>\n';
+  h += '<span class="kw">from</span> zenml <span class="kw">import</span> step\n';
+  h += '<span class="kw">from</span> zenml.integrations.mlflow.services <span class="kw">import</span> MLFlowDeploymentService\n\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># SECTION 2: THE @step + FUNCTION SIGNATURE (lines 9-13)</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n\n';
+  h += '<span class="deco">@step</span>(enable_cache=<span class="kw">False</span>)\n';
+  h += '<span class="kw">def</span> <span class="fn">predictor</span>(\n';
+  h += '    service: MLFlowDeploymentService,  <span class="cm"># ← The running server</span>\n';
+  h += '    input_data: <span class="cls">str</span>,                  <span class="cm"># ← JSON string from importer</span>\n';
+  h += ') -> np.ndarray:                        <span class="cm"># ← Returns: numpy array</span>\n\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># PHASE 1: START THE SERVICE (line 25)</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '    service.start(timeout=<span class="num">10</span>)    <span class="cm"># NOP if already running</span>\n\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># PHASE 2: PARSE JSON (lines 27-28)</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '    data = json.loads(input_data)      <span class="cm"># JSON string → Python dict</span>\n';
+  h += '    data.pop(<span class="str">"columns"</span>, <span class="kw">None</span>)        <span class="cm"># Remove metadata (not needed)</span>\n';
+  h += '    data.pop(<span class="str">"index"</span>, <span class="kw">None</span>)          <span class="cm"># Remove metadata (not needed)</span>\n\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># PHASE 3: BUILD DATAFRAME (lines 34-77)</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '    <span class="cm"># 37 columns in EXACT order. ORDER MATTERS!</span>\n';
+  h += '    expected_columns = [\n';
+  h += '        <span class="str">"Order"</span>, <span class="str">"PID"</span>, <span class="str">"MS SubClass"</span>, <span class="str">"Lot Frontage"</span>,\n';
+  h += '        <span class="cm"># ... 32 more columns ...</span>\n';
+  h += '        <span class="str">"Yr Sold"</span>,\n';
+  h += '    ]\n';
+  h += '    df = pd.DataFrame(data[<span class="str">"data"</span>], columns=expected_columns)\n\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># PHASE 4: CONVERT FORMAT (lines 80-81)</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '    <span class="cm"># Transpose: rows↔cols → dict → list → numpy array</span>\n';
+  h += '    json_list = json.loads(json.dumps(list(df.T.to_dict().values())))\n';
+  h += '    data_array = np.array(json_list)\n\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># PHASE 5: THE ACTUAL PREDICTION (line 84)</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '    <span class="cm"># Sends data to localhost:8000/invocations</span>\n';
+  h += '    <span class="cm"># MLflow runs: preprocess → predict → return price array</span>\n';
+  h += '    prediction = service.predict(data_array)\n';
+  h += '    <span class="kw">return</span> prediction\n';
+  h += '</div>';
+
+  h += '<div class="beginner-box"><strong>🧑‍🏫 What is df.T and why transpose?</strong><br>';
+  h += '<strong>DataFrame shape:</strong> 2 rows × 37 columns (rows=houses, cols=features)<br>';
+  h += '<strong>MLflow expects:</strong> list of 2 dicts, each dict = 1 house with 37 key-value pairs<br>';
+  h += '<strong>df.T:</strong> swaps rows and columns → 37 rows × 2 columns<br>';
+  h += '<strong>.to_dict().values():</strong> extracts just the house dicts → [{"Order":1,...}, {"Order":2,...}]<br>';
+  h += 'It\'s a bridge between "table thinking" (pandas) and "record thinking" (MLflow/REST APIs).</div>';
+
+  return h;
+}
+
+function getAnatomySample(){
+  var h = '';
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.75rem;color:var(--violet);margin:1rem 0 0.4rem">🔬 Anatomy of sample_predict.py — ALL 73 Lines</h4>';
+  h += '<p style="color:var(--tdim);font-size:0.72rem;margin-bottom:0.4rem"><strong>File:</strong> <code>sample_predict.py</code>. A STANDALONE test — NO ZenML needed. Proves the deployed API works with raw HTTP. <strong>This is how ANY external application would call your model.</strong></p>';
+
+  h += '<div class="code-box" style="font-size:0.65rem;line-height:1.75;text-align:left">';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># IMPORTS</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="kw">import</span> json\n';
+  h += '<span class="kw">import</span> requests   <span class="cm"># Python\'s HTTP library — sends GET, POST, PUT, DELETE</span>\n\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># CONFIGURATION</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># 127.0.0.1 = localhost (your own computer)</span>\n';
+  h += '<span class="cm"># 8000 = the port MLflow serves on</span>\n';
+  h += '<span class="cm"># /invocations = the ENDPOINT — the specific "button" for predictions</span>\n';
+  h += 'url = <span class="str">"http://127.0.0.1:8000/invocations"</span>\n\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># SAMPLE DATA — ONE house with 38 features</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += 'input_data = {\n';
+  h += '    <span class="str">"dataframe_records"</span>: [{\n';
+  h += '        <span class="str">"Order"</span>: <span class="num">1</span>, <span class="str">"PID"</span>: <span class="num">5286</span>,\n';
+  h += '        <span class="str">"MS SubClass"</span>: <span class="num">20</span>, <span class="str">"Lot Frontage"</span>: <span class="num">80.0</span>,\n';
+  h += '        <span class="str">"Lot Area"</span>: <span class="num">9600</span>, <span class="str">"Overall Qual"</span>: <span class="num">5</span>,\n';
+  h += '        <span class="cm"># ... 33 more attributes ...</span>\n';
+  h += '        <span class="str">"Gr Liv Area"</span>: <span class="num">1710.0</span>, <span class="str">"Year Built"</span>: <span class="num">1961</span>,\n';
+  h += '        <span class="str">"Garage Cars"</span>: <span class="num">2</span>, <span class="str">"Yr Sold"</span>: <span class="num">2010</span>,\n';
+  h += '    }]\n';
+  h += '}\n\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># SEND REQUEST</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># POST = "I\'m sending data to you"</span>\n';
+  h += 'response = requests.post(url, json=input_data)\n\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># HANDLE RESPONSE</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="kw">if</span> response.status_code == <span class="num">200</span>:\n';
+  h += '    <span class="cm"># 200 = HTTP "OK" — everything worked</span>\n';
+  h += '    prediction = response.json()\n';
+  h += '    print(<span class="str">f"Prediction: {prediction}"</span>)\n';
+  h += '    <span class="cm"># → Prediction: {"predictions": [185000.50]}</span>\n';
+  h += '    <span class="cm"># → This house is worth ~$185,000!</span>\n';
+  h += '<span class="kw">else</span>:\n';
+  h += '    print(<span class="str">f"Error: {response.status_code}"</span>)\n';
+  h += '</div>';
+
+  h += '<div class="beginner-box"><strong>🧑‍🏫 What are HTTP status codes?</strong><br>';
+  h += '<strong>200</strong> = OK (everything worked)<br><strong>400</strong> = Bad Request (malformed JSON)<br><strong>404</strong> = Not Found (wrong URL)<br><strong>500</strong> = Internal Server Error (server crashed)<br><strong>503</strong> = Service Unavailable (server busy/starting)<br>';
+  h += 'Always check <code>response.status_code</code> — predicting on a 500 error gives you an error message, not a prediction!</div>';
+
+  return h;
+}
+
+function getAnatomyLoader(){
+  var h = '';
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.75rem;color:var(--violet);margin:1rem 0 0.4rem">🔬 Anatomy of model_loader.py — ALL 23 Lines</h4>';
+  h += '<p style="color:var(--tdim);font-size:0.72rem;margin-bottom:0.4rem"><strong>File:</strong> <code>steps/model_loader.py</code>. Loads a specific model version from ZenML\'s Model Registry. Alternative to ml_pipeline() — use when you want the <strong>production</strong> model, not a freshly trained one.</p>';
+
+  h += '<div class="code-box" style="font-size:0.65rem;line-height:1.75;text-align:left">';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># IMPORTS</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="kw">from</span> sklearn.pipeline <span class="kw">import</span> Pipeline\n';
+  h += '<span class="cm">#   The TYPE returned (sklearn Pipeline = preprocessor + model)</span>\n';
+  h += '<span class="kw">from</span> zenml <span class="kw">import</span> Model, step\n';
+  h += '<span class="cm">#   Model: ZenML\'s Model Registry class</span>\n';
+  h += '<span class="cm">#   Model(name="prices_predictor", version="production")</span>\n';
+  h += '<span class="cm">#   "Give me the production version of prices_predictor"</span>\n';
+  h += '</div>';
+
+  h += '<div class="code-box" style="font-size:0.65rem;line-height:1.75;text-align:left">';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># THE @step FUNCTION</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n\n';
+  h += '<span class="deco">@step</span>\n';
+  h += '<span class="kw">def</span> <span class="fn">model_loader</span>(model_name: <span class="cls">str</span>) -> Pipeline:\n';
+  h += '    <span class="str">"""Loads the current production model pipeline."""</span>\n\n';
+  h += '    <span class="cm"># Look up the model in ZenML\'s Model Registry</span>\n';
+  h += '    <span class="cm"># name="prices_predictor" — the model we registered</span>\n';
+  h += '    <span class="cm"># version="production" — the PROMOTED version (not staging)</span>\n';
+  h += '    <span class="cm"># Registry tracks: staging → production → archived</span>\n';
+  h += '    model = Model(name=model_name, version=<span class="str">"production"</span>)\n\n';
+  h += '    <span class="cm"># Load the actual sklearn Pipeline artifact</span>\n';
+  h += '    <span class="cm"># "sklearn_pipeline" = artifact name set in model_building_step</span>\n';
+  h += '    <span class="cm"># load_artifact() reads from ZenML\'s artifact store</span>\n';
+  h += '    <span class="cm"># (could be local disk, S3 bucket, or GCS)</span>\n';
+  h += '    model_pipeline: Pipeline = model.load_artifact(<span class="str">"sklearn_pipeline"</span>)\n';
+  h += '    <span class="kw">return</span> model_pipeline\n';
+  h += '</div>';
+
+  h += '<div class="code-box" style="font-size:0.65rem;line-height:1.75;text-align:left">';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm"># model_loader vs ml_pipeline() — WHEN TO USE WHICH?</span>\n';
+  h += '<span class="cm"># ============================================================================</span>\n';
+  h += '<span class="cm">#</span>\n';
+  h += '<span class="cm"># ml_pipeline()</span>\n';
+  h += '<span class="cm">#   → Runs ALL 7 steps fresh (ingest, impute, feature, ...)</span>\n';
+  h += '<span class="cm">#   → Trains a NEW model every time</span>\n';
+  h += '<span class="cm">#   → Use when: you want to retrain + deploy</span>\n';
+  h += '<span class="cm">#</span>\n';
+  h += '<span class="cm"># model_loader()</span>\n';
+  h += '<span class="cm">#   → Loads an EXISTING model from the registry</span>\n';
+  h += '<span class="cm">#   → No training — just load what\'s already saved</span>\n';
+  h += '<span class="cm">#   → Use when: you want to deploy the current PRODUCTION model</span>\n';
+  h += '<span class="cm">#     without retraining (e.g., deploying to a new server)</span>\n';
+  h += '</div>';
+
+  h += '<div class="beginner-box"><strong>🧑‍🏫 What is a Model Registry and "version: production"?</strong><br>';
+  h += 'The <strong>Model Registry</strong> is like a library catalog for ML models:<br>';
+  h += '<strong>staging</strong> = "this version looks good, testing it now"<br>';
+  h += '<strong>production</strong> = "approved for real-world use"<br>';
+  h += '<strong>archived</strong> = "old version, kept for history"<br>';
+  h += '<code>version="production"</code> means "give me the one approved for real predictions." This prevents accidentally serving a broken staging model.</div>';
+
+  return h;
+}
+
+
+// ============================================================================
+// USAGE TAB
+// ============================================================================
+function buildUsage(){
+  var h = '';
+  h += '<h3 style="font-family:\'Space Grotesk\',sans-serif;font-size:1.1rem;color:var(--green);margin-bottom:0.3rem">▶️ How to USE It — The Complete Deployment Flow</h3>';
+  h += '<p style="color:var(--tdim);font-size:0.85rem;margin-bottom:0.8rem">Train → Deploy → Infer → Test. The end-to-end workflow that turns a trained model into a live prediction API.</p>';
+
+  h += '<div style="background:var(--green-bg);border:2px solid var(--green);border-radius:12px;padding:1rem;margin:1rem 0">';
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.72rem;color:var(--green);margin-bottom:0.5rem;text-align:center">▶️ The 4-Step End-to-End Flow</h4>';
+  h += '<div class="viz-row" style="flex-direction:column;gap:0.4rem"><div class="viz-row">';
+  h += '<div class="viz-box in"><strong>1. TRAIN</strong><br>python run_pipeline.py<br><span style="color:var(--tmut)">7 steps → model</span></div>';
+  h += '<span class="viz-arrow">→</span>';
+  h += '<div class="viz-box proc"><strong>2. DEPLOY</strong><br>python run_deployment.py<br><span style="color:var(--tmut)">train + deploy</span></div>';
+  h += '<span class="viz-arrow">→</span>';
+  h += '<div class="viz-box out"><strong>3. SERVER LIVE</strong><br>localhost:8000<br><span style="color:var(--tmut)">REST API ready</span></div>';
+  h += '<span class="viz-arrow">→</span>';
+  h += '<div class="viz-box" style="border-color:var(--cyan);background:var(--cyan-bg)"><strong>4. TEST</strong><br>python sample_predict.py<br><span style="color:var(--tmut)">Real prediction!</span></div>';
+  h += '</div></div></div>';
+
+  h += '<div class="code-box">';
+  h += '<span class="cm"># ============================================================</span>\n';
+  h += '<span class="cm"># STEP 1: TRAIN (Phase 5E)</span>\n';
+  h += '<span class="cm"># ============================================================</span>\n';
+  h += 'python run_pipeline.py\n';
+  h += '<span class="cm"># Runs all 7 steps: ingest → impute → feature → outlier</span>\n';
+  h += '<span class="cm">#   → split → model_build → evaluate</span>\n';
+  h += '<span class="cm"># Opens MLflow UI at http://localhost:5000</span>\n';
+  h += '<span class="cm"># Best model is registered in ZenML Model Registry</span>\n\n';
+  h += '<span class="cm"># ============================================================</span>\n';
+  h += '<span class="cm"># STEP 2: DEPLOY (Phase 5F)</span>\n';
+  h += '<span class="cm"># ============================================================</span>\n';
+  h += 'python run_deployment.py\n';
+  h += '<span class="cm"># Pipeline 1: Re-trains + deploys model as REST API</span>\n';
+  h += '<span class="cm">#   • ml_pipeline() re-runs the 7 training steps</span>\n';
+  h += '<span class="cm">#   • mlflow_model_deployer_step wraps model → live server</span>\n';
+  h += '<span class="cm">#   • Server starts on http://127.0.0.1:8000</span>\n';
+  h += '<span class="cm"># Pipeline 2: Runs inference on sample data</span>\n';
+  h += '<span class="cm">#   • dynamic_importer loads 2 test houses</span>\n';
+  h += '<span class="cm">#   • prediction_service_loader finds the server</span>\n';
+  h += '<span class="cm">#   • predictor sends data → gets predictions</span>\n\n';
+  h += '<span class="cm"># ============================================================</span>\n';
+  h += '<span class="cm"># STEP 3: TEST with sample_predict.py</span>\n';
+  h += '<span class="cm"># ============================================================</span>\n';
+  h += 'python sample_predict.py\n';
+  h += '<span class="cm"># Sends RAW HTTP POST to localhost:8000/invocations</span>\n';
+  h += '<span class="cm"># Proves the API works WITHOUT ZenML pipeline</span>\n';
+  h += '<span class="cm"># Output: {"predictions": [185000.50]}</span>\n\n';
+  h += '<span class="cm"># ============================================================</span>\n';
+  h += '<span class="cm"># STEP 4: STOP the server when done</span>\n';
+  h += '<span class="cm"># ============================================================</span>\n';
+  h += 'python run_deployment.py --stop-service\n';
+  h += '<span class="cm"># Finds the running MLflow server → graceful shutdown</span>\n';
+  h += '</div>';
+
+  // Multi-language examples
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.72rem;color:var(--violet);margin:0.8rem 0 0.3rem">🔌 Calling Your Model From ANY Language</h4>';
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;margin:0.6rem 0;font-size:0.55rem">';
+  h += '<div style="background:#1e1e1e;border:2px solid var(--violet);border-radius:8px;padding:0.6rem;font-family:\'JetBrains Mono\',monospace;color:#d4d4d4;font-size:0.52rem">';
+  h += '<span style="color:#6a9955">// JavaScript / Node.js</span>\n';
+  h += '<span style="color:#569cd6">const</span> resp = <span style="color:#569cd6">await</span> <span style="color:#c586c0">fetch</span>(<span style="color:#ce9178">\'http://localhost:8000/invocations\'</span>, {\n';
+  h += '  method: <span style="color:#ce9178">\'POST\'</span>,\n';
+  h += '  body: <span style="color:#c586c0">JSON</span>.stringify(data)\n';
+  h += '});\n';
+  h += '<span style="color:#569cd6">const</span> result = <span style="color:#569cd6">await</span> resp.json();\n';
+  h += '</div>';
+  h += '<div style="background:#1e1e1e;border:2px solid var(--green);border-radius:8px;padding:0.6rem;font-family:\'JetBrains Mono\',monospace;color:#d4d4d4;font-size:0.52rem">';
+  h += '<span style="color:#6a9955"># cURL (command line)</span>\n';
+  h += 'curl -X POST \\\n';
+  h += '  http://localhost:8000/invocations \\\n';
+  h += '  -H <span style="color:#ce9178">"Content-Type: application/json"</span> \\\n';
+  h += '  -d <span style="color:#ce9178">\'{"dataframe_records": [...]}\'</span>\n';
+  h += '</div>';
+  h += '<div style="background:#1e1e1e;border:2px solid var(--amber);border-radius:8px;padding:0.6rem;font-family:\'JetBrains Mono\',monospace;color:#d4d4d4;font-size:0.52rem">';
+  h += '<span style="color:#6a9955">// Go</span>\n';
+  h += 'resp, err := http.<span style="color:#c586c0">Post</span>(\n';
+  h += '  <span style="color:#ce9178">"http://localhost:8000/invocations"</span>,\n';
+  h += '  <span style="color:#ce9178">"application/json"</span>, body)\n';
+  h += '<span style="color:#569cd6">var</span> result Prediction\n';
+  h += 'json.<span style="color:#c586c0">NewDecoder</span>(resp.Body).<span style="color:#c586c0">Decode</span>(&result)\n';
+  h += '</div></div>';
+
+  // Checklist
+  h += '<div style="background:var(--green-bg);border:2px solid var(--green);border-radius:10px;padding:1rem;margin:1rem 0;text-align:center">';
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.72rem;color:var(--green);margin-bottom:0.4rem">✅ Phase 5F Checklist</h4>';
+  h += '<div class="table-wrap"><table>';
+  var checks = [
+    'Understand the TWO pipelines: continuous_deployment + inference',
+    'continuous_deployment_pipeline: train (ml_pipeline) → deploy (mlflow_model_deployer_step)',
+    'mlflow_model_deployer_step — wraps any trained model as a REST API',
+    'inference_pipeline: importer → service_loader → predictor',
+    'dynamic_importer: placeholder for real data source',
+    'prediction_service_loader: finds running MLflow server by name',
+    'predictor: parses JSON → DataFrame → sends to server → gets prediction',
+    'run_deployment.py: Click CLI that ties both pipelines together',
+    'sample_predict.py: raw HTTP test of deployed API',
+    'Full flow: python run_pipeline.py → python run_deployment.py → sample_predict.py → --stop-service'
+  ];
+  for(var i = 0; i < checks.length; i++){
+    h += '<tr><td style="padding:0.3rem;color:var(--green);font-weight:700">✅ 5F.' + (i+1) + '</td><td style="padding:0.3rem">' + checks[i] + '</td></tr>';
+  }
+  h += '</table></div></div>';
+
+  h += '<div class="callout"><strong>✅ Phase 5F Complete!</strong> Trained model deployed as a live REST API. Inference pipeline tested. Full MLOps pipeline: <strong>data → train → evaluate → deploy → predict</strong>. This is the complete cycle!<br><br>';
+  h += '<strong>🎉 THE FULL 6-PHASE MLOPS JOURNEY (5A-5F):</strong><br>';
+  h += '5A: Design Patterns (Factory/Strategy/Template) → 5B: Data Ingestion → 5C: EDA → 5D: Processing Pipeline → 5E: Model Building + MLflow → <strong>5F: Deployment + Inference</strong><br>';
+  h += '<strong>You now understand a production ML system end-to-end!</strong></div>';
+  return h;
+}
+
+// ============================================================================
+// PROJECT STRUCTURE TAB — new 6th tab
+// ============================================================================
+function buildStructure(){
+  var h = '';
+  h += '<h3 style="font-family:\'Space Grotesk\',sans-serif;font-size:1.1rem;color:var(--violet);margin-bottom:0.3rem">📁 Complete Project Structure & File Creation Sequence</h3>';
+  h += '<p style="color:var(--tdim);font-size:0.85rem;margin-bottom:0.6rem">Building this project from scratch? Here is every folder, every file, and the <strong>exact order</strong> to create them — with dependencies mapped.</p>';
+
+  // Golden Rule
+  h += '<div class="callout"><strong>🔑 THE GOLDEN RULE — 4-Layer Pattern For Every Module:</strong><br>';
+  h += '<strong>Layer 1:</strong> ABC (Contract) → <strong>Layer 2:</strong> Concrete Strategy → <strong>Layer 3:</strong> Context Class → <strong>Layer 4:</strong> ZenML @step<br>';
+  h += 'Once you build ONE module (ingest_data.py + data_ingestion_step.py), the other 5 modules use the <strong>exact same pattern</strong>. Copy the skeleton, change the strategy logic.</div>';
+
+  // Folder Tree
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.75rem;color:var(--violet);margin:1rem 0 0.4rem">📁 Complete Folder Tree</h4>';
+  h += '<div class="code-box" style="font-size:0.58rem;line-height:1.5;text-align:left">';
+  h += 'prices-predictor-system/\n';
+  h += '├── <span style="color:var(--amber)">config.yaml</span>                          <span class="cm"># Phase 0 — Model registry config</span>\n';
+  h += '├── <span style="color:var(--amber)">requirements.txt</span>                     <span class="cm"># Phase 0 — All pip dependencies</span>\n';
+  h += '│\n';
+  h += '├── <span style="color:var(--violet)">data/</span>\n';
+  h += '│   └── archive.zip                      <span class="cm"># Phase 0 — Ames Housing dataset</span>\n';
+  h += '│\n';
+  h += '├── <span style="color:var(--violet)">explanations/</span>                        <span class="cm"># Phase 5A — Design Pattern learning</span>\n';
+  h += '│   ├── factory_design_patter.py\n';
+  h += '│   ├── strategy_design_pattern.py\n';
+  h += '│   └── template_design_pattern.py\n';
+  h += '│\n';
+  h += '├── <span style="color:var(--violet)">src/</span>                                 <span class="cm"># Phases 5B-5E — Strategy Pattern modules</span>\n';
+  h += '│   ├── ingest_data.py                   <span class="cm"># 5B — Ingestion strategy</span>\n';
+  h += '│   ├── handle_missing_values.py         <span class="cm"># 5D.1 — Missing values strategy</span>\n';
+  h += '│   ├── feature_engineering.py           <span class="cm"># 5D.2 — Feature engineering strategy</span>\n';
+  h += '│   ├── outlier_detection.py             <span class="cm"># 5D.3 — Outlier detection strategy</span>\n';
+  h += '│   ├── data_splitter.py                 <span class="cm"># 5D.4 — Data splitter strategy</span>\n';
+  h += '│   ├── model_building.py               <span class="cm"># 5E.1 — Model building strategy</span>\n';
+  h += '│   └── model_evaluator.py              <span class="cm"># 5E.2 — Model evaluation strategy</span>\n';
+  h += '│\n';
+  h += '├── <span style="color:var(--violet)">steps/</span>                               <span class="cm"># Phases 5B-5F — ZenML @step wrappers</span>\n';
+  h += '│   ├── data_ingestion_step.py           <span class="cm"># 5B — Calls ingest_data context</span>\n';
+  h += '│   ├── handle_missing_values_step.py    <span class="cm"># 5D.1</span>\n';
+  h += '│   ├── feature_engineering_step.py      <span class="cm"># 5D.2</span>\n';
+  h += '│   ├── outlier_detection_step.py        <span class="cm"># 5D.3</span>\n';
+  h += '│   ├── data_splitter_step.py            <span class="cm"># 5D.4</span>\n';
+  h += '│   ├── model_building_step.py           <span class="cm"># 5E.1</span>\n';
+  h += '│   ├── model_evaluator_step.py          <span class="cm"># 5E.2</span>\n';
+  h += '│   ├── dynamic_importer.py              <span class="cm"># 5F — Simulates incoming data</span>\n';
+  h += '│   ├── prediction_service_loader.py     <span class="cm"># 5F — Finds running server</span>\n';
+  h += '│   ├── predictor.py                     <span class="cm"># 5F — Sends data → gets prediction</span>\n';
+  h += '│   └── model_loader.py                  <span class="cm"># 5F — Loads from Model Registry</span>\n';
+  h += '│\n';
+  h += '├── <span style="color:var(--violet)">pipelines/</span>                           <span class="cm"># Phases 5E-5F — Orchestration</span>\n';
+  h += '│   ├── training_pipeline.py             <span class="cm"># 5E — Wires all 7 steps</span>\n';
+  h += '│   └── deployment_pipeline.py           <span class="cm"># 5F — Deploy + Inference pipelines</span>\n';
+  h += '│\n';
+  h += '├── <span style="color:var(--violet)">analysis/</span>                            <span class="cm"># Phase 5C — EDA (separate from pipeline)</span>\n';
+  h += '│   ├── EDA.ipynb                        <span class="cm"># Notebook: calls all 5 analyzers</span>\n';
+  h += '│   └── analyze_src/\n';
+  h += '│       ├── basic_data_inspection.py\n';
+  h += '│       ├── missing_values_analysis.py\n';
+  h += '│       ├── univariate_analysis.py\n';
+  h += '│       ├── bivariate_analysis.py\n';
+  h += '│       └── multivariate_analysis.py\n';
+  h += '│\n';
+  h += '├── <span style="color:var(--amber)">run_pipeline.py</span>                      <span class="cm"># 5E — CLI: python run_pipeline.py</span>\n';
+  h += '├── <span style="color:var(--amber)">run_deployment.py</span>                    <span class="cm"># 5F — CLI: python run_deployment.py</span>\n';
+  h += '└── <span style="color:var(--amber)">sample_predict.py</span>                    <span class="cm"># 5F — Raw HTTP test of deployed API</span>\n';
+  h += '</div>';
+
+  // Creation Sequence Table
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.75rem;color:var(--violet);margin:1rem 0 0.4rem">📝 File Creation Sequence (Do This In Exact Order)</h4>';
+
+  h += '<p style="color:var(--amber);font-size:0.72rem;font-weight:700;margin:0.8rem 0 0.3rem">🔧 PHASE 0 — Project Skeleton + ZenML Stack</p>';
+  h += '<div class="table-wrap"><table>';
+  h += '<tr><th style="width:40px">#</th><th>File</th><th>What It Is</th></tr>';
+  h += '<tr><td>1</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">requirements.txt</td><td>All pip packages: zenml, mlflow, scikit-learn, pandas, numpy, click, rich, requests</td></tr>';
+  h += '<tr><td>2</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">config.yaml</td><td>Model name <code>prices_predictor</code>, license, tags</td></tr>';
+  h += '<tr><td>3</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">data/archive.zip</td><td>Download AmesHousing.csv → zip it</td></tr>';
+  h += '<tr><td>4</td><td style="font-family:\'JetBrains Mono\',monospace;">ZenML CLI commands</td><td><code>zenml init</code> → register stack components → <code>zenml stack register</code></td></tr>';
+  h += '</table></div>';
+  h += '<p style="color:var(--tmut);font-size:0.6rem;margin-top:0.3rem"><strong>Why first?</strong> ZenML needs to be initialized before you write any @step or @pipeline code.</p>';
+
+  h += '<p style="color:var(--amber);font-size:0.72rem;font-weight:700;margin:0.8rem 0 0.3rem">🧠 PHASE 5A — Design Patterns (Learning Only)</p>';
+  h += '<div class="table-wrap"><table>';
+  h += '<tr><th style="width:40px">#</th><th>File</th><th>What It Teaches</th></tr>';
+  h += '<tr><td>5</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">explanations/factory_design_patter.py</td><td>Factory Pattern: one function returns the right object</td></tr>';
+  h += '<tr><td>6</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">explanations/strategy_design_pattern.py</td><td>Strategy Pattern: ABC → Concrete → Context (THE pattern used everywhere)</td></tr>';
+  h += '<tr><td>7</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">explanations/template_design_pattern.py</td><td>Template Pattern: base class defines skeleton, subclasses fill gaps</td></tr>';
+  h += '</table></div>';
+  h += '<p style="color:var(--tmut);font-size:0.6rem;margin-top:0.3rem">These are <strong>standalone learning files</strong> — not imported by the pipeline. Run them directly to understand the patterns before using them.</p>';
+
+  h += '<p style="color:var(--amber);font-size:0.72rem;font-weight:700;margin:0.8rem 0 0.3rem">📥 PHASE 5B — Data Ingestion</p>';
+  h += '<div class="table-wrap"><table>';
+  h += '<tr><th style="width:40px">#</th><th>File</th><th>Layer</th></tr>';
+  h += '<tr><td>8</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">src/ingest_data.py</td><td>Layers 1-3: IngestDataStrategy (ABC) → ZipDataIngestion (concrete) → DataIngestor (context)</td></tr>';
+  h += '<tr><td>9</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">steps/data_ingestion_step.py</td><td>Layer 4: ZenML @step — calls DataIngestor(strategy=ZipDataIngestion())</td></tr>';
+  h += '</table></div>';
+
+  h += '<p style="color:var(--amber);font-size:0.72rem;font-weight:700;margin:0.8rem 0 0.3rem">📊 PHASE 5C — Exploratory Data Analysis (5 files + notebook)</p>';
+  h += '<div class="table-wrap"><table>';
+  h += '<tr><th style="width:40px">#</th><th>File</th><th>What It Analyzes</th></tr>';
+  h += '<tr><td>10</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">analysis/analyze_src/basic_data_inspection.py</td><td>Shape, dtypes, head, describe, info</td></tr>';
+  h += '<tr><td>11</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">analysis/analyze_src/missing_values_analysis.py</td><td>Null counts, percentages, patterns</td></tr>';
+  h += '<tr><td>12</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">analysis/analyze_src/univariate_analysis.py</td><td>Histograms, skewness, distributions</td></tr>';
+  h += '<tr><td>13</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">analysis/analyze_src/bivariate_analysis.py</td><td>Scatter plots, correlation with SalePrice</td></tr>';
+  h += '<tr><td>14</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">analysis/analyze_src/multivariate_analysis.py</td><td>Correlation heatmap, pair plots</td></tr>';
+  h += '<tr><td>15</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">analysis/EDA.ipynb</td><td>Jupyter notebook — imports all 5 files and runs them sequentially</td></tr>';
+  h += '</table></div>';
+  h += '<p style="color:var(--tmut);font-size:0.6rem;margin-top:0.3rem"><strong>Why separate from pipeline?</strong> EDA runs OUTSIDE the pipeline. You explore data FIRST to decide your processing strategies, THEN those strategies go into src/ modules.</p>';
+
+  h += '<p style="color:var(--amber);font-size:0.72rem;font-weight:700;margin:0.8rem 0 0.3rem">⚙️ PHASE 5D — Data Processing Pipeline (4 Modules × 2 Files = 8 Files)</p>';
+  h += '<div class="table-wrap"><table>';
+  h += '<tr><th style="width:40px">#</th><th>File</th><th>Strategy Decisions</th></tr>';
+  h += '<tr><td>16</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">src/handle_missing_values.py</td><td>DropMissingValues, FillMissingValues</td></tr>';
+  h += '<tr><td>17</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">steps/handle_missing_values_step.py</td><td>ZenML wrapper</td></tr>';
+  h += '<tr><td>18</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">src/feature_engineering.py</td><td>LogTransformation, StandardScaling, NoTransformation</td></tr>';
+  h += '<tr><td>19</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">steps/feature_engineering_step.py</td><td>ZenML wrapper</td></tr>';
+  h += '<tr><td>20</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">src/outlier_detection.py</td><td>ZScoreOutlierDetection, IQROutlierDetection</td></tr>';
+  h += '<tr><td>21</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">steps/outlier_detection_step.py</td><td>ZenML wrapper</td></tr>';
+  h += '<tr><td>22</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">src/data_splitter.py</td><td>SimpleTrainTestSplit, StratifiedTrainTestSplit</td></tr>';
+  h += '<tr><td>23</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">steps/data_splitter_step.py</td><td>ZenML wrapper</td></tr>';
+  h += '</table></div>';
+  h += '<p style="color:var(--tmut);font-size:0.6rem;margin-top:0.3rem"><strong>CREATION ORDER MATTERS:</strong> Missing Values → Feature Engineering → Outlier Detection → Split. This is the order the pipeline runs them in. Each step\'s output is the next step\'s input.</p>';
+
+  h += '<p style="color:var(--amber);font-size:0.72rem;font-weight:700;margin:0.8rem 0 0.3rem">🧠 PHASE 5E — Model Building + MLflow</p>';
+  h += '<div class="table-wrap"><table>';
+  h += '<tr><th style="width:40px">#</th><th>File</th><th>What It Does</th></tr>';
+  h += '<tr><td>24</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">src/model_building.py</td><td>Strategy: LinearRegressionStrategy, RidgeStrategy (swappable)</td></tr>';
+  h += '<tr><td>25</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">steps/model_building_step.py</td><td>ColumnTransformer + <code>mlflow.sklearn.autolog()</code></td></tr>';
+  h += '<tr><td>26</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">src/model_evaluator.py</td><td>Strategy: RegressionModelEvaluationStrategy → R², MSE, RMSE</td></tr>';
+  h += '<tr><td>27</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">steps/model_evaluator_step.py</td><td>ZenML wrapper — North Star + guardrails</td></tr>';
+  h += '<tr><td style="color:var(--red);font-weight:700">28</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">pipelines/training_pipeline.py</td><td><strong style="color:var(--red)">WIRES ALL 7 STEPS:</strong> ingest → missing → feature → outlier → split → build → eval</td></tr>';
+  h += '<tr><td>29</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">run_pipeline.py</td><td>CLI: <code>python run_pipeline.py</code> runs the training pipeline</td></tr>';
+  h += '</table></div>';
+  h += '<p style="color:var(--tmut);font-size:0.6rem;margin-top:0.3rem"><strong style="color:var(--red)">#28 is the big one.</strong> This is where everything comes together. It imports ALL 7 step files and ALL 7 src modules. If any earlier file has a bug, this is where you\'ll find out.</p>';
+
+  h += '<p style="color:var(--amber);font-size:0.72rem;font-weight:700;margin:0.8rem 0 0.3rem">🚀 PHASE 5F — Deployment + Inference</p>';
+  h += '<div class="table-wrap"><table>';
+  h += '<tr><th style="width:40px">#</th><th>File</th><th>What It Does</th></tr>';
+  h += '<tr><td>30</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">steps/dynamic_importer.py</td><td>Hard-coded sample houses → returns JSON string</td></tr>';
+  h += '<tr><td>31</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">steps/prediction_service_loader.py</td><td>Finds running MLflow server by pipeline name</td></tr>';
+  h += '<tr><td>32</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">steps/predictor.py</td><td>JSON → DataFrame → <code>service.predict()</code> → numpy array</td></tr>';
+  h += '<tr><td>33</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">steps/model_loader.py</td><td>Loads production model from ZenML Model Registry</td></tr>';
+  h += '<tr><td>34</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">pipelines/deployment_pipeline.py</td><td><strong>TWO pipelines:</strong> continuous_deployment + inference</td></tr>';
+  h += '<tr><td>35</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">run_deployment.py</td><td>CLI: <code>python run_deployment.py</code> / <code>--stop-service</code></td></tr>';
+  h += '<tr><td>36</td><td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--violet)">sample_predict.py</td><td><strong>Standalone.</strong> Raw <code>requests.post()</code> — proves the API works without ZenML</td></tr>';
+  h += '</table></div>';
+
+  // Dependency Graph
+  h += '<h4 style="font-family:\'Space Grotesk\',sans-serif;font-size:0.75rem;color:var(--violet);margin:1rem 0 0.4rem">🔗 Dependency Graph</h4>';
+  h += '<div class="code-box" style="font-size:0.52rem;line-height:1.4;text-align:left">';
+  h += 'config.yaml ──→ requirements.txt ──→ ZenML CLI setup\n';
+  h += '                                        │\n';
+  h += '                    ┌───────────────────┘\n';
+  h += '                    ▼\n';
+  h += '            src/ingest_data.py ──→ steps/data_ingestion_step.py\n';
+  h += '                    │                       │\n';
+  h += '                    ▼                       ▼\n';
+  h += '          src/handle_missing.py ──→ steps/handle_missing_step.py\n';
+  h += '                    │                       │\n';
+  h += '                    ▼                       ▼\n';
+  h += '         src/feature_engineering.py ──→ steps/feature_engineering_step.py\n';
+  h += '                    │                       │\n';
+  h += '                    ▼                       ▼\n';
+  h += '          src/outlier_detection.py ──→ steps/outlier_detection_step.py\n';
+  h += '                    │                       │\n';
+  h += '                    ▼                       ▼\n';
+  h += '            src/data_splitter.py ──→ steps/data_splitter_step.py\n';
+  h += '                    │                       │\n';
+  h += '                    ▼                       ▼\n';
+  h += '          src/model_building.py ──→ steps/model_building_step.py\n';
+  h += '                    │                       │\n';
+  h += '                    ▼                       ▼\n';
+  h += '         src/model_evaluator.py ──→ steps/model_evaluator_step.py\n';
+  h += '                    │                       │\n';
+  h += '                    ▼                       ▼\n';
+  h += '            pipelines/training_pipeline.py  │\n';
+  h += '                    │                       │\n';
+  h += '                    ▼                       ▼\n';
+  h += '            run_pipeline.py      steps/dynamic_importer.py\n';
+  h += '                    │                    │\n';
+  h += '                    ▼                    ▼\n';
+  h += '        pipelines/deployment_pipeline.py  ←── steps/prediction_service_loader.py\n';
+  h += '                    │                       │\n';
+  h += '                    ▼                       ▼\n';
+  h += '            run_deployment.py         steps/predictor.py\n';
+  h += '                                            │\n';
+  h += '                                            ▼\n';
+  h += '                                    sample_predict.py\n';
+  h += '</div>';
+
+  h += '<div class="callout"><strong>✅ COMPLETE PROJECT:</strong> 36 files across 6 phases. Each phase builds on the previous. Start from <code>requirements.txt</code> and work your way down. <strong>The Strategy Pattern is your constant companion</strong> — once you master the 4-layer pattern (ABC → Concrete → Context → @step), every module follows the same structure.</div>';
+
+  return h;
+}
+
+// ============================================================================
+// INITIAL RENDER — show the overview tab on page load
+// ============================================================================
+document.getElementById('content').innerHTML = buildOverview();
+
+</script>
+</body>
+</html>
